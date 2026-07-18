@@ -25,3 +25,14 @@ Push all files to the repository root. GitHub Actions builds and publishes to Gi
 - Cleaner AI-generated ingress/app/data lanes
 - Increased separation for Key Vault and Azure Monitor
 - Cleaner connection labels and routed connectors
+
+## v5.3 IaC & Source Control foundation
+- Branding: Founded by Pranab Baro
+- Terraform/Bicep code preview retained
+- Download single IaC file
+- Download IaC bundle
+- Source Control panel for GitHub/GitHub Enterprise and Azure DevOps Repos
+- Repository, branch, folder and commit-message configuration
+- Safe Prepare Repository Push workflow
+- No PAT/API secrets stored in the static browser application
+- Direct authenticated push is intentionally reserved for a secure backend integration
