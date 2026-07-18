@@ -1,9 +1,16 @@
-import { ChevronDown, ChevronRight, Search } from 'lucide-react';
+import { ChevronDown, ChevronRight, Search, type LucideIcon } from 'lucide-react';
 import { useMemo, useState } from 'react';
 import { categories, resourceCatalog } from '../resourceCatalog';
 import type { ResourceCategory } from '../types';
 
 type Props = { onAddResource: (type: string) => void };
+
+function ResourceIcon({ iconUrl, label, FallbackIcon }: { iconUrl: string; label: string; FallbackIcon: LucideIcon }) {
+  const [failed, setFailed] = useState(false);
+  return failed
+    ? <FallbackIcon size={22} />
+    : <img src={iconUrl} alt={`${label} Azure icon`} draggable={false} onError={() => setFailed(true)} />;
+}
 
 export default function Sidebar({ onAddResource }: Props) {
   const [query, setQuery] = useState('');
@@ -14,7 +21,7 @@ export default function Sidebar({ onAddResource }: Props) {
   return (
     <aside className="sidebar">
       <div className="sidebar-heading">
-        <div><div className="panel-title">Resource library</div><div className="panel-subtitle">Azure building blocks</div></div>
+        <div><div className="panel-title">Resource library</div><div className="panel-subtitle">Azure architecture services</div></div>
         <span className="count-badge">{resourceCatalog.length}</span>
       </div>
       <div className="search-box"><Search size={16} /><input value={query} onChange={(e) => setQuery(e.target.value)} placeholder="Search Azure resources" /></div>
@@ -27,15 +34,14 @@ export default function Sidebar({ onAddResource }: Props) {
             <button className="group-header" onClick={() => setOpen((v) => ({ ...v, [category]: !v[category] }))}>
               <span>{expanded ? <ChevronDown size={15}/> : <ChevronRight size={15}/>} {category}</span><small>{items.length}</small>
             </button>
-            {expanded && <div className="resource-list">{items.map((resource) => {
-              const Icon = resource.icon;
-              return <button key={resource.type} className="resource-item" draggable
+            {expanded && <div className="resource-list">{items.map((resource) => (
+              <button key={resource.type} className="resource-item" draggable
                 onDoubleClick={() => onAddResource(resource.type)}
                 onDragStart={(event) => { event.dataTransfer.setData('application/cloud-resource', resource.type); event.dataTransfer.effectAllowed = 'move'; }}>
-                <span className="resource-icon"><Icon size={18}/></span>
+                <span className="resource-icon azure-service-icon-small"><ResourceIcon iconUrl={resource.iconUrl} label={resource.label} FallbackIcon={resource.fallbackIcon} /></span>
                 <span className="resource-copy"><strong>{resource.label}</strong><small>{resource.description}</small></span>
-              </button>;
-            })}</div>}
+              </button>
+            ))}</div>}
           </section>;
         })}
       </div>

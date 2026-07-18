@@ -3,3 +3,25 @@
 @media(max-width:1120px){.topbar{grid-template-columns:1fr auto}.design-title{display:none}.workspace{grid-template-columns:230px minmax(0,1fr) 270px}.toolbar button span{display:none}.toolbar button{padding:8px}}
 @media(max-width:850px){.workspace{grid-template-columns:220px minmax(0,1fr)}.properties-panel{display:none}.statusbar .shortcut{display:none}}
 @media(max-width:620px){.workspace{grid-template-columns:1fr}.sidebar{display:none}.topbar{grid-template-columns:1fr auto}.subtitle{display:none}.statusbar{gap:10px}.statusbar span:nth-child(3){display:none}}
+
+/* ArchMindCanvas v3 - Azure architecture icon presentation */
+.azure-service-icon {
+  background: #f7fbff;
+  border: 1px solid #dbeafe;
+}
+.azure-service-icon img {
+  width: 34px;
+  height: 34px;
+  object-fit: contain;
+  display: block;
+}
+.azure-service-icon-small {
+  background: #fff;
+  border: 1px solid #e2e8f0;
+}
+.azure-service-icon-small img {
+  width: 24px;
+  height: 24px;
+  object-fit: contain;
+  display: block;
+}

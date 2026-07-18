@@ -1,4 +1,4 @@
-# ArchMindCanvas v2
+# ArchMindCanvas v3 v2
 
 Professional visual cloud architecture designer built with React, TypeScript, Vite and React Flow.
 
@@ -28,3 +28,8 @@ npm run build
 ```
 
 Push the repository to GitHub. The included GitHub Actions workflow builds and deploys to GitHub Pages.
+
+
+## Azure architecture icons
+
+Version 3 displays Azure service icon artwork in the resource library and on canvas nodes. The application keeps a built-in Lucide fallback so the designer remains usable if an external icon cannot be loaded. Microsoft permits its Azure architecture icons for architecture diagrams, training materials, and documentation subject to Microsoft's icon terms.

@@ -8,7 +8,7 @@ export default function PropertiesPanel({ data, onChange, onDelete, onDuplicate 
   return <aside className="properties-panel">
     <div className="sidebar-heading"><div><div className="panel-title">Properties</div><div className="panel-subtitle">Configure selected resource</div></div></div>
     {!data ? <div className="empty-properties"><div className="empty-icon">◇</div><strong>No resource selected</strong><span>Select a node on the canvas to view and edit its configuration.</span></div> : <>
-      <div className="selected-resource-summary"><span className="summary-icon">{(() => { const Icon = resourceMap[data.resourceType].icon; return <Icon size={20}/>; })()}</span><div><strong>{resourceMap[data.resourceType].label}</strong><small>{resourceMap[data.resourceType].category}</small></div></div>
+      <div className="selected-resource-summary"><span className="summary-icon">{(() => { const Icon = resourceMap[data.resourceType].fallbackIcon; return <Icon size={20}/>; })()}</span><div><strong>{resourceMap[data.resourceType].label}</strong><small>{resourceMap[data.resourceType].category}</small></div></div>
       <div className="form-stack">
         <label>Resource name<input value={data.label} onChange={(e) => onChange({ label: e.target.value })}/></label>
         <label>Environment<select value={data.environment} onChange={(e) => onChange({ environment: e.target.value as ArchitectureNodeData['environment'] })}><option>Production</option><option>Development</option><option>Test</option><option>Shared</option></select></label>
