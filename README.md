@@ -36,3 +36,14 @@ Push all files to the repository root. GitHub Actions builds and publishes to Gi
 - Safe Prepare Repository Push workflow
 - No PAT/API secrets stored in the static browser application
 - Direct authenticated push is intentionally reserved for a secure backend integration
+
+## v5.4 Cost Intelligence
+- Cost button and dedicated Cost Intelligence panel
+- Estimated monthly and annual architecture cost
+- Cost breakdown by category
+- Per-resource baseline estimates
+- USD, EUR, INR and GBP display
+- Automatic recalculation as diagram resources change
+- Clear estimate disclaimer; live Azure Retail Prices API integration remains a future secure enhancement
+- Founded by Pranab Baro branding retained
+- IaC and Source Control foundation retained

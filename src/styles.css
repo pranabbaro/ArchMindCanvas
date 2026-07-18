@@ -55,3 +55,15 @@
 .repo-panel label{font-size:9px;font-weight:700;color:#64748b;display:flex;flex-direction:column;gap:4px}
 .repo-panel input,.repo-panel select{height:32px;border:1px solid #cbd5e1;border-radius:7px;background:white;padding:0 8px;font-size:10px;color:#0f172a}
 .repo-panel small{font-size:8px;line-height:1.45;color:#64748b}
+
+.cost-panel{padding:14px;display:flex;flex-direction:column;gap:12px;height:100%;overflow:auto}
+.cost-controls label{font-size:9px;font-weight:700;color:#64748b;display:flex;flex-direction:column;gap:4px}
+.cost-controls select{height:32px;border:1px solid #cbd5e1;border-radius:7px;background:#fff;padding:0 8px}
+.cost-hero{padding:16px;border:1px solid #dbe3ee;border-radius:12px;background:#f8fafc;display:flex;flex-direction:column;gap:5px}
+.cost-hero span{font-size:9px;color:#64748b;font-weight:700;text-transform:uppercase;letter-spacing:.4px}
+.cost-hero strong{font-size:25px;color:#0f172a}
+.cost-hero small{font-size:9px;color:#64748b}
+.cost-section{border-top:1px solid #e2e8f0;padding-top:11px;display:flex;flex-direction:column;gap:8px}
+.cost-section>strong{font-size:10px;color:#334155}
+.cost-row,.cost-resource{display:flex;align-items:center;justify-content:space-between;gap:10px;font-size:9px;padding:7px 0;border-bottom:1px solid #f1f5f9}
+.cost-resource div{display:flex;flex-direction:column;gap:2px;min-width:0}.cost-resource b{font-size:9px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.cost-resource small{font-size:8px;color:#94a3b8}.cost-resource span{font-weight:700;white-space:nowrap}
