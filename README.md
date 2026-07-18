@@ -1,18 +1,28 @@
-# ArchMindCanvas v4
+# ArchMindCanvas v4.1
 
-Professional visual cloud architecture designer.
+Version 4.1 adds professional diagramming controls to the working v4 foundation.
 
-## v4 highlights
-- Azure-style resource library and icons
-- VNet and Subnet visual containers
-- Drop resources inside network containers
-- Undo / Redo
-- Multi-select with Shift
-- Copy / Paste
+## New
+- Straight connectors
+- Elbow / routed connectors
+- Curved connectors
+- Dotted connectors
+- Connection labels
+- Connector auto-rerouting when connected objects move
+- Rectangle boxes
+- Triangle boxes
+- Text boxes
+- Shape fill/border controls
+- Text color/font-size controls
+- Select a connection and change its style
+- Delete connections independently
+
+## Existing
+- Azure resource palette
+- VNet and subnet containers
 - Architecture validation and score
-- Export JSON, SVG and PNG
-- Save / Load in browser
-- GitHub Pages deployment workflow
-
-## GitHub Pages
-Push all files to the repository root. The included GitHub Actions workflow installs dependencies, builds, and deploys the `dist` folder.
+- Undo/redo
+- Copy/paste and multi-select
+- Save/load
+- JSON import/export
+- GitHub Pages deployment
