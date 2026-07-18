@@ -75,18 +75,18 @@ function Designer(){
     data:{...makeData(type,label),region:'West Europe',environment:'Production',tags:{Environment:'Production',GeneratedBy:'ArchMind AI'}}
   });
   let ns:CanvasNode[]=[
-    mk(sub,'subscription','AI Generated Production Subscription',undefined,{x:40,y:35},{width:1180,height:690}),
-    mk(rg,'resourceGroup','RG-ThreeTier-Prod',sub,{x:45,y:70},{width:1080,height:560}),
-    mk(vnet,'virtualNetwork','VNet-ThreeTier',rg,{x:35,y:75},{width:760,height:420}),
-    mk(web,'subnet','Ingress-Subnet',vnet,{x:30,y:85},{width:210,height:275}),
-    mk(app,'subnet','App-Subnet',vnet,{x:275,y:85},{width:210,height:275}),
-    mk(data,'subnet','Data-Subnet',vnet,{x:520,y:85},{width:210,height:275}),
+    mk(sub,'subscription','AI Generated Production Subscription',undefined,{x:40,y:35},{width:1320,height:760}),
+    mk(rg,'resourceGroup','RG-ThreeTier-Prod',sub,{x:45,y:70},{width:1210,height:630}),
+    mk(vnet,'virtualNetwork','VNet-ThreeTier',rg,{x:35,y:75},{width:860,height:490}),
+    mk(web,'subnet','Ingress-Subnet',vnet,{x:30,y:85},{width:250,height:330}),
+    mk(app,'subnet','App-Subnet',vnet,{x:300,y:85},{width:250,height:330}),
+    mk(data,'subnet','Data-Subnet',vnet,{x:570,y:85},{width:250,height:330}),
     mk('agw','applicationGateway','Application Gateway WAF',web,{x:20,y:105}),
     mk('appsvc','appService','Web App',app,{x:20,y:105}),
-    mk('pe','privateEndpoint','SQL Private Endpoint',data,{x:20,y:80}),
-    mk('sql','sqlDatabase','Azure SQL Database',data,{x:20,y:190}),
-    mk('kv','keyVault','Key Vault',rg,{x:835,y:155}),
-    mk('mon','monitor','Azure Monitor',rg,{x:835,y:310})
+    mk('pe','privateEndpoint','SQL Private Endpoint',data,{x:20,y:75}),
+    mk('sql','sqlDatabase','Azure SQL Database',data,{x:20,y:220}),
+    mk('kv','keyVault','Key Vault',rg,{x:920,y:170}),
+    mk('mon','monitor','Azure Monitor',rg,{x:920,y:350})
   ];
   ns=recalcHierarchy(ns);
   const es:CanvasEdge[]=[
@@ -101,11 +101,11 @@ function Designer(){
  };
  const autoArrange=()=>{pushHistory();
   const updates:Record<string,{x:number;y:number;width?:number;height?:number}>={
-    'ai-sub':{x:40,y:35,width:1180,height:690},'ai-rg':{x:45,y:70,width:1080,height:560},
-    'ai-vnet':{x:35,y:75,width:760,height:420},'ai-web-subnet':{x:30,y:85,width:210,height:275},
-    'ai-app-subnet':{x:275,y:85,width:210,height:275},'ai-data-subnet':{x:520,y:85,width:210,height:275},
-    'agw':{x:20,y:105},'appsvc':{x:20,y:105},'pe':{x:20,y:80},'sql':{x:20,y:190},
-    'kv':{x:835,y:155},'mon':{x:835,y:310}
+    'ai-sub':{x:40,y:35,width:1320,height:760},'ai-rg':{x:45,y:70,width:1210,height:630},
+    'ai-vnet':{x:35,y:75,width:860,height:490},'ai-web-subnet':{x:30,y:85,width:250,height:330},
+    'ai-app-subnet':{x:300,y:85,width:250,height:330},'ai-data-subnet':{x:570,y:85,width:250,height:330},
+    'agw':{x:20,y:105},'appsvc':{x:20,y:105},'pe':{x:20,y:75},'sql':{x:20,y:220},
+    'kv':{x:920,y:170},'mon':{x:920,y:350}
   };
   setNodes(c=>c.map(n=>{const u=updates[n.id];if(!u)return n;return {...n,position:{x:u.x,y:u.y},style:u.width?{...(n.style||{}),width:u.width,height:u.height}:n.style} as CanvasNode;}));
   setEdges(c=>c.map(e=>({...e,data:{...e.data,connectorStyle:'smoothstep'}})));

@@ -12,7 +12,6 @@ export default function ContainerNode({ data, selected }: NodeProps<Architecture
     <div className={`container-node hierarchy-${data.resourceType} ${selected?'selected':''}`}>
       <Handle id="left" type="target" position={Position.Left}/><Handle id="top" type="target" position={Position.Top}/>
       <div className="container-titlebar"><span className="container-title-icon"><Icon size={16}/></span><div><strong>{data.label}</strong><small>{item.label}{data.region?` · ${data.region}`:''}</small></div></div>
-      <div className="container-drop-hint">Drop compatible resources inside</div>
       <Handle id="right" type="source" position={Position.Right}/><Handle id="bottom" type="source" position={Position.Bottom}/>
     </div>
   </>;
