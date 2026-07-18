@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState, type DragEvent } from 'react';
 import {
   addEdge, Background, BackgroundVariant, Controls, MarkerType, MiniMap, ReactFlow, ReactFlowProvider,
   useEdgesState, useNodesState, useReactFlow, type Connection, type Edge,
@@ -45,7 +45,7 @@ function Designer() {
     setNodes((current) => [...current, node]); setSelectedNodeId(id); markChanged();
   }, [setNodes, markChanged]);
 
-  const onDrop = useCallback((event: React.DragEvent) => { event.preventDefault(); const type = event.dataTransfer.getData('application/cloud-resource') as ResourceType; if (!type) return; createNode(type, screenToFlowPosition({ x: event.clientX, y: event.clientY })); }, [createNode, screenToFlowPosition]);
+  const onDrop = useCallback((event: DragEvent) => { event.preventDefault(); const type = event.dataTransfer.getData('application/cloud-resource') as ResourceType; if (!type) return; createNode(type, screenToFlowPosition({ x: event.clientX, y: event.clientY })); }, [createNode, screenToFlowPosition]);
   const updateSelected = (updates: Partial<ArchitectureNode['data']>) => { if (!selectedNodeId) return; setNodes((current) => current.map((node) => node.id === selectedNodeId ? { ...node, data: { ...node.data, ...updates } } : node)); markChanged(); };
   const deleteSelected = useCallback(() => { if (!selectedNodeId) return; setNodes((c) => c.filter((n) => n.id !== selectedNodeId)); setEdges((c) => c.filter((e) => e.source !== selectedNodeId && e.target !== selectedNodeId)); setSelectedNodeId(undefined); markChanged(); }, [selectedNodeId, setNodes, setEdges, markChanged]);
   const duplicateSelected = () => { if (!selectedNode) return; const id = `${selectedNode.data.resourceType}-${Date.now()}`; setNodes((c) => [...c, { ...selectedNode, id, selected: false, position: { x: selectedNode.position.x + 36, y: selectedNode.position.y + 36 }, data: { ...selectedNode.data, label: `${selectedNode.data.label} Copy` } }]); setSelectedNodeId(id); markChanged(); };
