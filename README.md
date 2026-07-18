@@ -1,28 +1,13 @@
-# ArchMindCanvas v4.1
+# ArchMindCanvas v4.2
 
-Version 4.1 adds professional diagramming controls to the working v4 foundation.
+Adds Visio-style resizing to the working v4.1 designer.
 
-## New
-- Straight connectors
-- Elbow / routed connectors
-- Curved connectors
-- Dotted connectors
-- Connection labels
-- Connector auto-rerouting when connected objects move
-- Rectangle boxes
-- Triangle boxes
-- Text boxes
-- Shape fill/border controls
-- Text color/font-size controls
-- Select a connection and change its style
-- Delete connections independently
+## New in v4.2
+- Resize Azure resource cards using drag handles
+- Resize VNet and Subnet containers
+- Resize rectangles, triangles, and text boxes
+- Connections stay attached while objects resize
+- Custom node sizes persist in saved/imported/exported JSON designs
+- Minimum-size protection for usable nodes
 
-## Existing
-- Azure resource palette
-- VNet and subnet containers
-- Architecture validation and score
-- Undo/redo
-- Copy/paste and multi-select
-- Save/load
-- JSON import/export
-- GitHub Pages deployment
+All v4.1 connector and drawing features are retained.

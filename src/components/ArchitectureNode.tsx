@@ -1,4 +1,4 @@
-import { Handle, Position, type NodeProps } from '@xyflow/react';
+import { Handle, Position, NodeResizer, type NodeProps } from '@xyflow/react';
 import { useState } from 'react';
 import { resourceMap } from '../resourceCatalog';
 import type { ArchitectureNode } from '../types';
@@ -9,7 +9,9 @@ export default function ArchitectureNodeComponent({ data, selected }: NodeProps<
   const [iconFailed, setIconFailed] = useState(false);
 
   return (
-    <div className={`architecture-node ${selected ? 'selected' : ''}`}>
+    <>
+      <NodeResizer isVisible={selected} minWidth={180} minHeight={72} keepAspectRatio={false} />
+      <div className={`architecture-node ${selected ? 'selected' : ''}`}>
       <Handle type="target" position={Position.Left} />
       <div className="node-icon azure-service-icon">
         {iconFailed ? (
@@ -25,5 +27,6 @@ export default function ArchitectureNodeComponent({ data, selected }: NodeProps<
       </div>
       <Handle type="source" position={Position.Right} />
     </div>
+    </>
   );
 }
