@@ -47,3 +47,13 @@ Push all files to the repository root. GitHub Actions builds and publishes to Gi
 - Clear estimate disclaimer; live Azure Retail Prices API integration remains a future secure enhancement
 - Founded by Pranab Baro branding retained
 - IaC and Source Control foundation retained
+
+## v5.5 Live Cost + IaC to Diagram
+- Azure Retail Prices API integration with refresh action
+- Live retail price indicator and baseline fallback
+- Currency-aware retail price requests
+- Terraform paste-to-diagram for common azurerm resources
+- Bicep paste-to-diagram for common resource declarations
+- Basic dependency/reference inference and automatic canvas layout
+- Existing Cost Intelligence, IaC generation, Source Control foundation and Founder branding retained
+- No version badge in the product header
