@@ -21,4 +21,13 @@ export type ArchitectureNodeData = {
   owner: string;
 };
 
-export type ArchitectureNode = Node<ArchitectureNodeData, 'architecture'>;
+export type ArchitectureNode = Node<ArchitectureNodeData, 'architecture' | 'container'>;
+
+export type ValidationSeverity = 'critical' | 'warning' | 'info' | 'success';
+export type ValidationFinding = {
+  id: string;
+  severity: ValidationSeverity;
+  title: string;
+  message: string;
+  nodeId?: string;
+};
