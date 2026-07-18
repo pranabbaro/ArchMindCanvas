@@ -1,16 +1,15 @@
 import type { Node } from '@xyflow/react';
 
+export type ResourceCategory = 'Networking' | 'Compute' | 'Storage' | 'Database' | 'Containers' | 'Security' | 'Web';
+
 export type ResourceType =
-  | 'virtualNetwork'
-  | 'subnet'
-  | 'virtualMachine'
+  | 'virtualNetwork' | 'subnet' | 'networkSecurityGroup' | 'publicIp' | 'loadBalancer' | 'firewall'
+  | 'virtualMachine' | 'vmScaleSet'
   | 'storageAccount'
-  | 'sqlDatabase'
-  | 'aks'
+  | 'sqlDatabase' | 'cosmosDb'
+  | 'aks' | 'containerRegistry'
   | 'keyVault'
-  | 'loadBalancer'
-  | 'appService'
-  | 'firewall';
+  | 'appService' | 'functionApp' | 'applicationGateway';
 
 export type ArchitectureNodeData = {
   label: string;
@@ -18,6 +17,8 @@ export type ArchitectureNodeData = {
   description: string;
   region: string;
   sku: string;
+  environment: 'Production' | 'Development' | 'Test' | 'Shared';
+  owner: string;
 };
 
 export type ArchitectureNode = Node<ArchitectureNodeData, 'architecture'>;

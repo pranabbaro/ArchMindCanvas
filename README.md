@@ -1,64 +1,30 @@
-# ArchMindCanvas
+# ArchMindCanvas v2
 
-A starter visual cloud architecture design tool built with React, TypeScript, Vite, and React Flow.
+Professional visual cloud architecture designer built with React, TypeScript, Vite and React Flow.
 
-## Features
-
-- Drag Azure-style resources onto a visual canvas
-- Move and connect resources
-- Edit resource name, region, SKU, and description
-- Delete resources and connections
-- Save/load diagrams in browser local storage
-- Import/export architecture JSON files
-- Mini-map, zoom, pan, grid snapping
+## Highlights
+- Professional three-panel cloud designer UI
+- 17 Azure resource types grouped by category
+- Search, drag-and-drop, and double-click-to-add
+- Connect resources with directional smooth-step links
+- Edit name, environment, Azure region, SKU, owner and description
+- Duplicate and delete selected resources
+- Keyboard shortcuts: Delete/Backspace, Ctrl/Cmd+S, Esc
+- Named designs with saved/unsaved status
+- Save/load in browser, JSON import/export
+- Starter 3-tier Azure architecture template
+- Fit view, zoom, pan, minimap and grid snapping
 - GitHub Pages deployment workflow included
 
-## Run locally
-
+## Run
 ```bash
-npm install
+npm ci
 npm run dev
 ```
 
-Open the URL printed by Vite, normally `http://localhost:5173`.
-
-## Build locally
-
+## Production test
 ```bash
 npm run build
-npm run preview
 ```
 
-## Push to GitHub
-
-Create an empty GitHub repository, then run:
-
-```bash
-git init
-git add .
-git commit -m "Initial cloud architecture designer"
-git branch -M main
-git remote add origin https://github.com/YOUR-USERNAME/YOUR-REPOSITORY.git
-git push -u origin main
-```
-
-## Deploy with GitHub Pages
-
-1. Open your GitHub repository.
-2. Go to **Settings → Pages**.
-3. Under **Build and deployment**, set **Source** to **GitHub Actions**.
-4. Push to the `main` branch.
-5. The included `.github/workflows/deploy.yml` workflow builds and deploys the app.
-
-For a normal GitHub project page, the workflow automatically sets the Vite base path to your repository name.
-
-## Next upgrade ideas
-
-- Official Azure SVG icons
-- Containers/groups for subscriptions, VNets, subnets, and resource groups
-- Terraform/Bicep generation
-- Architecture validation rules
-- Cost estimation
-- GitHub repository save/load
-- Authentication
-- AI prompt-to-diagram generation
+Push the repository to GitHub. The included GitHub Actions workflow builds and deploys to GitHub Pages.
