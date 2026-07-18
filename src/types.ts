@@ -1,14 +1,38 @@
 import type { Edge, Node } from '@xyflow/react';
 
-export type ResourceCategory = 'Networking' | 'Compute' | 'Storage' | 'Database' | 'Containers' | 'Security' | 'Web';
+export type ResourceCategory = 'Governance' | 'Networking' | 'Compute' | 'Storage' | 'Database' | 'Containers' | 'Security' | 'Web' | 'Integration' | 'AI & Data' | 'Monitoring';
 export type ResourceType =
-  | 'virtualNetwork' | 'subnet' | 'networkSecurityGroup' | 'publicIp' | 'loadBalancer' | 'firewall'
-  | 'virtualMachine' | 'vmScaleSet' | 'storageAccount' | 'sqlDatabase' | 'cosmosDb'
-  | 'aks' | 'containerRegistry' | 'keyVault' | 'appService' | 'functionApp' | 'applicationGateway';
+  | 'tenant' | 'managementGroup' | 'subscription' | 'resourceGroup'
+  | 'virtualNetwork' | 'subnet' | 'networkSecurityGroup' | 'routeTable' | 'publicIp' | 'privateEndpoint' | 'privateLink' | 'natGateway' | 'vpnGateway' | 'expressRoute' | 'loadBalancer' | 'applicationGateway' | 'frontDoor' | 'trafficManager' | 'firewall' | 'bastion' | 'dnsZone' | 'privateDnsZone' | 'virtualWan'
+  | 'virtualMachine' | 'vmScaleSet' | 'availabilitySet' | 'dedicatedHost' | 'avd'
+  | 'storageAccount' | 'blobStorage' | 'fileShare' | 'dataLake' | 'netAppFiles'
+  | 'sqlDatabase' | 'sqlManagedInstance' | 'cosmosDb' | 'postgresql' | 'mysql' | 'redis'
+  | 'aks' | 'containerRegistry' | 'containerApps' | 'containerInstances'
+  | 'keyVault' | 'managedIdentity' | 'defenderForCloud' | 'sentinel'
+  | 'appService' | 'functionApp' | 'staticWebApp'
+  | 'apiManagement' | 'logicApps' | 'serviceBus' | 'eventGrid' | 'eventHubs'
+  | 'dataFactory' | 'synapse' | 'databricks' | 'fabric' | 'azureOpenAI' | 'machineLearning'
+  | 'monitor' | 'logAnalytics' | 'applicationInsights' | 'automation' | 'policy';
+
+export type TagMap = Record<string, string>;
 
 export type ArchitectureNodeData = {
-  label: string; resourceType: ResourceType; description: string; region: string; sku: string;
-  environment: 'Production' | 'Development' | 'Test' | 'Shared'; owner: string;
+  label: string;
+  resourceType: ResourceType;
+  description: string;
+  region: string;
+  sku: string;
+  environment: 'Production' | 'Development' | 'Test' | 'Shared';
+  owner: string;
+  tenantId?: string;
+  managementGroup?: string;
+  subscriptionName?: string;
+  subscriptionId?: string;
+  resourceGroup?: string;
+  vnet?: string;
+  subnet?: string;
+  tags?: TagMap;
+  inheritedTags?: TagMap;
 };
 export type DrawingNodeData = {
   label: string;
@@ -21,8 +45,9 @@ export type DrawingNodeData = {
 export type ArchitectureNode = Node<ArchitectureNodeData, 'architecture' | 'container'>;
 export type DrawingNode = Node<DrawingNodeData, 'drawing'>;
 export type CanvasNode = ArchitectureNode | DrawingNode;
-export type ConnectorStyle = 'straight' | 'smoothstep' | 'bezier' | 'dotted';
-export type CanvasEdgeData = { connectorStyle?: ConnectorStyle; label?: string };
+export type ConnectorStyle = 'straight' | 'smoothstep' | 'bezier' | 'dotted' | 'dashed';
+export type ArrowStyle = 'end' | 'both' | 'none';
+export type CanvasEdgeData = { connectorStyle?: ConnectorStyle; label?: string; protocol?: string; port?: string; connectionType?: string; arrowStyle?: ArrowStyle };
 export type CanvasEdge = Edge<CanvasEdgeData>;
 
 export type ValidationSeverity = 'critical' | 'warning' | 'info' | 'success';

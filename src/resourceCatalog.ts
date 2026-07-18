@@ -1,43 +1,82 @@
 import {
-  AppWindow, Boxes, Cloud, Container, Database, Globe2, HardDrive, KeyRound,
-  Layers3, Network, Router, Server, Shield, Split, Waypoints, Zap,
+  AppWindow, Boxes, Cloud, Container, Database, Globe2, HardDrive, KeyRound, Layers3, Network, Router, Server, Shield, Split, Waypoints, Zap,
+  Building2, FolderTree, Landmark, ShieldCheck, Route, LockKeyhole, Cable, Gauge, Workflow, RadioTower, MonitorCog, Bot, BrainCircuit, Activity, SearchCheck, CircleDot, FileStack
 } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
 import type { ResourceCategory, ResourceType } from './types';
 
-type ResourceItem = {
-  type: ResourceType;
-  label: string;
-  description: string;
-  sku: string;
-  category: ResourceCategory;
-  iconUrl: string;
-  fallbackIcon: LucideIcon;
-};
-
+type ResourceItem = { type: ResourceType; label: string; description: string; sku: string; category: ResourceCategory; iconUrl: string; fallbackIcon: LucideIcon; container?: boolean };
 const iconBase = 'https://www.azureicons.com/static/images/icons';
 const icon = (category: string, file: string) => `${iconBase}/${category}/svg/${file}.svg`;
-
-export const categories: ResourceCategory[] = ['Networking', 'Compute', 'Web', 'Containers', 'Storage', 'Database', 'Security'];
-
+const empty = '';
+export const categories: ResourceCategory[] = ['Governance','Networking','Compute','Web','Containers','Storage','Database','Security','Integration','AI & Data','Monitoring'];
 export const resourceCatalog: ResourceItem[] = [
-  { type: 'virtualNetwork', label: 'Virtual Network', description: 'Private Azure network boundary', sku: 'Standard', category: 'Networking', iconUrl: icon('Networking', 'Virtual-Networks'), fallbackIcon: Network },
-  { type: 'subnet', label: 'Subnet', description: 'Network segment inside a VNet', sku: 'Standard', category: 'Networking', iconUrl: icon('Networking', 'Subnets'), fallbackIcon: Split },
-  { type: 'networkSecurityGroup', label: 'Network Security Group', description: 'Inbound and outbound traffic rules', sku: 'Standard', category: 'Networking', iconUrl: icon('Networking', 'Network-Security-Groups'), fallbackIcon: Shield },
-  { type: 'publicIp', label: 'Public IP', description: 'Internet-routable IP address', sku: 'Standard', category: 'Networking', iconUrl: icon('Networking', 'Public-IP-Addresses'), fallbackIcon: Globe2 },
-  { type: 'loadBalancer', label: 'Load Balancer', description: 'Layer 4 load balancing', sku: 'Standard', category: 'Networking', iconUrl: icon('Networking', 'Load-Balancers'), fallbackIcon: Waypoints },
-  { type: 'applicationGateway', label: 'Application Gateway', description: 'Layer 7 web traffic load balancer', sku: 'WAF_v2', category: 'Networking', iconUrl: icon('Networking', 'Application-Gateways'), fallbackIcon: Router },
-  { type: 'firewall', label: 'Azure Firewall', description: 'Managed cloud network firewall', sku: 'Standard', category: 'Security', iconUrl: icon('Security', 'Firewalls'), fallbackIcon: Shield },
-  { type: 'virtualMachine', label: 'Virtual Machine', description: 'Azure compute virtual machine', sku: 'Standard_D2s_v5', category: 'Compute', iconUrl: icon('Compute', 'Virtual-Machine'), fallbackIcon: Server },
-  { type: 'vmScaleSet', label: 'VM Scale Set', description: 'Autoscaling group of virtual machines', sku: 'Standard_D2s_v5', category: 'Compute', iconUrl: icon('Compute', 'VM-Scale-Sets'), fallbackIcon: Layers3 },
-  { type: 'appService', label: 'App Service', description: 'Managed web application hosting', sku: 'P1v3', category: 'Web', iconUrl: icon('App Services', 'App-Services'), fallbackIcon: AppWindow },
-  { type: 'functionApp', label: 'Function App', description: 'Serverless event-driven compute', sku: 'Consumption', category: 'Web', iconUrl: icon('Compute', 'Function-Apps'), fallbackIcon: Zap },
-  { type: 'aks', label: 'AKS Cluster', description: 'Managed Kubernetes cluster', sku: 'Standard', category: 'Containers', iconUrl: icon('Compute', 'Kubernetes-Services'), fallbackIcon: Boxes },
-  { type: 'containerRegistry', label: 'Container Registry', description: 'Private container image registry', sku: 'Premium', category: 'Containers', iconUrl: icon('Containers', 'Container-Registries'), fallbackIcon: Container },
-  { type: 'storageAccount', label: 'Storage Account', description: 'Object, file, queue and table storage', sku: 'Standard_LRS', category: 'Storage', iconUrl: icon('Storage', 'Storage-Accounts'), fallbackIcon: HardDrive },
-  { type: 'sqlDatabase', label: 'SQL Database', description: 'Managed relational SQL database', sku: 'GeneralPurpose', category: 'Database', iconUrl: icon('Databases', 'SQL-Database'), fallbackIcon: Database },
-  { type: 'cosmosDb', label: 'Cosmos DB', description: 'Globally distributed NoSQL database', sku: 'Serverless', category: 'Database', iconUrl: icon('Databases', 'Azure-Cosmos-DB'), fallbackIcon: Cloud },
-  { type: 'keyVault', label: 'Key Vault', description: 'Secrets, certificates and key management', sku: 'Standard', category: 'Security', iconUrl: icon('Security', 'Key-Vaults'), fallbackIcon: KeyRound },
+  {type:'tenant',label:'Microsoft Entra Tenant',description:'Identity tenant boundary',sku:'Tenant',category:'Governance',iconUrl:icon('Identity','Azure-Active-Directory'),fallbackIcon:Building2,container:true},
+  {type:'managementGroup',label:'Management Group',description:'Azure governance hierarchy',sku:'Management Group',category:'Governance',iconUrl:icon('Management + Governance','Management-Groups'),fallbackIcon:FolderTree,container:true},
+  {type:'subscription',label:'Azure Subscription',description:'Billing and resource boundary',sku:'Subscription',category:'Governance',iconUrl:icon('Management + Governance','Subscriptions'),fallbackIcon:Landmark,container:true},
+  {type:'resourceGroup',label:'Resource Group',description:'Lifecycle boundary for Azure resources',sku:'Resource Group',category:'Governance',iconUrl:icon('Management + Governance','Resource-Groups'),fallbackIcon:FolderTree,container:true},
+  {type:'virtualNetwork',label:'Virtual Network',description:'Private Azure network boundary',sku:'Standard',category:'Networking',iconUrl:icon('Networking','Virtual-Networks'),fallbackIcon:Network,container:true},
+  {type:'subnet',label:'Subnet',description:'Network segment inside a VNet',sku:'Standard',category:'Networking',iconUrl:icon('Networking','Subnets'),fallbackIcon:Split,container:true},
+  {type:'networkSecurityGroup',label:'Network Security Group',description:'Inbound and outbound traffic rules',sku:'Standard',category:'Networking',iconUrl:icon('Networking','Network-Security-Groups'),fallbackIcon:Shield},
+  {type:'routeTable',label:'Route Table',description:'Custom network routes',sku:'Standard',category:'Networking',iconUrl:icon('Networking','Route-Tables'),fallbackIcon:Route},
+  {type:'publicIp',label:'Public IP',description:'Internet-routable IP address',sku:'Standard',category:'Networking',iconUrl:icon('Networking','Public-IP-Addresses'),fallbackIcon:Globe2},
+  {type:'privateEndpoint',label:'Private Endpoint',description:'Private IP endpoint to Azure PaaS',sku:'Standard',category:'Networking',iconUrl:icon('Networking','Private-Endpoint'),fallbackIcon:LockKeyhole},
+  {type:'privateLink',label:'Private Link',description:'Private connectivity service',sku:'Standard',category:'Networking',iconUrl:icon('Networking','Private-Link'),fallbackIcon:Cable},
+  {type:'natGateway',label:'NAT Gateway',description:'Managed outbound internet connectivity',sku:'Standard',category:'Networking',iconUrl:icon('Networking','NAT'),fallbackIcon:Router},
+  {type:'vpnGateway',label:'VPN Gateway',description:'Encrypted cross-premises connectivity',sku:'VpnGw2AZ',category:'Networking',iconUrl:icon('Networking','Virtual-Network-Gateways'),fallbackIcon:Shield},
+  {type:'expressRoute',label:'ExpressRoute',description:'Private dedicated connectivity',sku:'Standard',category:'Networking',iconUrl:icon('Networking','ExpressRoute-Circuits'),fallbackIcon:Cable},
+  {type:'loadBalancer',label:'Load Balancer',description:'Layer 4 load balancing',sku:'Standard',category:'Networking',iconUrl:icon('Networking','Load-Balancers'),fallbackIcon:Waypoints},
+  {type:'applicationGateway',label:'Application Gateway',description:'Layer 7 web traffic load balancer',sku:'WAF_v2',category:'Networking',iconUrl:icon('Networking','Application-Gateways'),fallbackIcon:Router},
+  {type:'frontDoor',label:'Azure Front Door',description:'Global application delivery',sku:'Premium',category:'Networking',iconUrl:icon('Networking','Front-Doors'),fallbackIcon:Globe2},
+  {type:'trafficManager',label:'Traffic Manager',description:'DNS-based global traffic routing',sku:'Standard',category:'Networking',iconUrl:icon('Networking','Traffic-Manager-Profiles'),fallbackIcon:Route},
+  {type:'firewall',label:'Azure Firewall',description:'Managed cloud network firewall',sku:'Premium',category:'Security',iconUrl:icon('Security','Firewalls'),fallbackIcon:Shield},
+  {type:'bastion',label:'Azure Bastion',description:'Secure browser-based VM access',sku:'Standard',category:'Networking',iconUrl:icon('Networking','Bastions'),fallbackIcon:ShieldCheck},
+  {type:'dnsZone',label:'DNS Zone',description:'Public DNS hosting',sku:'Standard',category:'Networking',iconUrl:icon('Networking','DNS-Zones'),fallbackIcon:Globe2},
+  {type:'privateDnsZone',label:'Private DNS Zone',description:'Private DNS name resolution',sku:'Standard',category:'Networking',iconUrl:icon('Networking','DNS-Private-Zones'),fallbackIcon:Network},
+  {type:'virtualWan',label:'Virtual WAN',description:'Global transit network service',sku:'Standard',category:'Networking',iconUrl:icon('Networking','Virtual-WANs'),fallbackIcon:Network},
+  {type:'virtualMachine',label:'Virtual Machine',description:'Azure compute virtual machine',sku:'Standard_D2s_v5',category:'Compute',iconUrl:icon('Compute','Virtual-Machine'),fallbackIcon:Server},
+  {type:'vmScaleSet',label:'VM Scale Set',description:'Autoscaling group of virtual machines',sku:'Standard_D2s_v5',category:'Compute',iconUrl:icon('Compute','VM-Scale-Sets'),fallbackIcon:Layers3},
+  {type:'availabilitySet',label:'Availability Set',description:'VM fault and update domain grouping',sku:'Standard',category:'Compute',iconUrl:icon('Compute','Availability-Sets'),fallbackIcon:Layers3},
+  {type:'dedicatedHost',label:'Dedicated Host',description:'Dedicated physical server host',sku:'DSv3',category:'Compute',iconUrl:empty,fallbackIcon:Server},
+  {type:'avd',label:'Azure Virtual Desktop',description:'Cloud desktop and app virtualization',sku:'Pooled',category:'Compute',iconUrl:empty,fallbackIcon:MonitorCog},
+  {type:'appService',label:'App Service',description:'Managed web application hosting',sku:'P1v3',category:'Web',iconUrl:icon('App Services','App-Services'),fallbackIcon:AppWindow},
+  {type:'functionApp',label:'Function App',description:'Serverless event-driven compute',sku:'Consumption',category:'Web',iconUrl:icon('Compute','Function-Apps'),fallbackIcon:Zap},
+  {type:'staticWebApp',label:'Static Web App',description:'Managed static web application hosting',sku:'Standard',category:'Web',iconUrl:empty,fallbackIcon:AppWindow},
+  {type:'aks',label:'AKS Cluster',description:'Managed Kubernetes cluster',sku:'Standard',category:'Containers',iconUrl:icon('Compute','Kubernetes-Services'),fallbackIcon:Boxes},
+  {type:'containerRegistry',label:'Container Registry',description:'Private container image registry',sku:'Premium',category:'Containers',iconUrl:icon('Containers','Container-Registries'),fallbackIcon:Container},
+  {type:'containerApps',label:'Container Apps',description:'Serverless container platform',sku:'Consumption',category:'Containers',iconUrl:empty,fallbackIcon:Container},
+  {type:'containerInstances',label:'Container Instances',description:'Run containers without managing VMs',sku:'Standard',category:'Containers',iconUrl:empty,fallbackIcon:Container},
+  {type:'storageAccount',label:'Storage Account',description:'Object, file, queue and table storage',sku:'Standard_LRS',category:'Storage',iconUrl:icon('Storage','Storage-Accounts'),fallbackIcon:HardDrive},
+  {type:'blobStorage',label:'Blob Storage',description:'Object storage for unstructured data',sku:'Hot',category:'Storage',iconUrl:empty,fallbackIcon:HardDrive},
+  {type:'fileShare',label:'Azure Files',description:'Managed SMB/NFS file shares',sku:'Premium',category:'Storage',iconUrl:empty,fallbackIcon:FileStack},
+  {type:'dataLake',label:'Data Lake Storage',description:'Analytics-optimized data lake storage',sku:'Standard_LRS',category:'Storage',iconUrl:empty,fallbackIcon:HardDrive},
+  {type:'netAppFiles',label:'Azure NetApp Files',description:'Enterprise file storage service',sku:'Premium',category:'Storage',iconUrl:empty,fallbackIcon:HardDrive},
+  {type:'sqlDatabase',label:'SQL Database',description:'Managed relational SQL database',sku:'GeneralPurpose',category:'Database',iconUrl:icon('Databases','SQL-Database'),fallbackIcon:Database},
+  {type:'sqlManagedInstance',label:'SQL Managed Instance',description:'Managed SQL Server instance',sku:'GeneralPurpose',category:'Database',iconUrl:empty,fallbackIcon:Database},
+  {type:'cosmosDb',label:'Cosmos DB',description:'Globally distributed NoSQL database',sku:'Serverless',category:'Database',iconUrl:icon('Databases','Azure-Cosmos-DB'),fallbackIcon:Cloud},
+  {type:'postgresql',label:'Azure Database for PostgreSQL',description:'Managed PostgreSQL database',sku:'GeneralPurpose',category:'Database',iconUrl:empty,fallbackIcon:Database},
+  {type:'mysql',label:'Azure Database for MySQL',description:'Managed MySQL database',sku:'GeneralPurpose',category:'Database',iconUrl:empty,fallbackIcon:Database},
+  {type:'redis',label:'Azure Managed Redis',description:'Managed in-memory cache',sku:'Standard',category:'Database',iconUrl:empty,fallbackIcon:Database},
+  {type:'keyVault',label:'Key Vault',description:'Secrets, certificates and key management',sku:'Standard',category:'Security',iconUrl:icon('Security','Key-Vaults'),fallbackIcon:KeyRound},
+  {type:'managedIdentity',label:'Managed Identity',description:'Passwordless Azure service identity',sku:'User Assigned',category:'Security',iconUrl:empty,fallbackIcon:KeyRound},
+  {type:'defenderForCloud',label:'Defender for Cloud',description:'Cloud security posture and workload protection',sku:'Defender',category:'Security',iconUrl:empty,fallbackIcon:ShieldCheck},
+  {type:'sentinel',label:'Microsoft Sentinel',description:'Cloud-native SIEM and SOAR',sku:'Analytics',category:'Security',iconUrl:empty,fallbackIcon:Shield},
+  {type:'apiManagement',label:'API Management',description:'API gateway and management platform',sku:'Premium',category:'Integration',iconUrl:empty,fallbackIcon:Workflow},
+  {type:'logicApps',label:'Logic Apps',description:'Workflow integration and automation',sku:'Consumption',category:'Integration',iconUrl:empty,fallbackIcon:Workflow},
+  {type:'serviceBus',label:'Service Bus',description:'Enterprise message broker',sku:'Premium',category:'Integration',iconUrl:empty,fallbackIcon:RadioTower},
+  {type:'eventGrid',label:'Event Grid',description:'Event routing service',sku:'Standard',category:'Integration',iconUrl:empty,fallbackIcon:Zap},
+  {type:'eventHubs',label:'Event Hubs',description:'Streaming ingestion service',sku:'Standard',category:'Integration',iconUrl:empty,fallbackIcon:RadioTower},
+  {type:'dataFactory',label:'Data Factory',description:'Cloud data integration service',sku:'Standard',category:'AI & Data',iconUrl:empty,fallbackIcon:Workflow},
+  {type:'synapse',label:'Synapse Analytics',description:'Enterprise analytics service',sku:'DW',category:'AI & Data',iconUrl:empty,fallbackIcon:Database},
+  {type:'databricks',label:'Azure Databricks',description:'Lakehouse data and AI platform',sku:'Premium',category:'AI & Data',iconUrl:empty,fallbackIcon:BrainCircuit},
+  {type:'fabric',label:'Microsoft Fabric',description:'Unified analytics platform',sku:'F64',category:'AI & Data',iconUrl:empty,fallbackIcon:Layers3},
+  {type:'azureOpenAI',label:'Azure OpenAI',description:'Enterprise generative AI models',sku:'Standard',category:'AI & Data',iconUrl:empty,fallbackIcon:Bot},
+  {type:'machineLearning',label:'Azure Machine Learning',description:'ML development and operations',sku:'Workspace',category:'AI & Data',iconUrl:empty,fallbackIcon:BrainCircuit},
+  {type:'monitor',label:'Azure Monitor',description:'Unified monitoring and observability',sku:'Standard',category:'Monitoring',iconUrl:empty,fallbackIcon:Activity},
+  {type:'logAnalytics',label:'Log Analytics Workspace',description:'Central log analytics workspace',sku:'PerGB2018',category:'Monitoring',iconUrl:empty,fallbackIcon:SearchCheck},
+  {type:'applicationInsights',label:'Application Insights',description:'Application performance monitoring',sku:'Workspace-based',category:'Monitoring',iconUrl:empty,fallbackIcon:Gauge},
+  {type:'automation',label:'Automation Account',description:'Cloud automation and configuration',sku:'Standard',category:'Monitoring',iconUrl:empty,fallbackIcon:MonitorCog},
+  {type:'policy',label:'Azure Policy',description:'Governance and compliance rules',sku:'Standard',category:'Governance',iconUrl:empty,fallbackIcon:ShieldCheck},
 ];
-
-export const resourceMap = Object.fromEntries(resourceCatalog.map((item) => [item.type, item])) as Record<ResourceType, ResourceItem>;
+export const resourceMap = Object.fromEntries(resourceCatalog.map(i=>[i.type,i])) as Record<ResourceType,ResourceItem>;
+export const isContainerType = (type: ResourceType) => Boolean(resourceMap[type]?.container);
