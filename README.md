@@ -157,3 +157,13 @@ Push all files to the repository root. GitHub Actions builds and publishes to Gi
 - Connection crossing clarity improved using a white bridge/gap underlay
 - Crossing lines visually remain separate and do not look connected
 - Existing connector routing, arrow directions, line thickness and export features retained
+
+## v6.2.1 Reliable Alignment + Professional Line Jump
+- Reliable multi-selection alignment using React Flow selected nodes only
+- Alignment limited to objects under the same parent/container
+- Align Left, Center, Right, Top, Middle and Bottom
+- True equal-gap horizontal and vertical distribution for 3+ selected objects
+- Locked objects are preserved
+- Auto Tidy retained
+- Connection crossover visuals improved with arc-style bridge rendering
+- Existing connector routing, arrow directions, cost, IaC and export features retained

@@ -123,3 +123,15 @@
 /* v6.2 Smart Layout & Connection Crossings */
 .edge-crossing-note{font-size:8px;color:#64748b}
 .canvas-action button{white-space:nowrap}
+
+/* v6.2.1 reliable alignment + professional line jump */
+.line-jump-bridge{
+  fill:none;
+  stroke:#64748b;
+  stroke-width:2.2;
+  stroke-linecap:round;
+  pointer-events:none;
+  filter:drop-shadow(0 0 0 #fff);
+}
+.canvas-action{display:flex;flex-wrap:wrap;gap:4px}
+.canvas-action button[title^="Align"],.canvas-action button[title^="Distribute"]{font-size:8px;padding:5px 6px}
