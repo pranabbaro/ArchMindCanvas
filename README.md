@@ -209,3 +209,11 @@ Important: The browser workflow is a safe scaffold/demo until the deployment API
 - Save as PNG
 - Save as SVG
 - Save menu closes automatically after an export/save action
+
+## v7.0.4 Compact Edit Toolbar
+- Moved Copy, Paste, Duplicate and Delete into a single Edit dropdown
+- Removed standalone Delete icon from the crowded drawing toolbar
+- Layout remains in its own Layout dropdown
+- Forward / Backward / Lock remain contextual for selected objects
+- Edit and Layout menus close each other to avoid overlap
+- Floating toolbar is horizontally scrollable on narrow screens
