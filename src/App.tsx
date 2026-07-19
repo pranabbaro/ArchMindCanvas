@@ -174,62 +174,168 @@ function Designer(){
  const importIacToDiagram=()=>{
   if(!iacImportCode.trim()){alert('Paste Terraform or Bicep code first.');return;}
   const code=iacImportCode;
-  const mapType=(raw:string)=>{const s=raw.toLowerCase();
-   if(s.includes('resource_group'))return'resourceGroup';if(s.includes('virtual_network'))return'virtualNetwork';
-   if(s.includes('subnet'))return'subnet';if(s.includes('network_interface'))return'genericAzure';
-   if(s.includes('virtual_machine')||s.includes('linux_virtual_machine')||s.includes('windows_virtual_machine'))return'virtualMachine';
-   if(s.includes('kubernetes_cluster'))return'aks';if(s.includes('application_gateway'))return'applicationGateway';
-   if(s.includes('firewall'))return'firewall';if(s.includes('key_vault'))return'keyVault';
+
+  const mapType=(raw:string):ResourceType=>{
+   const s=raw.toLowerCase();
+   if(s.includes('resource_group'))return'resourceGroup';
+   if(s.includes('virtual_network'))return'virtualNetwork';
+   if(s.includes('subnet'))return'subnet';
+   if(s.includes('linux_virtual_machine')||s.includes('windows_virtual_machine')||s.includes('virtual_machine'))return'virtualMachine';
+   if(s.includes('kubernetes_cluster'))return'aks';
+   if(s.includes('application_gateway'))return'applicationGateway';
+   if(s.includes('load_balancer'))return'loadBalancer';
+   if(s.includes('firewall'))return'firewall';
+   if(s.includes('key_vault'))return'keyVault';
    if(s.includes('mssql_database')||s.includes('sql_database'))return'sqlDatabase';
-   if(s.includes('storage_account'))return'storageAccount';if(s.includes('private_endpoint'))return'privateEndpoint';
-   if(s.includes('container_registry'))return'containerRegistry';if(s.includes('service_plan')||s.includes('web_app'))return'appService';
-   return'genericAzure';
+   if(s.includes('mssql_server')||s.includes('sql_server'))return'sqlDatabase';
+   if(s.includes('storage_account'))return'storageAccount';
+   if(s.includes('private_endpoint'))return'privateEndpoint';
+   if(s.includes('container_registry'))return'containerRegistry';
+   if(s.includes('service_plan')||s.includes('web_app'))return'appService';
+   if(s.includes('public_ip'))return'publicIp';
+   if(s.includes('network_security_group'))return'networkSecurityGroup';
+   if(s.includes('route_table'))return'routeTable';
+   if(s.includes('nat_gateway'))return'natGateway';
+   if(s.includes('bastion'))return'bastion';
+   if(s.includes('vpn_gateway')||s.includes('virtual_network_gateway'))return'vpnGateway';
+   return'virtualMachine';
   };
-  type Entry={id:string;symbol:string;rawType:string;type:ResourceType;label:string;body:string;parent?:string};
+
+  type Entry={
+    id:string; symbol:string; rawType:string; type:ResourceType; label:string; body:string;
+    parent?:string; subnetRef?:string; rgRef?:string; vnetRef?:string; nicRefs?:string[];
+  };
   const entries:Entry[]=[];
+
   if(iacImportType==='terraform'){
-   const rx=/resource\s+"([^"]+)"\s+"([^"]+)"\s*\{([\s\S]*?)(?=\n\}|\nresource\s+"|$)/g;let m;
-   while((m=rx.exec(code))!==null)entries.push({id:`imp-${m[2]}`,symbol:m[2],rawType:m[1],type:mapType(m[1]) as ResourceType,label:m[2].replace(/_/g,' '),body:m[3]||''});
-   const bySymbol=new Map(entries.map(e=>[e.symbol,e]));
-   const findRef=(body:string,kind:string)=>{const mm=body.match(new RegExp(`azurerm_${kind}\\.([A-Za-z0-9_]+)`));return mm?.[1];};
-   for(const e of entries){
-    if(e.type==='virtualNetwork'){const r=findRef(e.body,'resource_group');if(r&&bySymbol.get(r))e.parent=bySymbol.get(r)!.id;}
-    else if(e.type==='subnet'){const v=findRef(e.body,'virtual_network');if(v&&bySymbol.get(v))e.parent=bySymbol.get(v)!.id;}
-    else if(e.rawType.toLowerCase().includes('network_interface')){const s=findRef(e.body,'subnet');if(s&&bySymbol.get(s))e.parent=bySymbol.get(s)!.id;}
-    else if(e.type==='privateEndpoint'){const s=findRef(e.body,'subnet');if(s&&bySymbol.get(s))e.parent=bySymbol.get(s)!.id;}
-    else if(e.type==='virtualMachine'){
-      const nic=findRef(e.body,'network_interface');
-      const nicEntry=nic?bySymbol.get(nic):undefined;
-      if(nicEntry?.parent)e.parent=nicEntry.parent;
-      else {const subs=entries.filter(x=>x.type==='subnet');if(subs.length===1)e.parent=subs[0].id;}
-    } else {
-      const rg=findRef(e.body,'resource_group'); if(rg&&bySymbol.get(rg))e.parent=bySymbol.get(rg)!.id;
+    const rx=/resource\s+"([^"]+)"\s+"([^"]+)"\s*\{([\s\S]*?)(?=\n\}|\nresource\s+"|$)/g;let m;
+    while((m=rx.exec(code))!==null){
+      entries.push({id:`imp-${m[2]}`,symbol:m[2],rawType:m[1],type:mapType(m[1]),label:m[2].replace(/_/g,' '),body:m[3]||''});
     }
-   }
+
+    const bySymbol=new Map(entries.map(e=>[e.symbol,e]));
+    const findRef=(body:string,kind:string)=>{
+      const mm=body.match(new RegExp(`azurerm_${kind}\\.([A-Za-z0-9_]+)`));
+      return mm?.[1];
+    };
+    const findAllRefs=(body:string,kind:string)=>[...body.matchAll(new RegExp(`azurerm_${kind}\\.([A-Za-z0-9_]+)`,'g'))].map(x=>x[1]);
+
+    for(const e of entries){
+      e.rgRef=findRef(e.body,'resource_group');
+      e.vnetRef=findRef(e.body,'virtual_network');
+      e.subnetRef=findRef(e.body,'subnet');
+      e.nicRefs=findAllRefs(e.body,'network_interface');
+
+      if(e.type==='virtualNetwork'){
+        if(e.rgRef&&bySymbol.get(e.rgRef))e.parent=bySymbol.get(e.rgRef)!.id;
+      }else if(e.type==='subnet'){
+        if(e.vnetRef&&bySymbol.get(e.vnetRef))e.parent=bySymbol.get(e.vnetRef)!.id;
+      }else if(e.rawType.toLowerCase().includes('network_interface')){
+        if(e.subnetRef&&bySymbol.get(e.subnetRef))e.parent=bySymbol.get(e.subnetRef)!.id;
+      }else if(e.type==='privateEndpoint'){
+        if(e.subnetRef&&bySymbol.get(e.subnetRef))e.parent=bySymbol.get(e.subnetRef)!.id;
+      }else if(e.type==='virtualMachine'){
+        const nic=e.nicRefs?.map(n=>bySymbol.get(n)).find(Boolean);
+        if(nic?.parent)e.parent=nic.parent;
+        else if(e.subnetRef&&bySymbol.get(e.subnetRef))e.parent=bySymbol.get(e.subnetRef)!.id;
+        else if(e.rgRef&&bySymbol.get(e.rgRef))e.parent=bySymbol.get(e.rgRef)!.id;
+      }else if(['applicationGateway','aks','bastion','firewall','loadBalancer','natGateway'].includes(e.type)){
+        if(e.subnetRef&&bySymbol.get(e.subnetRef))e.parent=bySymbol.get(e.subnetRef)!.id;
+        else if(e.rgRef&&bySymbol.get(e.rgRef))e.parent=bySymbol.get(e.rgRef)!.id;
+      }else{
+        if(e.rgRef&&bySymbol.get(e.rgRef))e.parent=bySymbol.get(e.rgRef)!.id;
+      }
+    }
   }else{
-   const rx=/resource\s+([A-Za-z0-9_]+)\s+'([^']+)'(?:\s*=\s*)?\{([\s\S]*?)(?=\n\}|\nresource\s+|$)/g;let m;
-   while((m=rx.exec(code))!==null)entries.push({id:`imp-${m[1]}`,symbol:m[1],rawType:m[2],type:mapType(m[2]) as ResourceType,label:m[1],body:m[3]||''});
-   const rg=entries.find(e=>e.type==='resourceGroup');const vnet=entries.find(e=>e.type==='virtualNetwork');const subnet=entries.find(e=>e.type==='subnet');
-   entries.forEach(e=>{if(e.type==='virtualNetwork'&&rg)e.parent=rg.id;else if(e.type==='subnet'&&vnet)e.parent=vnet.id;else if(!['resourceGroup','virtualNetwork','subnet'].includes(e.type)){e.parent=subnet?.id||vnet?.id||rg?.id;}});
+    const rx=/resource\s+([A-Za-z0-9_]+)\s+'([^']+)'(?:\s*=\s*)?\{([\s\S]*?)(?=\n\}|\nresource\s+|$)/g;let m;
+    while((m=rx.exec(code))!==null){
+      entries.push({id:`imp-${m[1]}`,symbol:m[1],rawType:m[2],type:mapType(m[2]),label:m[1],body:m[3]||''});
+    }
+    const rg=entries.find(e=>e.type==='resourceGroup');
+    const vnet=entries.find(e=>e.type==='virtualNetwork');
+    const subnets=entries.filter(e=>e.type==='subnet');
+    entries.forEach(e=>{
+      if(e.type==='virtualNetwork'&&rg)e.parent=rg.id;
+      else if(e.type==='subnet'&&vnet)e.parent=vnet.id;
+      else if(!['resourceGroup','virtualNetwork','subnet'].includes(e.type)){
+        const matching=subnets.find(s=>new RegExp(`\\b${s.symbol}\\b`,'i').test(e.body));
+        e.parent=matching?.id||vnet?.id||rg?.id;
+      }
+    });
   }
+
   if(!entries.length){alert('No supported Azure resources were detected.');return;}
-  const children=(id:string)=>entries.filter(e=>e.parent===id);
+
+  // Network interfaces are used for dependency resolution but are not rendered yet.
+  const renderEntries=entries.filter(e=>!e.rawType.toLowerCase().includes('network_interface'));
+  const children=(id:string)=>renderEntries.filter(e=>e.parent===id);
+
   const imported:CanvasNode[]=[];
-  const makeNode=(e:Entry):ArchitectureNode=>{
-    const isContainer=isContainerType(e.type);
-    const sibs=e.parent?children(e.parent):entries.filter(x=>!x.parent);
-    const idx=Math.max(0,sibs.findIndex(x=>x.id===e.id));
-    const pos=isContainer?{x:35+idx*35,y:70+idx*25}:{x:35+(idx%2)*280,y:90+Math.floor(idx/2)*145};
-    return {id:e.id,type:isContainer?'container':'architecture',parentId:e.parent,extent:e.parent?'parent':undefined,position:pos,
-      style:isContainer?containerSize(e.type):undefined,
-      data:{...(resourceMap[e.type]?makeData(e.type,e.label):makeData('virtualMachine',e.label)),resourceType:e.type,region:'West Europe',environment:'Development',description:'Imported from IaC',tags:{ImportedFrom:'IaC'}}} as ArchitectureNode;
+  const positionFor=(e:Entry)=>{
+    if(!e.parent){
+      const roots=renderEntries.filter(x=>!x.parent);const i=Math.max(0,roots.findIndex(x=>x.id===e.id));
+      return {x:50+i*40,y:40+i*30};
+    }
+    const sibs=children(e.parent);const i=Math.max(0,sibs.findIndex(x=>x.id===e.id));
+    if(isContainerType(e.type))return{x:35+i*30,y:75+i*24};
+    return{x:40+(i%2)*290,y:100+Math.floor(i/2)*155};
   };
-  entries.filter(e=>!e.rawType.toLowerCase().includes('network_interface')).forEach(e=>imported.push(makeNode(e)));
-  const hierarchyRank:Record<string,number>={resourceGroup:1,virtualNetwork:2,subnet:3};
-  imported.sort((a,b)=>(hierarchyRank[(a as ArchitectureNode).data.resourceType]||9)-(hierarchyRank[(b as ArchitectureNode).data.resourceType]||9));
-  const arranged=recalcHierarchy(imported);
-  setNodes(arranged);setEdges([]);setDesignName('Imported IaC Architecture');setSaveState('unsaved');
-  setTimeout(()=>fitView({padding:.12,duration:500}),120);setRightPanel('properties');
+
+  const smartContainerSize=(e:Entry)=>{
+    const count=children(e.id).length;
+    if(e.type==='resourceGroup')return{width:1100,height:650};
+    if(e.type==='virtualNetwork')return{width:900,height:520};
+    if(e.type==='subnet')return{width:320,height:Math.max(260,180+count*110)};
+    return containerSize(e.type);
+  };
+
+  for(const e of renderEntries){
+    const known=resourceMap[e.type];
+    const fallbackType:ResourceType=known?e.type:'virtualMachine';
+    imported.push({
+      id:e.id,
+      type:isContainerType(e.type)?'container':'architecture',
+      parentId:e.parent,
+      extent:e.parent?'parent':undefined,
+      position:positionFor(e),
+      style:isContainerType(e.type)?smartContainerSize(e):undefined,
+      data:{...makeData(fallbackType,e.label),resourceType:e.type,region:'West Europe',environment:'Development',description:'Imported from IaC',tags:{ImportedFrom:'IaC'}}
+    } as ArchitectureNode);
+  }
+
+  // Create visual relationship edges only where containment is not already visually sufficient.
+  const importedEdges:any[]=[];
+  const byId=new Map(renderEntries.map(e=>[e.id,e]));
+  for(const e of renderEntries){
+    if(e.parent&&byId.get(e.parent)){
+      const p=byId.get(e.parent)!;
+      if(!isContainerType(p.type)||!isContainerType(e.type)){
+        // Skip most containment edges to keep diagram clean.
+      }
+    }
+  }
+
+  // Infer references between non-container resources.
+  for(const a of renderEntries){
+    for(const b of renderEntries){
+      if(a.id===b.id||isContainerType(a.type)||isContainerType(b.type))continue;
+      if(new RegExp(`\\b${b.symbol}\\b`,'i').test(a.body)){
+        if(!importedEdges.some(x=>x.source===b.id&&x.target===a.id)){
+          importedEdges.push({id:`rel-${b.id}-${a.id}`,source:b.id,target:a.id,type:'styled',data:{connectorStyle:'smoothstep',label:'dependency'}});
+        }
+      }
+    }
+  }
+
+  const rank:Record<string,number>={resourceGroup:1,virtualNetwork:2,subnet:3};
+  imported.sort((a,b)=>(rank[(a as ArchitectureNode).data.resourceType]||9)-(rank[(b as ArchitectureNode).data.resourceType]||9));
+
+  setNodes(recalcHierarchy(imported));
+  setEdges(importedEdges.slice(0,30));
+  setDesignName('Imported IaC Architecture');
+  setSaveState('unsaved');
+  setTimeout(()=>fitView({padding:.1,duration:500}),140);
+  setRightPanel('properties');
  }; const terraformCode=useMemo(()=>{const lines=['terraform { required_providers { azurerm = { source = "hashicorp/azurerm" version = "~> 4.0" } } }','provider "azurerm" { features {} }',''];architectureNodes.forEach((n,i)=>{const safe=n.data.label.toLowerCase().replace(/[^a-z0-9]+/g,'_').replace(/^_|_$/g,'')||`resource_${i}`;if(n.data.resourceType==='resourceGroup')lines.push(`resource "azurerm_resource_group" "${safe}" {\n  name = "${n.data.label}"\n  location = "${n.data.region}"\n}\n`);else if(n.data.resourceType==='virtualNetwork')lines.push(`# Virtual Network: ${n.data.label}\nresource "azurerm_virtual_network" "${safe}" {\n  name = "${n.data.label}"\n  location = "${n.data.region}"\n  address_space = ["10.0.0.0/16"]\n}\n`);else if(!['tenant','managementGroup','subscription','subnet'].includes(n.data.resourceType))lines.push(`# TODO ${n.data.resourceType}: ${n.data.label}\n# Resource Group: ${n.data.resourceGroup||'unassigned'} | Region: ${n.data.region}\n`);});return lines.join('\n');},[architectureNodes]);
  const bicepCode=useMemo(()=>{const lines=["targetScope = 'subscription'",''];architectureNodes.filter(n=>n.data.resourceType==='resourceGroup').forEach((n,i)=>lines.push(`resource rg${i} 'Microsoft.Resources/resourceGroups@2024-03-01' = {\n  name: '${n.data.label}'\n  location: '${n.data.region}'\n}\n`));architectureNodes.filter(n=>!['tenant','managementGroup','subscription','resourceGroup'].includes(n.data.resourceType)).forEach(n=>lines.push(`// TODO ${n.data.resourceType}: ${n.data.label} | RG: ${n.data.resourceGroup||'unassigned'} | ${n.data.region}`));return lines.join('\n');},[architectureNodes]);
  const iacCode=iacMode==='terraform'?terraformCode:bicepCode;
@@ -247,6 +353,6 @@ function Designer(){
  return <div className="app-shell"><header className="topbar"><div className="brand-block"><div className="brand-mark"><Sparkles size={19}/></div><div><div className="brand">ArchMindCanvas</div><div className="subtitle">AI Architecture Studio · Describe. Design. Validate. Generate IaC.<small className="founder-line">Founded by Pranab Baro</small></div></div></div><div className="design-title"><input value={designName} onChange={e=>{setDesignName(e.target.value);markChanged();}}/><div className={`save-status ${saveState}`}><Check size={12}/>{saveState==='saved'?'Saved':'Unsaved'}</div></div><div className="toolbar"><button onClick={undo}><Undo2 size={16}/></button><button onClick={redo}><Redo2 size={16}/></button><button onClick={newDesign}><FilePlus2 size={16}/><span>New</span></button><button onClick={loadTemplate}><Sparkles size={16}/><span>Template</span></button><button onClick={saveDesign}><Save size={16}/><span>Save</span></button><button onClick={loadDesign}><FolderOpen size={16}/><span>Load</span></button><button onClick={()=>setRightPanel('ai')}><Bot size={16}/><span>AI Studio</span></button><button onClick={autoArrange}><Route size={16}/><span>Auto Arrange</span></button><button onClick={()=>setRightPanel('validation')}><ShieldCheck size={16}/><span>Validate</span></button><button onClick={()=>setRightPanel('iac')}><Code2 size={16}/><span>IaC</span></button><button onClick={()=>setRightPanel('cost')}><DollarSign size={16}/><span>Cost</span></button><button onClick={()=>setRightPanel('import')}><Code2 size={16}/><span>Import IaC</span></button><button className="primary-button" onClick={exportJson}><Download size={16}/><span>JSON</span></button></div></header><div className="statusbar"><span><strong>{nodes.length}</strong> objects</span><span><strong>{edges.length}</strong> connections</span><span><strong>{score}</strong>/100 architecture score</span><span className="shortcut">Hierarchy-aware: Subscription › Resource Group › VNet › Subnet › Resource</span></div>
  <main className="workspace"><Sidebar onAddResource={t=>createResource(t as ResourceType)}/><div className="canvas-wrapper" onDrop={onDrop} onDragOver={e=>{e.preventDefault();e.dataTransfer.dropEffect='move';}}><div className="drawing-toolbar"><button className={tool==='select'?'active':''} onClick={()=>setTool('select')}><MousePointer2 size={16}/></button><span/><Route size={16}/><select value={connectorStyle} onChange={e=>setConnectorStyle(e.target.value as ConnectorStyle)}><option value="straight">Straight</option><option value="smoothstep">Elbow / routed</option><option value="bezier">Curved</option><option value="dotted">Dotted</option><option value="dashed">Dashed</option></select><span/><button className={tool==='rectangle'?'active':''} onClick={()=>setTool('rectangle')}><Square size={16}/></button><button className={tool==='triangle'?'active':''} onClick={()=>setTool('triangle')}><Triangle size={16}/></button><button className={tool==='text'?'active':''} onClick={()=>setTool('text')}><Type size={16}/></button><span/><button onClick={deleteSelected}><Trash2 size={16}/></button></div>
  <ReactFlow nodes={nodes} edges={edges} nodeTypes={nodeTypes} edgeTypes={edgeTypes} onNodesChange={onNodesChange} onEdgesChange={onEdgesChange} onConnect={onConnect} onNodeClick={(_,n)=>{setSelectedNodeId(n.id);setSelectedEdgeId(undefined);setRightPanel('properties');}} onEdgeClick={(_,e)=>{setSelectedEdgeId(e.id);setSelectedNodeId(undefined);setRightPanel('properties');}} onPaneClick={onPaneClick} fitView snapToGrid snapGrid={[16,16]} selectionOnDrag multiSelectionKeyCode="Shift" deleteKeyCode={null} defaultEdgeOptions={{type:'styled',markerEnd:{type:MarkerType.ArrowClosed},data:{connectorStyle}}}><Background variant={BackgroundVariant.Dots} gap={20} size={1.2}/><Controls position="bottom-left"/><MiniMap pannable zoomable position="bottom-right"/><div className="canvas-action"><button onClick={()=>fitView({padding:.12})}><Maximize2 size={15}/> Fit</button><button onClick={copySelection}><Copy size={15}/> Copy</button><button onClick={pasteSelection}><Clipboard size={15}/> Paste</button><button onClick={importJson}><UploadCloud size={15}/> Import</button></div></ReactFlow></div>
- <div className="inspector-shell"><div className="inspector-tabs v5-tabs"><button className={rightPanel==='properties'?'active':''} onClick={()=>setRightPanel('properties')}>Properties</button><button className={rightPanel==='ai'?'active':''} onClick={()=>setRightPanel('ai')}>AI</button><button className={rightPanel==='validation'?'active':''} onClick={()=>setRightPanel('validation')}>Validate <span>{findings.filter(f=>f.severity==='warning'||f.severity==='critical').length}</span></button><button className={rightPanel==='iac'?'active':''} onClick={()=>setRightPanel('iac')}>IaC</button></div>{rightPanel==='ai'?<div className="ai-studio"><div className="panel-title">ArchMind AI Architecture Studio</div><p>Describe the Azure architecture you want. This MVP uses a deterministic architecture generator and is ready for a future LLM API connection.</p><textarea value={aiPrompt} onChange={e=>setAiPrompt(e.target.value)} rows={8}/><div className="prompt-chips"><button onClick={()=>setAiPrompt('Create a secure 3-tier Azure application in West Europe with private endpoints and monitoring.')}>3-tier</button><button onClick={()=>setAiPrompt('Create an AKS production platform with ACR, Key Vault and Azure Monitor.')}>AKS</button><button onClick={()=>setAiPrompt('Create a hub-spoke network with Azure Firewall, VPN Gateway and private DNS.')}>Hub-spoke</button></div><button className="generate-button" onClick={buildAiArchitecture}><Sparkles size={16}/> Generate Architecture</button><div className="ai-note"><strong>Current intelligence layer</strong><span>Prompt templates generate a complete editable Azure model with collision-free hierarchical layout. Use Auto Arrange anytime to restore clean spacing and routed connections.</span></div></div>:rightPanel==='iac'?<div className="iac-panel"><div className="panel-title">Infrastructure as Code</div><div className="iac-toggle"><button className={iacMode==='terraform'?'active':''} onClick={()=>setIacMode('terraform')}>Terraform</button><button className={iacMode==='bicep'?'active':''} onClick={()=>setIacMode('bicep')}>Bicep</button></div><pre>{iacCode}</pre><div className="iac-actions"><button onClick={copyIac}>Copy code</button><button onClick={downloadIac}>Download {iacMode==='terraform'?'main.tf':'main.bicep'}</button><button className="primary-button" onClick={downloadIacBundle}>Download IaC Bundle</button></div><div className="repo-panel"><strong>Source Control</strong><label>Provider<select value={repoProvider} onChange={e=>setRepoProvider(e.target.value as 'github'|'azuredevops')}><option value="github">GitHub / GitHub Enterprise</option><option value="azuredevops">Azure DevOps Repos</option></select></label><label>Repository<input value={repoName} onChange={e=>setRepoName(e.target.value)} placeholder="organization/infrastructure-repo"/></label><label>Branch<input value={repoBranch} onChange={e=>setRepoBranch(e.target.value)}/></label><label>Target folder<input value={repoFolder} onChange={e=>setRepoFolder(e.target.value)}/></label><label>Commit message<input value={commitMessage} onChange={e=>setCommitMessage(e.target.value)}/></label><button className="primary-button" onClick={prepareRepoPush}>Prepare Repository Push</button><small>Secure direct push requires a backend GitHub App/OAuth or Azure DevOps OAuth connection. Tokens are never stored in this browser app.</small></div><div className="ai-note"><strong>Generator status</strong><span>v5.3 generates deployable starter Terraform for Resource Groups and VNets and preserves all remaining diagram resources as reviewed TODO mappings. Expand resource mappings before production deployment.</span></div></div>:rightPanel==='import'?<div className="import-iac-panel"><div className="panel-title">IaC → Diagram</div><div className="iac-toggle"><button className={iacImportType==='terraform'?'active':''} onClick={()=>setIacImportType('terraform')}>Terraform</button><button className={iacImportType==='bicep'?'active':''} onClick={()=>setIacImportType('bicep')}>Bicep</button></div><textarea value={iacImportCode} onChange={e=>setIacImportCode(e.target.value)} placeholder={iacImportType==='terraform'?'Paste Terraform azurerm code here...':'Paste Bicep code here...'}></textarea><button className="primary-button" onClick={importIacToDiagram}>Generate Diagram from Code</button><div className="ai-note"><strong>Reverse engineering</strong><span>v5.6.1 rebuilds Azure hierarchy from common Terraform azurerm references and Bicep resource declarations, creates editable ArchMindCanvas nodes, infers basic reference relationships, and auto-fits the generated diagram. Complex Terraform modules, dynamic blocks, remote state and deeply nested Bicep modules require a future backend parser for complete fidelity.</span></div></div>:rightPanel==='cost'?<div className="cost-panel"><div className="panel-title">Cost Intelligence</div><div className="cost-controls"><label>Currency<select value={costCurrency} onChange={e=>{setCostCurrency(e.target.value as 'USD'|'EUR'|'INR'|'GBP');setPricingStatus('idle');setLivePrices({});}}><option>USD</option><option>EUR</option><option>INR</option><option>GBP</option></select></label><button className="primary-button" onClick={refreshLivePricing} disabled={pricingStatus==='loading'}>{pricingStatus==='loading'?'Loading live prices...':'Refresh Azure Retail Prices'}</button><small className="pricing-status">{pricingStatus==='live'?'Live Azure retail prices loaded':pricingStatus==='partial'?'Partial live pricing loaded; unsupported resources use baseline estimates':pricingStatus==='error'?'Live pricing unavailable; showing baseline estimates':'Baseline estimates shown until live prices are refreshed'}</small></div><div className="cost-hero"><span>Estimated monthly cost</span><strong>{money(monthlyCost)}</strong><small>Estimated annual cost: {money(monthlyCost*12)}</small></div><div className="cost-section"><strong>Cost by category</strong>{Object.entries(costBreakdown).sort((a,b)=>b[1]-a[1]).map(([k,v])=><div className="cost-row" key={k}><span>{k}</span><b>{money(v)}</b></div>)}</div><div className="cost-section"><strong>Resources</strong>{costItems.length?costItems.map(x=><div className="cost-resource" key={x.id}><div><b>{x.name}</b><small>{x.category}</small></div><span>{x.monthly?money(x.monthly):'Not priced'} {x.live?'· Live':''}</span></div>):<small>Add Azure resources to see an estimate.</small>}</div><div className="ai-note"><strong>Estimate only</strong><span>Use “Refresh Azure Retail Prices” to query Microsoft's public Retail Prices API. Where an exact SKU is not configured or no matching meter is found, ArchMindCanvas falls back to its baseline estimate. Retail pricing is not your negotiated invoice price.</span></div></div>:rightPanel==='validation'?<ValidationPanel findings={findings} score={score} onSelectNode={id=>{setSelectedNodeId(id);setRightPanel('properties');}}/>:isArchitecture?<PropertiesPanel data={(selectedNode as ArchitectureNode).data} parentId={(selectedNode as ArchitectureNode).parentId} hierarchy={hierarchyData} onParentChange={changeParent} onChange={updateArchitecture} onDelete={deleteSelected} onDuplicate={duplicateSelected}/>:isDrawing?<div className="properties-panel"><div className="panel-title">Drawing object</div><div className="form-stack"><label>Text / label<input value={(selectedNode as DrawingNode).data.label} onChange={e=>updateDrawing({label:e.target.value})}/></label><button className="danger-button" onClick={deleteSelected}>Delete object</button></div></div>:selectedEdge?<div className="properties-panel"><div className="panel-title">Connection</div><div className="form-stack"><label>Line style<select value={selectedEdge.data?.connectorStyle||'smoothstep'} onChange={e=>updateEdge({connectorStyle:e.target.value as ConnectorStyle})}><option value="straight">Straight</option><option value="smoothstep">Elbow / routed</option><option value="bezier">Curved</option><option value="dotted">Dotted</option><option value="dashed">Dashed</option></select></label><label>Label<input value={selectedEdge.data?.label||''} onChange={e=>updateEdge({label:e.target.value})}/></label><label>Connection type<select value={selectedEdge.data?.connectionType||''} onChange={e=>updateEdge({connectionType:e.target.value})}><option value="">General</option><option>HTTPS</option><option>Private Link</option><option>VNet Peering</option><option>VPN</option><option>ExpressRoute</option><option>Dependency</option><option>Data Flow</option></select></label><label>Protocol<input value={selectedEdge.data?.protocol||''} onChange={e=>updateEdge({protocol:e.target.value})} placeholder="TCP / UDP / HTTPS"/></label><label>Port<input value={selectedEdge.data?.port||''} onChange={e=>updateEdge({port:e.target.value})} placeholder="443"/></label><button className="danger-button" onClick={deleteSelected}>Delete connection</button></div></div>:<div className="empty-properties"><div className="empty-icon">✦</div><strong>Select an object or connection</strong><span>Edit hierarchy, Azure properties, tags and connection metadata here.</span></div>}</div></main></div>;
+ <div className="inspector-shell"><div className="inspector-tabs v5-tabs"><button className={rightPanel==='properties'?'active':''} onClick={()=>setRightPanel('properties')}>Properties</button><button className={rightPanel==='ai'?'active':''} onClick={()=>setRightPanel('ai')}>AI</button><button className={rightPanel==='validation'?'active':''} onClick={()=>setRightPanel('validation')}>Validate <span>{findings.filter(f=>f.severity==='warning'||f.severity==='critical').length}</span></button><button className={rightPanel==='iac'?'active':''} onClick={()=>setRightPanel('iac')}>IaC</button></div>{rightPanel==='ai'?<div className="ai-studio"><div className="panel-title">ArchMind AI Architecture Studio</div><p>Describe the Azure architecture you want. This MVP uses a deterministic architecture generator and is ready for a future LLM API connection.</p><textarea value={aiPrompt} onChange={e=>setAiPrompt(e.target.value)} rows={8}/><div className="prompt-chips"><button onClick={()=>setAiPrompt('Create a secure 3-tier Azure application in West Europe with private endpoints and monitoring.')}>3-tier</button><button onClick={()=>setAiPrompt('Create an AKS production platform with ACR, Key Vault and Azure Monitor.')}>AKS</button><button onClick={()=>setAiPrompt('Create a hub-spoke network with Azure Firewall, VPN Gateway and private DNS.')}>Hub-spoke</button></div><button className="generate-button" onClick={buildAiArchitecture}><Sparkles size={16}/> Generate Architecture</button><div className="ai-note"><strong>Current intelligence layer</strong><span>Prompt templates generate a complete editable Azure model with collision-free hierarchical layout. Use Auto Arrange anytime to restore clean spacing and routed connections.</span></div></div>:rightPanel==='iac'?<div className="iac-panel"><div className="panel-title">Infrastructure as Code</div><div className="iac-toggle"><button className={iacMode==='terraform'?'active':''} onClick={()=>setIacMode('terraform')}>Terraform</button><button className={iacMode==='bicep'?'active':''} onClick={()=>setIacMode('bicep')}>Bicep</button></div><pre>{iacCode}</pre><div className="iac-actions"><button onClick={copyIac}>Copy code</button><button onClick={downloadIac}>Download {iacMode==='terraform'?'main.tf':'main.bicep'}</button><button className="primary-button" onClick={downloadIacBundle}>Download IaC Bundle</button></div><div className="repo-panel"><strong>Source Control</strong><label>Provider<select value={repoProvider} onChange={e=>setRepoProvider(e.target.value as 'github'|'azuredevops')}><option value="github">GitHub / GitHub Enterprise</option><option value="azuredevops">Azure DevOps Repos</option></select></label><label>Repository<input value={repoName} onChange={e=>setRepoName(e.target.value)} placeholder="organization/infrastructure-repo"/></label><label>Branch<input value={repoBranch} onChange={e=>setRepoBranch(e.target.value)}/></label><label>Target folder<input value={repoFolder} onChange={e=>setRepoFolder(e.target.value)}/></label><label>Commit message<input value={commitMessage} onChange={e=>setCommitMessage(e.target.value)}/></label><button className="primary-button" onClick={prepareRepoPush}>Prepare Repository Push</button><small>Secure direct push requires a backend GitHub App/OAuth or Azure DevOps OAuth connection. Tokens are never stored in this browser app.</small></div><div className="ai-note"><strong>Generator status</strong><span>v5.3 generates deployable starter Terraform for Resource Groups and VNets and preserves all remaining diagram resources as reviewed TODO mappings. Expand resource mappings before production deployment.</span></div></div>:rightPanel==='import'?<div className="import-iac-panel"><div className="panel-title">IaC → Diagram</div><div className="iac-toggle"><button className={iacImportType==='terraform'?'active':''} onClick={()=>setIacImportType('terraform')}>Terraform</button><button className={iacImportType==='bicep'?'active':''} onClick={()=>setIacImportType('bicep')}>Bicep</button></div><textarea value={iacImportCode} onChange={e=>setIacImportCode(e.target.value)} placeholder={iacImportType==='terraform'?'Paste Terraform azurerm code here...':'Paste Bicep code here...'}></textarea><button className="primary-button" onClick={importIacToDiagram}>Generate Diagram from Code</button><div className="ai-note"><strong>Reverse engineering</strong><span>v5.7 rebuilds Azure hierarchy from common Terraform azurerm references and Bicep resource declarations, creates editable ArchMindCanvas nodes, infers basic reference relationships, and auto-fits the generated diagram. Complex Terraform modules, dynamic blocks, remote state and deeply nested Bicep modules require a future backend parser for complete fidelity.</span></div></div>:rightPanel==='cost'?<div className="cost-panel"><div className="panel-title">Cost Intelligence</div><div className="cost-controls"><label>Currency<select value={costCurrency} onChange={e=>{setCostCurrency(e.target.value as 'USD'|'EUR'|'INR'|'GBP');setPricingStatus('idle');setLivePrices({});}}><option>USD</option><option>EUR</option><option>INR</option><option>GBP</option></select></label><button className="primary-button" onClick={refreshLivePricing} disabled={pricingStatus==='loading'}>{pricingStatus==='loading'?'Loading live prices...':'Refresh Azure Retail Prices'}</button><small className="pricing-status">{pricingStatus==='live'?'Live Azure retail prices loaded':pricingStatus==='partial'?'Partial live pricing loaded; unsupported resources use baseline estimates':pricingStatus==='error'?'Live pricing unavailable; showing baseline estimates':'Baseline estimates shown until live prices are refreshed'}</small></div><div className="cost-hero"><span>Estimated monthly cost</span><strong>{money(monthlyCost)}</strong><small>Estimated annual cost: {money(monthlyCost*12)}</small></div><div className="cost-section"><strong>Cost by category</strong>{Object.entries(costBreakdown).sort((a,b)=>b[1]-a[1]).map(([k,v])=><div className="cost-row" key={k}><span>{k}</span><b>{money(v)}</b></div>)}</div><div className="cost-section"><strong>Resources</strong>{costItems.length?costItems.map(x=><div className="cost-resource" key={x.id}><div><b>{x.name}</b><small>{x.category}</small></div><span>{x.monthly?money(x.monthly):'Not priced'} {x.live?'· Live':''}</span></div>):<small>Add Azure resources to see an estimate.</small>}</div><div className="ai-note"><strong>Estimate only</strong><span>Use “Refresh Azure Retail Prices” to query Microsoft's public Retail Prices API. Where an exact SKU is not configured or no matching meter is found, ArchMindCanvas falls back to its baseline estimate. Retail pricing is not your negotiated invoice price.</span></div></div>:rightPanel==='validation'?<ValidationPanel findings={findings} score={score} onSelectNode={id=>{setSelectedNodeId(id);setRightPanel('properties');}}/>:isArchitecture?<PropertiesPanel data={(selectedNode as ArchitectureNode).data} parentId={(selectedNode as ArchitectureNode).parentId} hierarchy={hierarchyData} onParentChange={changeParent} onChange={updateArchitecture} onDelete={deleteSelected} onDuplicate={duplicateSelected}/>:isDrawing?<div className="properties-panel"><div className="panel-title">Drawing object</div><div className="form-stack"><label>Text / label<input value={(selectedNode as DrawingNode).data.label} onChange={e=>updateDrawing({label:e.target.value})}/></label><button className="danger-button" onClick={deleteSelected}>Delete object</button></div></div>:selectedEdge?<div className="properties-panel"><div className="panel-title">Connection</div><div className="form-stack"><label>Line style<select value={selectedEdge.data?.connectorStyle||'smoothstep'} onChange={e=>updateEdge({connectorStyle:e.target.value as ConnectorStyle})}><option value="straight">Straight</option><option value="smoothstep">Elbow / routed</option><option value="bezier">Curved</option><option value="dotted">Dotted</option><option value="dashed">Dashed</option></select></label><label>Label<input value={selectedEdge.data?.label||''} onChange={e=>updateEdge({label:e.target.value})}/></label><label>Connection type<select value={selectedEdge.data?.connectionType||''} onChange={e=>updateEdge({connectionType:e.target.value})}><option value="">General</option><option>HTTPS</option><option>Private Link</option><option>VNet Peering</option><option>VPN</option><option>ExpressRoute</option><option>Dependency</option><option>Data Flow</option></select></label><label>Protocol<input value={selectedEdge.data?.protocol||''} onChange={e=>updateEdge({protocol:e.target.value})} placeholder="TCP / UDP / HTTPS"/></label><label>Port<input value={selectedEdge.data?.port||''} onChange={e=>updateEdge({port:e.target.value})} placeholder="443"/></label><button className="danger-button" onClick={deleteSelected}>Delete connection</button></div></div>:<div className="empty-properties"><div className="empty-icon">✦</div><strong>Select an object or connection</strong><span>Edit hierarchy, Azure properties, tags and connection metadata here.</span></div>}</div></main></div>;
 }
 export default function App(){return <ReactFlowProvider><Designer/></ReactFlowProvider>}

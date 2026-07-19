@@ -63,3 +63,13 @@ Push all files to the repository root. GitHub Actions builds and publishes to Gi
 - NIC resources are used for dependency resolution but not rendered as unsupported generic nodes
 - VM-to-subnet hierarchy is inferred through the NIC subnet reference
 - Added defensive fallback for unknown imported resource types
+
+## v5.7 Advanced IaC Import
+- Multiple subnet hierarchy import
+- Better Terraform reference parsing
+- VM subnet placement through NIC references
+- Common Azure resource mappings expanded
+- Cleaner auto-layout for RG, VNet and multiple Subnets
+- Subnet containers grow based on imported children
+- Basic non-container dependency edges
+- Network Interface remains dependency-only and is not rendered
