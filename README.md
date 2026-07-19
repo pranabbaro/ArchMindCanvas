@@ -91,3 +91,9 @@ Push all files to the repository root. GitHub Actions builds and publishes to Gi
 - Automatic container sizing based on children
 - Automatic spacing between nested containers and resources
 - Auto fit-to-view after import
+
+## v5.7.3 UI Cleanup
+- Removed top-level JSON export button from the header
+- Unified Import panel remains the single place to import JSON, Terraform, and Bicep
+- Collision-free hierarchy-aware import retained
+- All existing AI, Cost, Validate, IaC, Auto Arrange, and Source Control features retained
