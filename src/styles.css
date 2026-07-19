@@ -200,3 +200,19 @@
 .save-export-menu hr{border:0;border-top:1px solid #e2e8f0;margin:5px 0}
 @media(max-width:1280px){.topbar{grid-template-columns:minmax(200px,260px) minmax(220px,300px) minmax(0,1fr)!important}.toolbar button span{display:none}.toolbar button{padding:8px}}
 @media(max-width:980px){.topbar{grid-template-columns:minmax(180px,240px) minmax(0,1fr)!important}.brand-block{display:none}.design-title{display:flex!important}}
+
+/* v7.0.2 complete save menu */
+.save-export-menu{
+  min-width:260px!important;
+  max-height:calc(100vh - 90px);
+  overflow-y:auto;
+  z-index:9999!important;
+}
+.save-export-menu hr{
+  border:0;
+  border-top:1px solid #e2e8f0;
+  margin:5px 0;
+}
+.save-export-menu button{
+  width:100%;
+}

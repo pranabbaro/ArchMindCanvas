@@ -199,3 +199,13 @@ Important: The browser workflow is a safe scaffold/demo until the deployment API
 - Open Browser Save restores the last browser-saved design
 - Save As JSON downloads the editable architecture design
 - PDF / PNG / SVG exports retained
+
+## v7.0.2 Complete Save Menu
+- Retains the filename/header overlap fix from v7.0.1
+- Save in Browser
+- Open Browser Save
+- Save As JSON for editable architecture files
+- Save as PDF
+- Save as PNG
+- Save as SVG
+- Save menu closes automatically after an export/save action
