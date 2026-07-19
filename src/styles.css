@@ -91,3 +91,8 @@
 .node-context-menu button.danger{color:#dc2626}
 .node-context-menu hr{border:0;border-top:1px solid #e2e8f0;margin:4px 0}
 .node-context-menu kbd{font-size:8px;color:#64748b;background:#f8fafc;border:1px solid #e2e8f0;border-radius:4px;padding:1px 4px}
+
+.cursor-mode .react-flow__pane{cursor:default!important}
+.cursor-mode .react-flow__node{cursor:move}
+.hand-mode .react-flow__pane,.hand-mode .react-flow__viewport{cursor:grab!important}
+.hand-mode .react-flow__pane:active,.hand-mode .react-flow__viewport:active{cursor:grabbing!important}
