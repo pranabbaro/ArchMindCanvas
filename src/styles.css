@@ -119,3 +119,7 @@
   pointer-events:all!important;
   user-select:none!important;
 }
+
+/* v6.2 Smart Layout & Connection Crossings */
+.edge-crossing-note{font-size:8px;color:#64748b}
+.canvas-action button{white-space:nowrap}

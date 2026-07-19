@@ -147,3 +147,13 @@ Push all files to the repository root. GitHub Actions builds and publishes to Gi
 - Movable labels retained
 - Arrow direction and line thickness retained
 - Stable incremental update based directly on v6.1.3
+
+## v6.2 Smart Layout & Connection Crossings
+- Auto Tidy button for quick diagram cleanup
+- Align Left and Align Top controls
+- Horizontal and vertical distribution controls
+- Layout actions work on multi-selected objects
+- Locked objects are preserved during layout operations
+- Connection crossing clarity improved using a white bridge/gap underlay
+- Crossing lines visually remain separate and do not look connected
+- Existing connector routing, arrow directions, line thickness and export features retained
