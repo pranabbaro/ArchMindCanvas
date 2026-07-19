@@ -1,0 +1,46 @@
+trigger: none
+
+parameters:
+- name: environment
+  type: string
+  default: dev
+  values:
+  - dev
+  - test
+  - prod
+
+pool:
+  vmImage: ubuntu-latest
+
+stages:
+- stage: Validate
+  jobs:
+  - job: BicepValidate
+    steps:
+    - checkout: self
+    - script: az bicep build --file infrastructure/main.bicep
+      displayName: Bicep build
+
+- stage: WhatIf
+  dependsOn: Validate
+  jobs:
+  - job: AzureWhatIf
+    steps:
+    - script: |
+        echo "Configure AzureCLI@2 with your workload-identity-based Azure service connection."
+        echo "Run: az deployment group what-if ..."
+      displayName: Azure what-if placeholder
+
+- stage: Deploy
+  dependsOn: WhatIf
+  condition: succeeded()
+  jobs:
+  - deployment: BicepDeploy
+    environment: ${{ parameters.environment }}
+    strategy:
+      runOnce:
+        deploy:
+          steps:
+          - script: |
+              echo "Configure AzureCLI@2 and run az deployment group create ..."
+            displayName: Bicep deployment placeholder

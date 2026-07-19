@@ -1,0 +1,55 @@
+trigger: none
+
+parameters:
+- name: environment
+  type: string
+  default: dev
+  values:
+  - dev
+  - test
+  - prod
+
+pool:
+  vmImage: ubuntu-latest
+
+stages:
+- stage: Validate
+  jobs:
+  - job: TerraformValidate
+    steps:
+    - checkout: self
+    - script: |
+        terraform fmt -check -recursive
+        terraform init -backend=false
+        terraform validate
+      workingDirectory: infrastructure
+      displayName: Terraform validate
+
+- stage: Plan
+  dependsOn: Validate
+  jobs:
+  - job: TerraformPlan
+    steps:
+    - checkout: self
+    - script: |
+        terraform init
+        terraform plan -out=tfplan
+      workingDirectory: infrastructure
+      displayName: Terraform plan
+
+- stage: Deploy
+  dependsOn: Plan
+  condition: succeeded()
+  jobs:
+  - deployment: TerraformApply
+    environment: ${{ parameters.environment }}
+    strategy:
+      runOnce:
+        deploy:
+          steps:
+          - checkout: self
+          - script: |
+              terraform init
+              terraform apply -auto-approve tfplan
+            workingDirectory: infrastructure
+            displayName: Terraform apply

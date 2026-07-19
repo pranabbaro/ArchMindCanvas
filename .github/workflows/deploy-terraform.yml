@@ -1,0 +1,40 @@
+name: Deploy Terraform
+
+on:
+  workflow_dispatch:
+    inputs:
+      environment:
+        type: choice
+        options: [dev, test, prod]
+        default: dev
+
+permissions:
+  id-token: write
+  contents: read
+
+jobs:
+  validate-plan:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+    - uses: hashicorp/setup-terraform@v3
+    - run: terraform fmt -check -recursive
+      working-directory: infrastructure
+    - run: terraform init
+      working-directory: infrastructure
+    - run: terraform validate
+      working-directory: infrastructure
+    - run: terraform plan
+      working-directory: infrastructure
+
+  deploy:
+    needs: validate-plan
+    environment: ${{ inputs.environment }}
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+    - uses: hashicorp/setup-terraform@v3
+    - run: terraform init
+      working-directory: infrastructure
+    - run: terraform apply -auto-approve
+      working-directory: infrastructure

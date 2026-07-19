@@ -177,10 +177,16 @@ Push all files to the repository root. GitHub Actions builds and publishes to Gi
 - Forward / Backward / Lock controls remain contextual
 - Existing v6.2.1 alignment and line-jump behavior retained
 
-## v6.2.3 True Line Crossovers
-- Removed fake midpoint crossover arcs
-- Detects actual segment-to-segment connector intersections
-- Adds arc bridge only at true crossings
-- Shared endpoints never show line jumps
-- Supports Arc bridge, Gap, or None
-- Keeps existing manual routing, arrows, alignment menu and exports
+## v7.0 Azure Deployment Engine
+- Added Deploy to Azure panel
+- Azure DevOps / GitHub deployment configuration
+- Terraform / Bicep deployment mode
+- Dev / Test / Prod environment selection
+- Validate, Plan / What-if, Approve & Deploy workflow
+- Deployment status UI
+- Added server-side deployment API scaffold
+- Added Azure DevOps Terraform pipeline template
+- Added Azure DevOps Bicep pipeline template
+- Added GitHub Actions Terraform workflow template
+
+Important: The browser workflow is a safe scaffold/demo until the deployment API is connected to real Azure DevOps or GitHub APIs. Do not store deployment secrets in the frontend.

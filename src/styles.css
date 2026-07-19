@@ -172,3 +172,19 @@
 .layout-dropdown button:hover{background:#f1f5f9!important}
 .layout-dropdown hr{border:0;border-top:1px solid #e2e8f0;margin:5px 0}
 .layout-dropdown .layout-tidy{font-weight:700!important;color:#2563eb!important}
+
+.deploy-studio{padding:14px;display:flex;flex-direction:column;gap:12px}
+.deploy-studio p{font-size:10px;line-height:1.5;color:#64748b;margin:0}
+.deploy-status-card{display:flex;justify-content:space-between;align-items:center;border:1px solid #dbe3ee;background:#f8fafc;border-radius:10px;padding:10px}
+.deploy-status-card div{display:flex;flex-direction:column;gap:3px}
+.deploy-status-card strong{font-size:11px}
+.deploy-status-card span{font-size:9px;color:#64748b}
+.deploy-status-dot{width:10px;height:10px;border-radius:50%;background:#94a3b8}
+.deploy-status-dot.ready,.deploy-status-dot.completed{background:#16a34a}
+.deploy-status-dot.queued,.deploy-status-dot.validating,.deploy-status-dot.planning,.deploy-status-dot.deploying{background:#2563eb}
+.deploy-status-dot.approval{background:#d97706}
+.deploy-status-dot.failed{background:#dc2626}
+.deploy-actions{display:grid;grid-template-columns:1fr 1fr;gap:7px}
+.deploy-actions .primary-button{grid-column:1/-1}
+.deploy-actions button{display:flex;align-items:center;justify-content:center;gap:6px}
+.deploy-note{display:flex;gap:8px;align-items:flex-start;background:#eff6ff;border:1px solid #bfdbfe;border-radius:8px;padding:9px;color:#1e40af;font-size:9px;line-height:1.45}
