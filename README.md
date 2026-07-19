@@ -128,3 +128,14 @@ Push all files to the repository root. GitHub Actions builds and publishes to Gi
 - Delete / Backspace delete selection
 - Escape clears selection/context menu
 - Existing v6.0 manual connection routing and Cursor/Hand modes retained
+
+## v6.1.3 Professional Connectors
+- Multiple draggable connection waypoints
+- Double-click selected connection to add waypoint
+- Double-click waypoint to remove it
+- Drag connection labels independently
+- Arrow direction: none, forward, backward, both
+- Adjustable line thickness
+- Reset to automatic routing
+- Waypoints and label coordinates persist in design JSON
+- Cursor/Hand visual behavior retained

@@ -96,3 +96,9 @@
 .cursor-mode .react-flow__node{cursor:move}
 .hand-mode .react-flow__pane,.hand-mode .react-flow__viewport{cursor:grab!important}
 .hand-mode .react-flow__pane:active,.hand-mode .react-flow__viewport:active{cursor:grabbing!important}
+
+.edge-label-movable{cursor:move;pointer-events:all!important;user-select:none}
+.edge-route-handle{position:absolute;width:14px;height:14px;border-radius:50%;background:#fff;border:3px solid #2563eb;box-shadow:0 2px 8px rgba(37,99,235,.3);cursor:move;pointer-events:all;z-index:30}
+.cursor-mode .react-flow__pane{cursor:default!important}
+.hand-mode .react-flow__pane,.hand-mode .react-flow__viewport{cursor:grab!important}
+.hand-mode .react-flow__pane:active,.hand-mode .react-flow__viewport:active{cursor:grabbing!important}
