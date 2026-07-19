@@ -176,3 +176,11 @@ Push all files to the repository root. GitHub Actions builds and publishes to Gi
 - Main canvas toolbar remains fixed and compact
 - Forward / Backward / Lock controls remain contextual
 - Existing v6.2.1 alignment and line-jump behavior retained
+
+## v6.2.3 True Line Crossovers
+- Removed fake midpoint crossover arcs
+- Detects actual segment-to-segment connector intersections
+- Adds arc bridge only at true crossings
+- Shared endpoints never show line jumps
+- Supports Arc bridge, Gap, or None
+- Keeps existing manual routing, arrows, alignment menu and exports
