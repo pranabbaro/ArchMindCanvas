@@ -173,10 +173,10 @@ function Designer(){
  };
  const importIacToDiagram=()=>{
   if(!iacImportCode.trim()){alert('Paste Terraform or Bicep code first.');return;}
-  const code=iacImportCode; const imported:ArchitectureNode[]=[]; const importedEdges:any[]=[];
+  const code=iacImportCode;
   const mapType=(raw:string)=>{const s=raw.toLowerCase();
    if(s.includes('resource_group'))return'resourceGroup';if(s.includes('virtual_network'))return'virtualNetwork';
-   if(s.includes('subnet'))return'subnet';if(s.includes('network_interface'))return'networkInterface';
+   if(s.includes('subnet'))return'subnet';if(s.includes('network_interface'))return'genericAzure';
    if(s.includes('virtual_machine')||s.includes('linux_virtual_machine')||s.includes('windows_virtual_machine'))return'virtualMachine';
    if(s.includes('kubernetes_cluster'))return'aks';if(s.includes('application_gateway'))return'applicationGateway';
    if(s.includes('firewall'))return'firewall';if(s.includes('key_vault'))return'keyVault';
@@ -185,22 +185,52 @@ function Designer(){
    if(s.includes('container_registry'))return'containerRegistry';if(s.includes('service_plan')||s.includes('web_app'))return'appService';
    return'genericAzure';
   };
-  const entries:{id:string,type:string,label:string}[]=[];
+  type Entry={id:string;symbol:string;rawType:string;type:ResourceType;label:string;body:string;parent?:string};
+  const entries:Entry[]=[];
   if(iacImportType==='terraform'){
-   const rx=/resource\s+"([^"]+)"\s+"([^"]+)"\s*\{/g;let m;
-   while((m=rx.exec(code))!==null)entries.push({id:`imp-${m[2]}`,type:mapType(m[1]),label:m[2].replace(/_/g,' ')});
+   const rx=/resource\s+"([^"]+)"\s+"([^"]+)"\s*\{([\s\S]*?)(?=\n\}|\nresource\s+"|$)/g;let m;
+   while((m=rx.exec(code))!==null)entries.push({id:`imp-${m[2]}`,symbol:m[2],rawType:m[1],type:mapType(m[1]) as ResourceType,label:m[2].replace(/_/g,' '),body:m[3]||''});
+   const bySymbol=new Map(entries.map(e=>[e.symbol,e]));
+   const findRef=(body:string,kind:string)=>{const mm=body.match(new RegExp(`azurerm_${kind}\\.([A-Za-z0-9_]+)`));return mm?.[1];};
+   for(const e of entries){
+    if(e.type==='virtualNetwork'){const r=findRef(e.body,'resource_group');if(r&&bySymbol.get(r))e.parent=bySymbol.get(r)!.id;}
+    else if(e.type==='subnet'){const v=findRef(e.body,'virtual_network');if(v&&bySymbol.get(v))e.parent=bySymbol.get(v)!.id;}
+    else if(e.rawType.toLowerCase().includes('network_interface')){const s=findRef(e.body,'subnet');if(s&&bySymbol.get(s))e.parent=bySymbol.get(s)!.id;}
+    else if(e.type==='privateEndpoint'){const s=findRef(e.body,'subnet');if(s&&bySymbol.get(s))e.parent=bySymbol.get(s)!.id;}
+    else if(e.type==='virtualMachine'){
+      const nic=findRef(e.body,'network_interface');
+      const nicEntry=nic?bySymbol.get(nic):undefined;
+      if(nicEntry?.parent)e.parent=nicEntry.parent;
+      else {const subs=entries.filter(x=>x.type==='subnet');if(subs.length===1)e.parent=subs[0].id;}
+    } else {
+      const rg=findRef(e.body,'resource_group'); if(rg&&bySymbol.get(rg))e.parent=bySymbol.get(rg)!.id;
+    }
+   }
   }else{
-   const rx=/resource\s+([A-Za-z0-9_]+)\s+'([^']+)'(?:\s*=\s*)?\{/g;let m;
-   while((m=rx.exec(code))!==null)entries.push({id:`imp-${m[1]}`,type:mapType(m[2]),label:m[1]});
+   const rx=/resource\s+([A-Za-z0-9_]+)\s+'([^']+)'(?:\s*=\s*)?\{([\s\S]*?)(?=\n\}|\nresource\s+|$)/g;let m;
+   while((m=rx.exec(code))!==null)entries.push({id:`imp-${m[1]}`,symbol:m[1],rawType:m[2],type:mapType(m[2]) as ResourceType,label:m[1],body:m[3]||''});
+   const rg=entries.find(e=>e.type==='resourceGroup');const vnet=entries.find(e=>e.type==='virtualNetwork');const subnet=entries.find(e=>e.type==='subnet');
+   entries.forEach(e=>{if(e.type==='virtualNetwork'&&rg)e.parent=rg.id;else if(e.type==='subnet'&&vnet)e.parent=vnet.id;else if(!['resourceGroup','virtualNetwork','subnet'].includes(e.type)){e.parent=subnet?.id||vnet?.id||rg?.id;}});
   }
-  if(!entries.length){alert('No supported Azure resources were detected. v5.5 supports common Terraform azurerm resources and Bicep resource declarations.');return;}
-  const cols=4,gapX=285,gapY=150;
-  entries.forEach((e,i)=>imported.push({id:e.id,type:'architecture',position:{x:80+(i%cols)*gapX,y:80+Math.floor(i/cols)*gapY},data:{label:e.label,resourceType:e.type,region:'West Europe',environment:'Development',resourceGroup:'Imported-IaC',description:'Imported from IaC',sku:'',owner:''}} as unknown as ArchitectureNode));
-  // Dependency hints: Terraform references or Bicep symbolic-name mentions create simple edges.
-  entries.forEach(a=>entries.forEach(b=>{if(a.id!==b.id){const an=a.id.replace('imp-','');const bn=b.id.replace('imp-','');const lineRx=new RegExp(`${an}[^\\n]{0,160}${bn}|${bn}[^\\n]{0,160}${an}`,'i');if(lineRx.test(code)&&!importedEdges.some(e=>(e.source===a.id&&e.target===b.id)||(e.source===b.id&&e.target===a.id)))importedEdges.push({id:`e-${a.id}-${b.id}`,source:a.id,target:b.id,type:'styled',data:{style:'elbow'}});}}));
-  setNodes(imported);setEdges(importedEdges.slice(0,Math.max(entries.length*2,8)));setTimeout(()=>fitView({padding:.18,duration:500}),100);setRightPanel('properties');
- };
- const terraformCode=useMemo(()=>{const lines=['terraform { required_providers { azurerm = { source = "hashicorp/azurerm" version = "~> 4.0" } } }','provider "azurerm" { features {} }',''];architectureNodes.forEach((n,i)=>{const safe=n.data.label.toLowerCase().replace(/[^a-z0-9]+/g,'_').replace(/^_|_$/g,'')||`resource_${i}`;if(n.data.resourceType==='resourceGroup')lines.push(`resource "azurerm_resource_group" "${safe}" {\n  name = "${n.data.label}"\n  location = "${n.data.region}"\n}\n`);else if(n.data.resourceType==='virtualNetwork')lines.push(`# Virtual Network: ${n.data.label}\nresource "azurerm_virtual_network" "${safe}" {\n  name = "${n.data.label}"\n  location = "${n.data.region}"\n  address_space = ["10.0.0.0/16"]\n}\n`);else if(!['tenant','managementGroup','subscription','subnet'].includes(n.data.resourceType))lines.push(`# TODO ${n.data.resourceType}: ${n.data.label}\n# Resource Group: ${n.data.resourceGroup||'unassigned'} | Region: ${n.data.region}\n`);});return lines.join('\n');},[architectureNodes]);
+  if(!entries.length){alert('No supported Azure resources were detected.');return;}
+  const children=(id:string)=>entries.filter(e=>e.parent===id);
+  const imported:CanvasNode[]=[];
+  const makeNode=(e:Entry):ArchitectureNode=>{
+    const isContainer=isContainerType(e.type);
+    const sibs=e.parent?children(e.parent):entries.filter(x=>!x.parent);
+    const idx=Math.max(0,sibs.findIndex(x=>x.id===e.id));
+    const pos=isContainer?{x:35+idx*35,y:70+idx*25}:{x:35+(idx%2)*280,y:90+Math.floor(idx/2)*145};
+    return {id:e.id,type:isContainer?'container':'architecture',parentId:e.parent,extent:e.parent?'parent':undefined,position:pos,
+      style:isContainer?containerSize(e.type):undefined,
+      data:{...makeData(e.type,e.label),region:'West Europe',environment:'Development',description:'Imported from IaC',tags:{ImportedFrom:'IaC'}}} as ArchitectureNode;
+  };
+  entries.forEach(e=>imported.push(makeNode(e)));
+  const hierarchyRank:Record<string,number>={resourceGroup:1,virtualNetwork:2,subnet:3};
+  imported.sort((a,b)=>(hierarchyRank[(a as ArchitectureNode).data.resourceType]||9)-(hierarchyRank[(b as ArchitectureNode).data.resourceType]||9));
+  const arranged=recalcHierarchy(imported);
+  setNodes(arranged);setEdges([]);setDesignName('Imported IaC Architecture');setSaveState('unsaved');
+  setTimeout(()=>fitView({padding:.12,duration:500}),120);setRightPanel('properties');
+ }; const terraformCode=useMemo(()=>{const lines=['terraform { required_providers { azurerm = { source = "hashicorp/azurerm" version = "~> 4.0" } } }','provider "azurerm" { features {} }',''];architectureNodes.forEach((n,i)=>{const safe=n.data.label.toLowerCase().replace(/[^a-z0-9]+/g,'_').replace(/^_|_$/g,'')||`resource_${i}`;if(n.data.resourceType==='resourceGroup')lines.push(`resource "azurerm_resource_group" "${safe}" {\n  name = "${n.data.label}"\n  location = "${n.data.region}"\n}\n`);else if(n.data.resourceType==='virtualNetwork')lines.push(`# Virtual Network: ${n.data.label}\nresource "azurerm_virtual_network" "${safe}" {\n  name = "${n.data.label}"\n  location = "${n.data.region}"\n  address_space = ["10.0.0.0/16"]\n}\n`);else if(!['tenant','managementGroup','subscription','subnet'].includes(n.data.resourceType))lines.push(`# TODO ${n.data.resourceType}: ${n.data.label}\n# Resource Group: ${n.data.resourceGroup||'unassigned'} | Region: ${n.data.region}\n`);});return lines.join('\n');},[architectureNodes]);
  const bicepCode=useMemo(()=>{const lines=["targetScope = 'subscription'",''];architectureNodes.filter(n=>n.data.resourceType==='resourceGroup').forEach((n,i)=>lines.push(`resource rg${i} 'Microsoft.Resources/resourceGroups@2024-03-01' = {\n  name: '${n.data.label}'\n  location: '${n.data.region}'\n}\n`));architectureNodes.filter(n=>!['tenant','managementGroup','subscription','resourceGroup'].includes(n.data.resourceType)).forEach(n=>lines.push(`// TODO ${n.data.resourceType}: ${n.data.label} | RG: ${n.data.resourceGroup||'unassigned'} | ${n.data.region}`));return lines.join('\n');},[architectureNodes]);
  const iacCode=iacMode==='terraform'?terraformCode:bicepCode;
  const copyIac=()=>navigator.clipboard.writeText(iacCode);
