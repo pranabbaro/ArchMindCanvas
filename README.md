@@ -190,3 +190,12 @@ Push all files to the repository root. GitHub Actions builds and publishes to Gi
 - Added GitHub Actions Terraform workflow template
 
 Important: The browser workflow is a safe scaffold/demo until the deployment API is connected to real Azure DevOps or GitHub APIs. Do not store deployment secrets in the frontend.
+
+## v7.0.1 Header & Browser Save Fix
+- Fixed filename overlap with Undo / Redo / New / Save controls
+- Filename remains visible and truncates gracefully when space is limited
+- Toolbar scrolls horizontally on smaller screens instead of covering the filename
+- Save in Browser stores the editable design locally in the browser
+- Open Browser Save restores the last browser-saved design
+- Save As JSON downloads the editable architecture design
+- PDF / PNG / SVG exports retained
