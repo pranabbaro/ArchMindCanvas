@@ -57,3 +57,9 @@ Push all files to the repository root. GitHub Actions builds and publishes to Gi
 - Basic dependency/reference inference and automatic canvas layout
 - Existing Cost Intelligence, IaC generation, Source Control foundation and Founder branding retained
 - No version badge in the product header
+
+## v5.6.1 Fix
+- Fixed blank canvas during Terraform import when azurerm_network_interface is present
+- NIC resources are used for dependency resolution but not rendered as unsupported generic nodes
+- VM-to-subnet hierarchy is inferred through the NIC subnet reference
+- Added defensive fallback for unknown imported resource types
