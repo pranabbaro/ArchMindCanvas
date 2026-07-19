@@ -116,3 +116,15 @@ Push all files to the repository root. GitHub Actions builds and publishes to Gi
 - Elbow, straight, dotted, dashed and curved connections support manual route shaping
 - Double-click the routing handle to reset the connection to automatic routing
 - Manual route coordinates are stored in edge JSON and preserved in editable design exports
+
+## v6.1.1 Professional Selection & Grouping
+- Right-click node context menu
+- Duplicate selected objects
+- Lock / Unlock selected objects
+- Bring Forward / Send Backward
+- Group / Ungroup selected objects
+- Ctrl+D duplicate
+- Ctrl+A select all
+- Delete / Backspace delete selection
+- Escape clears selection/context menu
+- Existing v6.0 manual connection routing and Cursor/Hand modes retained
