@@ -73,3 +73,11 @@ Push all files to the repository root. GitHub Actions builds and publishes to Gi
 - Subnet containers grow based on imported children
 - Basic non-container dependency edges
 - Network Interface remains dependency-only and is not rendered
+
+## v5.7.1 IaC File Upload Fix
+- Added dedicated Upload .tf / .bicep file button inside Import IaC
+- Uploading a .tf file automatically selects Terraform mode
+- Uploading a .bicep file automatically selects Bicep mode
+- Uploaded file content is loaded into the IaC editor for review
+- Existing Load button remains dedicated to ArchMindCanvas JSON design files
+- Fixes the "Invalid JSON file" confusion when testing Terraform imports
