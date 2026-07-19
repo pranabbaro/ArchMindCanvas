@@ -216,3 +216,62 @@
 .save-export-menu button{
   width:100%;
 }
+
+/* v7.0.3: force complete Save menu above all editor layers */
+.save-menu-wrap{
+  position:relative!important;
+  flex:0 0 auto!important;
+  overflow:visible!important;
+}
+.save-export-menu-fixed{
+  position:fixed!important;
+  top:58px!important;
+  right:360px!important;
+  width:270px!important;
+  min-width:270px!important;
+  max-height:430px!important;
+  overflow-y:auto!important;
+  overflow-x:hidden!important;
+  z-index:2147483647!important;
+  display:flex!important;
+  flex-direction:column!important;
+  padding:7px!important;
+  background:#fff!important;
+  border:1px solid #dbe3ee!important;
+  border-radius:10px!important;
+  box-shadow:0 16px 40px rgba(15,23,42,.22)!important;
+}
+.save-export-menu-fixed button{
+  display:flex!important;
+  width:100%!important;
+  min-height:48px!important;
+  align-items:center!important;
+  justify-content:flex-start!important;
+  gap:10px!important;
+  padding:8px 10px!important;
+  border:0!important;
+  background:transparent!important;
+  color:#0f172a!important;
+  text-align:left!important;
+}
+.save-export-menu-fixed button:hover{background:#f1f5f9!important}
+.save-export-menu-fixed button span{
+  display:flex!important;
+  flex-direction:column!important;
+  align-items:flex-start!important;
+}
+.save-export-menu-fixed button b{font-size:11px!important}
+.save-export-menu-fixed button small{font-size:9px!important;color:#64748b!important}
+.save-menu-divider{
+  height:1px!important;
+  min-height:1px!important;
+  margin:5px 4px!important;
+  background:#e2e8f0!important;
+}
+@media(max-width:1280px){
+  .save-export-menu-fixed{
+    right:20px!important;
+    top:58px!important;
+  }
+  .save-export-menu-fixed button span{display:flex!important}
+}
