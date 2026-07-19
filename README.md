@@ -81,3 +81,13 @@ Push all files to the repository root. GitHub Actions builds and publishes to Gi
 - Uploaded file content is loaded into the IaC editor for review
 - Existing Load button remains dedicated to ArchMindCanvas JSON design files
 - Fixes the "Invalid JSON file" confusion when testing Terraform imports
+
+## v5.7.2 Collision-Free Unified Import
+- Removed separate JSON-only Load button from the main toolbar
+- Unified Import supports JSON, Terraform and Bicep
+- Upload .tf, .bicep or .json from the same Import panel
+- Recursive collision-free layout for nested Azure hierarchy
+- 2-column grid layout for resources inside each container
+- Automatic container sizing based on children
+- Automatic spacing between nested containers and resources
+- Auto fit-to-view after import
