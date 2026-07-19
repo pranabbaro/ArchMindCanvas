@@ -80,3 +80,7 @@
 .save-export-menu button>span{display:flex;flex-direction:column;gap:2px}
 .save-export-menu b{font-size:10px;font-weight:700}
 .save-export-menu small{font-size:8px;color:#64748b}
+
+.edge-route-handle{position:absolute;width:16px;height:16px;border-radius:4px;background:#fff;border:3px solid #2563eb;box-shadow:0 2px 8px rgba(37,99,235,.28);cursor:move;pointer-events:all;z-index:20}
+.edge-route-handle:hover{transform-origin:center;background:#dbeafe}
+.drawing-toolbar button[title*="Hand"].active,.drawing-toolbar button[title*="Cursor"].active{background:#dbeafe;color:#1d4ed8;box-shadow:inset 0 0 0 1px #93c5fd}

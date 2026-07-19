@@ -47,7 +47,7 @@ export type DrawingNode = Node<DrawingNodeData, 'drawing'>;
 export type CanvasNode = ArchitectureNode | DrawingNode;
 export type ConnectorStyle = 'straight' | 'smoothstep' | 'bezier' | 'dotted' | 'dashed';
 export type ArrowStyle = 'end' | 'both' | 'none';
-export type CanvasEdgeData = { connectorStyle?: ConnectorStyle; label?: string; protocol?: string; port?: string; connectionType?: string; arrowStyle?: ArrowStyle };
+export type CanvasEdgeData = { connectorStyle?: ConnectorStyle; label?: string; protocol?: string; port?: string; connectionType?: string; arrowStyle?: ArrowStyle; routeX?: number; routeY?: number };
 export type CanvasEdge = Edge<CanvasEdgeData>;
 
 export type ValidationSeverity = 'critical' | 'warning' | 'info' | 'success';

@@ -106,3 +106,13 @@ Push all files to the repository root. GitHub Actions builds and publishes to Gi
 - Exports target the diagram viewport rather than the application sidebars and toolbars
 - Removed redundant canvas-level JSON Import button
 - Import IaC remains the unified import experience for Terraform, Bicep and JSON
+
+## v6.0 Professional Architecture Editor
+- Cursor tool for select, move, resize and edit
+- Hand tool for canvas panning without accidental selection
+- Spacebar temporarily activates Hand mode
+- Selected connections show a draggable routing handle
+- Drag routing handle to reshape a connection without moving resources
+- Elbow, straight, dotted, dashed and curved connections support manual route shaping
+- Double-click the routing handle to reset the connection to automatic routing
+- Manual route coordinates are stored in edge JSON and preserved in editable design exports
