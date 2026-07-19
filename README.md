@@ -97,3 +97,12 @@ Push all files to the repository root. GitHub Actions builds and publishes to Gi
 - Unified Import panel remains the single place to import JSON, Terraform, and Bicep
 - Collision-free hierarchy-aware import retained
 - All existing AI, Cost, Validate, IaC, Auto Arrange, and Source Control features retained
+
+## v5.8 Professional Diagram Export
+- Save button now opens professional diagram export options
+- Save architecture as PDF
+- Save architecture as high-resolution PNG
+- Save architecture as SVG
+- Exports target the diagram viewport rather than the application sidebars and toolbars
+- Removed redundant canvas-level JSON Import button
+- Import IaC remains the unified import experience for Terraform, Bicep and JSON

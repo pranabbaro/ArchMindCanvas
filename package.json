@@ -1,7 +1,7 @@
 {
   "name": "archmindcanvas",
   "private": true,
-  "version": "5.7.3",
+  "version": "5.8.0",
   "type": "module",
   "scripts": {
     "dev": "vite",
@@ -12,7 +12,9 @@
     "@xyflow/react": "12.11.0",
     "lucide-react": "0.468.0",
     "react": "18.3.1",
-    "react-dom": "18.3.1"
+    "react-dom": "18.3.1",
+    "html-to-image": "1.11.13",
+    "jspdf": "2.5.2"
   },
   "devDependencies": {
     "@types/node": "22.10.2",

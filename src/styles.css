@@ -71,3 +71,12 @@
 .import-iac-panel{padding:14px;display:flex;flex-direction:column;gap:12px;height:100%;overflow:auto}
 .import-iac-panel textarea{min-height:330px;resize:vertical;border:1px solid #cbd5e1;border-radius:9px;padding:10px;font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:9px;line-height:1.5;background:#0f172a;color:#e2e8f0}
 .cost-controls{display:flex;flex-direction:column;gap:8px}.pricing-status{font-size:8px;color:#64748b;line-height:1.4}
+
+.save-menu-wrap{position:relative;display:inline-flex}
+.save-menu-wrap>button{height:100%}
+.save-export-menu{position:absolute;top:46px;right:0;z-index:200;width:235px;padding:7px;background:#fff;border:1px solid #dbe3ee;border-radius:10px;box-shadow:0 16px 40px rgba(15,23,42,.18);display:flex;flex-direction:column;gap:4px}
+.save-export-menu button{width:100%;display:flex;align-items:center;gap:10px;text-align:left;background:#fff!important;color:#0f172a!important;border:0!important;padding:9px!important;border-radius:7px!important;height:auto!important}
+.save-export-menu button:hover{background:#f1f5f9!important}
+.save-export-menu button>span{display:flex;flex-direction:column;gap:2px}
+.save-export-menu b{font-size:10px;font-weight:700}
+.save-export-menu small{font-size:8px;color:#64748b}
