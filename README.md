@@ -167,3 +167,12 @@ Push all files to the repository root. GitHub Actions builds and publishes to Gi
 - Auto Tidy retained
 - Connection crossover visuals improved with arc-style bridge rendering
 - Existing connector routing, arrow directions, cost, IaC and export features retained
+
+## v6.2.2 Compact Layout Menu
+- Replaced inline alignment/distribution buttons with a single Layout dropdown
+- Layout menu contains Align Left, Center, Right, Top, Middle, Bottom
+- Layout menu contains Distribute Horizontally and Vertically
+- Auto Tidy moved into the Layout dropdown
+- Main canvas toolbar remains fixed and compact
+- Forward / Backward / Lock controls remain contextual
+- Existing v6.2.1 alignment and line-jump behavior retained
