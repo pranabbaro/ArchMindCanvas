@@ -102,3 +102,20 @@
 .cursor-mode .react-flow__pane{cursor:default!important}
 .hand-mode .react-flow__pane,.hand-mode .react-flow__viewport{cursor:grab!important}
 .hand-mode .react-flow__pane:active,.hand-mode .react-flow__viewport:active{cursor:grabbing!important}
+
+/* v6.1.4 Easy Connector Editing */
+.edge-route-handle{
+  width:20px!important;
+  height:20px!important;
+  border-width:3px!important;
+  box-shadow:0 2px 12px rgba(37,99,235,.38)!important;
+  cursor:move!important;
+}
+.edge-route-handle:hover{
+  background:#dbeafe!important;
+}
+.edge-label-movable{
+  cursor:move!important;
+  pointer-events:all!important;
+  user-select:none!important;
+}

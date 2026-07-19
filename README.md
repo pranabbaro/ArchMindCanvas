@@ -139,3 +139,11 @@ Push all files to the repository root. GitHub Actions builds and publishes to Gi
 - Reset to automatic routing
 - Waypoints and label coordinates persist in design JSON
 - Cursor/Hand visual behavior retained
+
+## v6.1.4 Easy Connector Editing
+- Larger 20px draggable waypoint handles for easier routing
+- Wider invisible connection hit area for easier line interaction
+- Existing double-click add/remove waypoint workflow retained
+- Movable labels retained
+- Arrow direction and line thickness retained
+- Stable incremental update based directly on v6.1.3
