@@ -238,3 +238,11 @@ Important: The browser workflow is a safe scaffold/demo until the deployment API
 - Fixed remaining undefined `icon(...)` references in `resourceCatalog.ts`
 - Retained all official Azure/Bicep icon mappings from v7.0.6
 - Retained GitHub Pages custom-domain deployment configuration
+
+## v7.0.8 Complete Azure Icon Library
+- Updated Governance icons including Subscription, Resource Group, Management Group and Azure Policy
+- Updated SQL, Cosmos DB, PostgreSQL, MySQL and Azure Managed Redis icons
+- Updated Storage, Integration, Analytics and Monitoring icons
+- Updated Azure OpenAI and Azure Machine Learning icons
+- Added Azure AI Search, Microsoft Foundry, Foundry Project, Foundry Models, Foundry Agent Service, Document Intelligence, AI Content Safety, Azure AI Services and Azure Bot Service
+- Sidebar and Canvas share one centralized icon mapping

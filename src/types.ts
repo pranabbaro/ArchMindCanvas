@@ -12,7 +12,16 @@ export type ResourceType =
   | 'appService' | 'functionApp' | 'staticWebApp'
   | 'apiManagement' | 'logicApps' | 'serviceBus' | 'eventGrid' | 'eventHubs'
   | 'dataFactory' | 'synapse' | 'databricks' | 'fabric' | 'azureOpenAI' | 'machineLearning'
-  | 'monitor' | 'logAnalytics' | 'applicationInsights' | 'automation' | 'policy';
+  | 'monitor' | 'logAnalytics' | 'applicationInsights' | 'automation' | 'policy'
+  | 'aiSearch'
+  | 'microsoftFoundry'
+  | 'foundryProject'
+  | 'foundryModels'
+  | 'foundryAgentService'
+  | 'documentIntelligence'
+  | 'contentSafety'
+  | 'cognitiveServices'
+  | 'botService';
 
 export type TagMap = Record<string, string>;
 
