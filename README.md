@@ -225,3 +225,11 @@ Important: The browser workflow is a safe scaffold/demo until the deployment API
 - Replaced GitHub Pages workflow with GitHub Actions Pages deployment
 - Added `public/CNAME` containing `archmindcanvas.in`
 - Existing ArchMindCanvas editor functionality retained
+
+## v7.0.6 Azure Icon Consistency Fix
+- Centralized Azure resource icon mapping
+- Replaced many inconsistent third-party mappings with Microsoft Azure Architecture SVG icons from Azure/Bicep
+- Updated Networking, Compute, App Service, AKS, Container Registry, Storage Account and Key Vault
+- Added consistent icons for Container Apps, Container Instances, Managed Identity, Defender for Cloud, Sentinel, API Management and Azure NetApp Files
+- Sidebar and Canvas continue to use the same resourceCatalog mapping
+- Blob Storage, Azure Files and Data Lake temporarily share the official Storage Account architecture icon until dedicated official local assets are bundled
