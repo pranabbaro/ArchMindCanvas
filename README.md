@@ -217,3 +217,11 @@ Important: The browser workflow is a safe scaffold/demo until the deployment API
 - Forward / Backward / Lock remain contextual for selected objects
 - Edit and Layout menus close each other to avoid overlap
 - Floating toolbar is horizontally scrollable on narrow screens
+
+
+## v7.0.5 Custom Domain Deployment Fix
+- Vite base path fixed to `/` for `archmindcanvas.in`
+- Removed dynamic VITE_BASE_PATH dependency
+- Replaced GitHub Pages workflow with GitHub Actions Pages deployment
+- Added `public/CNAME` containing `archmindcanvas.in`
+- Existing ArchMindCanvas editor functionality retained
