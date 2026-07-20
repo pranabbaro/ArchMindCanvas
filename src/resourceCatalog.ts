@@ -42,7 +42,7 @@ export const resourceCatalog: ResourceItem[] = [
   {type:'dedicatedHost',label:'Dedicated Host',description:'Dedicated physical server host',sku:'DSv3',category:'Compute',iconUrl:empty,fallbackIcon:Server},
   {type:'avd',label:'Azure Virtual Desktop',description:'Cloud desktop and app virtualization',sku:'Pooled',category:'Compute',iconUrl:empty,fallbackIcon:MonitorCog},
   {type:'appService',label:'App Service',description:'Managed web application hosting',sku:'P1v3',category:'Web',iconUrl:officialIcon('app-services','10035-icon-service-App-Services.svg'),fallbackIcon:AppWindow},
-  {type:'functionApp',label:'Function App',description:'Serverless event-driven compute',sku:'Consumption',category:'Web',iconUrl:icon('Compute','Function-Apps'),fallbackIcon:Zap},
+  {type:'functionApp',label:'Function App',description:'Serverless event-driven compute',sku:'Consumption',category:'Web',iconUrl:legacyIcon('Compute','Function-Apps'),fallbackIcon:Zap},
   {type:'staticWebApp',label:'Static Web App',description:'Managed static web application hosting',sku:'Standard',category:'Web',iconUrl:officialIcon('app-services','10035-icon-service-App-Services.svg'),fallbackIcon:AppWindow},
   {type:'aks',label:'AKS Cluster',description:'Managed Kubernetes cluster',sku:'Standard',category:'Containers',iconUrl:officialIcon('compute','10023-icon-service-Kubernetes-Services.svg'),fallbackIcon:Boxes},
   {type:'containerRegistry',label:'Container Registry',description:'Private container image registry',sku:'Premium',category:'Containers',iconUrl:officialIcon('containers','10105-icon-service-Container-Registries.svg'),fallbackIcon:Container},

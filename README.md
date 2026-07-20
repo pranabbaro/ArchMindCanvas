@@ -233,3 +233,8 @@ Important: The browser workflow is a safe scaffold/demo until the deployment API
 - Added consistent icons for Container Apps, Container Instances, Managed Identity, Defender for Cloud, Sentinel, API Management and Azure NetApp Files
 - Sidebar and Canvas continue to use the same resourceCatalog mapping
 - Blob Storage, Azure Files and Data Lake temporarily share the official Storage Account architecture icon until dedicated official local assets are bundled
+
+## v7.0.7 Azure Icon Build Fix
+- Fixed remaining undefined `icon(...)` references in `resourceCatalog.ts`
+- Retained all official Azure/Bicep icon mappings from v7.0.6
+- Retained GitHub Pages custom-domain deployment configuration
