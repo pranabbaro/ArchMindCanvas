@@ -118,6 +118,26 @@ const bindingExpression=(
   return quote(literal);
 };
 
+const terraformTagsExpression=(data:ArchitectureNodeData,resources:ArchitectureNode[])=>{
+  const binding=data.bindings?.['__tags__'];
+  if(binding&&binding.source!=='literal'){
+    if(binding.source==='variable')return `var.${binding.variableName||'tags'}`;
+    if(binding.source==='local')return `local.${binding.localName||'common_tags'}`;
+    if(binding.source==='moduleOutput')return `module.${binding.moduleName||'platform'}.${binding.moduleOutput||'tags'}`;
+    if(binding.source==='data')return `data.${binding.dataSourceType||'azurerm_resource_group'}.${binding.dataSourceName||'existing'}.${binding.dataAttribute||'tags'}`;
+    if(binding.source==='resource'){
+      const target=resources.find(r=>r.id===binding.targetNodeId);
+      if(!target)return `/* broken tag reference */ {}`;
+      const prefix=(target.data.resourceMode||'create')==='existing'?'data.':'';
+      return `${prefix}${tfName(target.data.resourceType)}.${safeName(target.data.label)}.${binding.targetAttribute||'tags'}`;
+    }
+  }
+  const combined={...data.inheritedTags,...data.tags};
+  const entries=Object.entries(combined);
+  if(!entries.length)return '{}';
+  return `{\n${entries.map(([k,v])=>`    "${k}" = "${String(v).replace(/"/g,'\\"')}"`).join('\n')}\n  }`;
+};
+
 const terraformPreview=(data:ArchitectureNodeData,resources:ArchitectureNode[])=>{
   const schema=getResourceSchema(data.resourceType);
   const safe=safeName(data.label||data.resourceType);
@@ -127,7 +147,7 @@ const terraformPreview=(data:ArchitectureNodeData,resources:ArchitectureNode[])=
     const expr=bindingExpression(data.bindings?.[f.key],literal,resources);
     return `  ${f.terraformProperty} = ${expr}`;
   });
-  const tags=`  tags = ${JSON.stringify({...data.inheritedTags,...data.tags},null,2).replace(/\n/g,'\n  ')}`;
+  const tags=`  tags = ${terraformTagsExpression(data,resources)}`;
 
   if(mode==='existing'){
     const lookup=data.existingResource||{lookupType:'name' as const};
@@ -231,9 +251,53 @@ function FieldEditor({
   </div>;
 }
 
+
+function TagBindingPicker({
+  data,resources,onChange,onClose
+}:{
+  data:ArchitectureNodeData;
+  resources:ArchitectureNode[];
+  onChange:(u:Partial<ArchitectureNodeData>)=>void;
+  onClose:()=>void;
+}){
+  const current=data.bindings?.['__tags__']||{source:'literal' as const};
+  const patch=(b:PropertyBinding)=>onChange({bindings:{...(data.bindings||{}),__tags__:b}});
+  const candidates=resources;
+
+  return <div className="binding-popover tag-binding-popover">
+    <div className="binding-popover-head"><strong>Tags value source</strong><button onClick={onClose}><X size={14}/></button></div>
+    <div className="binding-source-grid">
+      <button className={current.source==='literal'?'active':''} onClick={()=>patch({source:'literal'})}><Braces size={14}/> Direct</button>
+      <button className={current.source==='variable'?'active':''} onClick={()=>patch({source:'variable',variableName:current.variableName||'tags'})}><Variable size={14}/> Variable</button>
+      <button className={current.source==='resource'?'active':''} onClick={()=>patch({source:'resource',targetNodeId:current.targetNodeId,targetAttribute:current.targetAttribute||'tags'})}><Boxes size={14}/> Resource</button>
+      <button className={current.source==='data'?'active':''} onClick={()=>patch({source:'data',dataSourceType:current.dataSourceType||'azurerm_resource_group',dataSourceName:current.dataSourceName||'existing',dataAttribute:current.dataAttribute||'tags'})}><Database size={14}/> Data</button>
+      <button className={current.source==='local'?'active':''} onClick={()=>patch({source:'local',localName:current.localName||'common_tags'})}><Box size={14}/> Local</button>
+      <button className={current.source==='moduleOutput'?'active':''} onClick={()=>patch({source:'moduleOutput',moduleName:current.moduleName||'platform',moduleOutput:current.moduleOutput||'tags'})}><PackageOpen size={14}/> Module</button>
+    </div>
+
+    {current.source==='variable'&&<label>Variable name<input value={current.variableName||''} onChange={e=>patch({...current,variableName:e.target.value})}/><small>Terraform: var.{current.variableName||'tags'}</small></label>}
+    {current.source==='local'&&<label>Local name<input value={current.localName||''} onChange={e=>patch({...current,localName:e.target.value})}/><small>Terraform: local.{current.localName||'common_tags'}</small></label>}
+    {current.source==='resource'&&<>
+      <label>Diagram resource<select value={current.targetNodeId||''} onChange={e=>patch({...current,targetNodeId:e.target.value,targetAttribute:current.targetAttribute||'tags'})}><option value="">Select resource...</option>{candidates.map(r=><option value={r.id} key={r.id}>{r.data.label} · {resourceMap[r.data.resourceType].label}</option>)}</select></label>
+      <label>Attribute<input value={current.targetAttribute||'tags'} onChange={e=>patch({...current,targetAttribute:e.target.value})} placeholder="tags"/></label>
+    </>}
+    {current.source==='data'&&<>
+      <label>Terraform data source<input value={current.dataSourceType||''} onChange={e=>patch({...current,dataSourceType:e.target.value})} placeholder="azurerm_resource_group"/></label>
+      <label>Data name<input value={current.dataSourceName||''} onChange={e=>patch({...current,dataSourceName:e.target.value})} placeholder="existing"/></label>
+      <label>Attribute<input value={current.dataAttribute||'tags'} onChange={e=>patch({...current,dataAttribute:e.target.value})}/></label>
+    </>}
+    {current.source==='moduleOutput'&&<>
+      <label>Module name<input value={current.moduleName||''} onChange={e=>patch({...current,moduleName:e.target.value})}/></label>
+      <label>Output<input value={current.moduleOutput||''} onChange={e=>patch({...current,moduleOutput:e.target.value})}/></label>
+    </>}
+    <div className="binding-preview"><span>Terraform expression</span><code>{terraformTagsExpression({...data,bindings:{...(data.bindings||{}),__tags__:current}},resources)}</code></div>
+  </div>;
+}
+
 export default function PropertiesPanel({nodeId,data,allResources,onChange,onDelete,onDuplicate,hierarchy,parentId,onParentChange}:Props){
   const[mode,setMode]=useState<'form'|'code'>('form');
   const[collapsed,setCollapsed]=useState<Record<string,boolean>>({});
+  const[showTagSource,setShowTagSource]=useState(false);
   const schema=useMemo(()=>data?getResourceSchema(data.resourceType):[],[data?.resourceType]);
   const groups=useMemo(()=>data?schemaGroups(data.resourceType):[],[data?.resourceType]);
   if(!data)return <aside className="properties-panel"><div className="empty-properties"><div className="empty-icon">◇</div><strong>No resource selected</strong><span>Select a node to edit its Azure configuration.</span></div></aside>;
@@ -250,7 +314,7 @@ export default function PropertiesPanel({nodeId,data,allResources,onChange,onDel
 
   return <aside className="properties-panel dynamic-properties">
     <div className="property-resource-header">
-      <div className="selected-resource-summary"><span className="summary-icon">{item.iconUrl?<img src={item.iconUrl} alt="" />:<Icon size={20}/>}</span><div><strong>{data.label}</strong><small>{item.label} · {item.category}</small></div></div>
+      <div className="selected-resource-summary enterprise-resource-summary"><span className="summary-icon">{item.iconUrl?<img src={item.iconUrl} alt="" />:<Icon size={20}/>}</span><div><strong>{data.label}</strong><small>{item.label} · {item.category}</small><div className="resource-summary-meta"><span>{data.environment}</span><span>{data.region}</span><span>{resourceMode==='existing'?'Existing':resourceMode==='import'?'Import':'Create'}</span></div></div></div>
       <div className="property-mode-switch"><button className={mode==='form'?'active':''} onClick={()=>setMode('form')}><FormInput size={14}/> Form</button><button className={mode==='code'?'active':''} onClick={()=>setMode('code')}><Code2 size={14}/> Code</button></div>
     </div>
 
@@ -277,25 +341,42 @@ export default function PropertiesPanel({nodeId,data,allResources,onChange,onDel
           <label>Resource name<input value={data.label} onChange={e=>onChange({label:e.target.value})}/></label>
           <label>Terraform type<input value={tfName(data.resourceType)} readOnly/></label>
           {showParent&&<label>Parent / placement<select value={parentId||''} onChange={e=>onParentChange(e.target.value||undefined)}><option value="">No parent / top level</option>{parentOptions.map(o=><option key={o.id} value={o.id}>{o.label}</option>)}</select></label>}
-          <label>Environment<select value={data.environment} onChange={e=>onChange({environment:e.target.value as ArchitectureNodeData['environment']})}><option>Production</option><option>Development</option><option>Test</option><option>Shared</option></select></label>
         </div>
       </section>
 
       {groups.map(group=><section className="property-section" key={group}>
         <button className="property-section-toggle" onClick={()=>setCollapsed(c=>({...c,[group]:!c[group]}))}>{collapsed[group]?<ChevronRight size={15}/>:<ChevronDown size={15}/>}<strong>{group}</strong></button>
-        {!collapsed[group]&&<div className="form-stack">{schema.filter(f=>f.group===group).map(f=><FieldEditor key={f.key} field={f} data={data} nodeId={nodeId} resources={allResources} onChange={onChange}/>)}</div>}
+        {!collapsed[group]&&<div className="form-stack">{schema.filter(f=>f.group===group&&f.key!=='owner').map(f=><FieldEditor key={f.key} field={f} data={data} nodeId={nodeId} resources={allResources} onChange={onChange}/>)}</div>}
       </section>)}
 
-      <section className="property-section">
-        <button className="property-section-toggle" onClick={()=>setCollapsed(c=>({...c,tags:!c.tags}))}>{collapsed.tags?<ChevronRight size={15}/>:<ChevronDown size={15}/>}<strong>Tags & description</strong></button>
-        {!collapsed.tags&&<div className="form-stack">
-          <label>Tags <small>key=value; key2=value2</small><textarea value={tagString(data.tags)} rows={3} onChange={e=>onChange({tags:parseTags(e.target.value)})}/></label>
-          {Object.keys(data.inheritedTags||{}).length>0&&<label>Inherited tags<textarea readOnly value={tagString(data.inheritedTags)} rows={3}/></label>}
-          <label>Description<textarea value={data.description} rows={3} onChange={e=>onChange({description:e.target.value})}/></label>
+      <section className="property-section governance-section">
+        <button className="property-section-toggle" onClick={()=>setCollapsed(c=>({...c,governance:!c.governance}))}>{collapsed.governance?<ChevronRight size={15}/>:<ChevronDown size={15}/>}<strong>Tags & Governance</strong><span className="section-hint">Ownership and environment</span></button>
+        {!collapsed.governance&&<div className="form-stack">
+          <label>Environment<select value={data.environment} onChange={e=>onChange({environment:e.target.value as ArchitectureNodeData['environment']})}><option>Production</option><option>Development</option><option>Test</option><option>Shared</option></select></label>
+          <label>Owner<input value={data.owner} placeholder="Platform team" onChange={e=>onChange({owner:e.target.value})}/></label>
+          <div className="smart-property-field smart-tags-field">
+            <div className="smart-field-row">
+              <div className="smart-field-editor"><label>Tags <small>Use direct tags or bind the complete tag map to Variable, Resource, Data, Local, or Module Output.</small><textarea value={tagString(data.tags)} rows={3} placeholder="Environment=Production; CostCenter=CC100" disabled={Boolean(data.bindings?.['__tags__']&&data.bindings['__tags__'].source!=='literal')} onChange={e=>onChange({tags:parseTags(e.target.value)})}/></label></div>
+              <button className={`binding-button ${data.bindings?.['__tags__']&&data.bindings['__tags__'].source!=='literal'?'bound':''}`} title="Choose Tags value source" onClick={()=>setShowTagSource(v=>!v)}><Link2 size={14}/></button>
+            </div>
+            {data.bindings?.['__tags__']&&data.bindings['__tags__'].source!=='literal'&&<div className="binding-chip">{sourceLabels[data.bindings['__tags__'].source]} · <code>{terraformTagsExpression(data,allResources)}</code></div>}
+            {showTagSource&&<TagBindingPicker data={data} resources={allResources} onChange={onChange} onClose={()=>setShowTagSource(false)}/>}
+          </div>
+          {Object.keys(data.inheritedTags||{}).length>0&&<label>Inherited tags <small>Read-only values inherited from parent resources.</small><textarea readOnly value={tagString(data.inheritedTags)} rows={3}/></label>}
         </div>}
       </section>
 
-      <div className="hierarchy-path"><strong>Hierarchy</strong><span>{[data.subscriptionName,data.resourceGroup,data.vnet,data.subnet].filter(Boolean).join('  ›  ')||'Not linked yet'}</span></div>
+      <section className="property-section">
+        <button className="property-section-toggle" onClick={()=>setCollapsed(c=>({...c,description:!c.description}))}>{collapsed.description?<ChevronRight size={15}/>:<ChevronDown size={15}/>}<strong>Description & Notes</strong><span className="section-hint">Architecture context</span></button>
+        {!collapsed.description&&<div className="form-stack">
+          <label>Description<textarea value={data.description} rows={4} placeholder="Describe the role of this resource in the architecture..." onChange={e=>onChange({description:e.target.value})}/></label>
+        </div>}
+      </section>
+
+      <section className="property-section hierarchy-summary-section">
+        <div className="property-section-title"><strong>Resource hierarchy</strong><small>Current placement within the Azure architecture.</small></div>
+        <div className="hierarchy-path enterprise-hierarchy"><span>{[data.subscriptionName,data.resourceGroup,data.vnet,data.subnet].filter(Boolean).join('  ›  ')||'Not linked yet'}</span></div>
+      </section>
     </>}
 
     <div className="property-actions"><button onClick={onDuplicate}><Copy size={15}/> Duplicate</button><button className="danger-button" onClick={onDelete}><Trash2 size={15}/> Delete</button></div>
