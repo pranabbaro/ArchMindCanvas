@@ -977,11 +977,15 @@ const selectedNode=nodes.find(n=>n.id===selectedNodeId);const selectedEdge=edges
  onOpenArchitectureVariables={()=>{setScopeManagerOpen(false);setRightPanel('variables')}}
  onClose={()=>setScopeManagerOpen(false)}
 />}<main className={`workspace workspace-simple ${leftPaneCollapsed?'left-pane-collapsed':''} ${rightPaneCollapsed?'right-pane-collapsed':''}`}>
-<aside className="editor-left-rail"><button className="pane-collapse-control left" onClick={()=>setLeftPaneCollapsed(v=>!v)} title={leftPaneCollapsed?'Expand left pane':'Collapse left pane'}>{leftPaneCollapsed?<ChevronRight size={17}/>:<ChevronLeft size={17}/>}<span>{leftPaneCollapsed?'Open':'Hide'}</span></button>
-  <button className={libraryOpen?'active':''} onClick={()=>setLibraryOpen(v=>!v)} title="Azure Resources"><Boxes size={18}/><span>Resources</span></button>
-  <button onClick={()=>setTool('select')} title="Select"><MousePointer2 size={18}/><span>Select</span></button>
-  <button onClick={()=>setTool('hand')} title="Pan"><Hand size={18}/><span>Pan</span></button>
-  <button onClick={()=>setTool('rectangle')} title="Shapes"><Square size={18}/><span>Shapes</span></button>
+<aside className="editor-left-rail">
+  <button className="pane-collapse-control left" onClick={()=>setLeftPaneCollapsed(v=>!v)} title={leftPaneCollapsed?'Expand left pane':'Collapse left pane'}>
+    {leftPaneCollapsed?<ChevronRight size={17}/>:<ChevronLeft size={17}/>}
+    <span>{leftPaneCollapsed?'Open':'Hide'}</span>
+  </button>
+  <button className={libraryOpen?'active':''} onClick={()=>setLibraryOpen(v=>!v)} title="Azure Resources">
+    <Boxes size={18}/>
+    <span>Resources</span>
+  </button>
 </aside>
 {libraryOpen&&!leftPaneCollapsed&&<div className="resource-library-drawer"><div className="resource-library-drawer-head"><strong>Azure Resources</strong><button onClick={()=>setLibraryOpen(false)}>×</button></div><Sidebar onAddResource={t=>createResource(t as ResourceType)}/></div>}
 <div className="canvas-wrapper" onDrop={onDrop} onDragOver={e=>{e.preventDefault();e.dataTransfer.dropEffect='move';}}><div className="drawing-toolbar draggable-canvas-toolbar" style={{transform:`translate(${canvasToolbarPos.x}px, ${canvasToolbarPos.y}px)`}}>

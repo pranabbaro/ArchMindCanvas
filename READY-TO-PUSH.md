@@ -1,17 +1,20 @@
-# ArchMindCanvas v7.9.7 — Draggable Canvas Toolbar
+# ArchMindCanvas v7.9.8 — Clean Left Rail
 
-Adds user-positionable drawing toolbar.
+Removed duplicate editor controls from the left rail:
+- Select
+- Pan
+- Shapes
 
-- Dedicated drag handle added to the left side of the toolbar
-- Dragging only works from the handle, so toolbar actions remain normal
-- Position is saved in localStorage
-- Position is restored after refresh
-- Double-click the drag handle to reset to the default position
-- Movement is constrained to a safe range around the canvas
-- Existing compact navigation and dual collapsible panels are preserved
+These functions remain available in the draggable canvas toolbar.
+
+Left rail now contains only:
+- Collapse / Expand
+- Resources
+
+This intentionally leaves the rail clean for future non-duplicate tools.
 
 ```powershell
 git add .
-git commit -m "ArchMindCanvas v7.9.7 - draggable canvas toolbar"
+git commit -m "ArchMindCanvas v7.9.8 - clean left rail"
 git push origin main
 ```

@@ -1471,3 +1471,15 @@
   background:#e8f2ff!important;
   color:#1d62b3!important;
 }
+
+/* v7.9.8 clean left rail */
+.editor-left-rail{
+  justify-content:flex-start!important;
+}
+.editor-left-rail::after{
+  content:"";
+  width:24px;
+  height:1px;
+  margin-top:8px;
+  background:#e8edf3;
+}
