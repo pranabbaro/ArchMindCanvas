@@ -72,14 +72,16 @@ useEffect(()=>{
 },[organizationId,organizationName,declaredVariables,declaredLocals,projectId,projectName,projectVariables,projectLocals,environmentId,environmentName,environmentVariables,environmentLocals]);
 const effectiveVariables=useMemo(()=>{
  const map=new Map<string,VariableDefinition>();
- [...declaredVariables,...projectVariables,...environmentVariables,...designVariables].forEach(v=>map.set(v.name,v));
+ // ArchMindCanvas intentionally supports only two variable scopes:
+ // Global/Organization and current Architecture. Architecture wins.
+ [...declaredVariables,...designVariables].forEach(v=>map.set(v.name,v));
  return [...map.values()];
-},[declaredVariables,projectVariables,environmentVariables,designVariables]);
+},[declaredVariables,designVariables]);
 const effectiveLocals=useMemo(()=>{
  const map=new Map<string,LocalDefinition>();
- [...declaredLocals,...projectLocals,...environmentLocals,...designLocals].forEach(v=>map.set(v.name,v));
+ [...declaredLocals,...designLocals].forEach(v=>map.set(v.name,v));
  return [...map.values()];
-},[declaredLocals,projectLocals,environmentLocals,designLocals]);
+},[declaredLocals,designLocals]);
 const selectedNode=nodes.find(n=>n.id===selectedNodeId);const selectedEdge=edges.find(e=>e.id===selectedEdgeId);const isArchitecture=selectedNode&&selectedNode.type!=='drawing';const isDrawing=selectedNode?.type==='drawing';
  const markChanged=useCallback(()=>setSaveState('unsaved'),[]);const pushHistory=useCallback(()=>{history.current.push(clone(nodes,edges));if(history.current.length>60)history.current.shift();future.current=[];},[nodes,edges]);
  const undo=useCallback(()=>{const p=history.current.pop();if(!p)return;future.current.push(clone(nodes,edges));setNodes(p.nodes);setEdges(p.edges);markChanged();},[nodes,edges,setNodes,setEdges,markChanged]);const redo=useCallback(()=>{const n=future.current.pop();if(!n)return;history.current.push(clone(nodes,edges));setNodes(n.nodes);setEdges(n.edges);markChanged();},[nodes,edges,setNodes,setEdges,markChanged]);
@@ -656,12 +658,12 @@ const selectedNode=nodes.find(n=>n.id===selectedNodeId);const selectedEdge=edges
     setWorkspaceView('editor');
   }}
  />;
-  return <div className="app-shell"><header className="topbar"><button className="editor-home-button" onClick={()=>setWorkspaceView('dashboard')} title="Back to Command Center"><LayoutDashboard size={15}/></button><button className="enterprise-breadcrumb" onClick={()=>setScopeManagerOpen(true)} title="Organization / Project / Environment / Architecture">
- <span><Building2 size={13}/>{organizationName}</span><b>›</b>
- <span><FolderKanban size={13}/>{projectName}</span><b>›</b>
- <span><Layers3 size={13}/>{environmentName}</span><b>›</b>
- <span>{designName}</span>
-</button><div className="design-title"><input value={designName} onChange={e=>{setDesignName(e.target.value);markChanged();}}/><div className={`save-status ${saveState}`}><Check size={12}/>{saveState==='saved'?'Saved':'Unsaved'}</div></div><div className="toolbar"><button onClick={undo}><Undo2 size={16}/></button><button onClick={redo}><Redo2 size={16}/></button><button onClick={newDesign}><FilePlus2 size={16}/><span>New</span></button><button onClick={loadTemplate}><Sparkles size={16}/><span>Template</span></button><div className="save-menu-wrap">
+  return <div className="app-shell"><header className="topbar"><button className="editor-home-button" onClick={()=>setWorkspaceView('dashboard')} title="Back to Command Center"><LayoutDashboard size={15}/></button><nav className="enterprise-breadcrumb" aria-label="Architecture breadcrumb">
+ <button type="button" onClick={()=>{sessionStorage.setItem('archmind-dashboard-target','home');setWorkspaceView('dashboard')}} title="Organization home"><Building2 size={13}/>{organizationName}</button><b>›</b>
+ <button type="button" onClick={()=>{sessionStorage.setItem('archmind-dashboard-target',`project:${projectId}`);setWorkspaceView('dashboard')}} title={`Back to ${projectName}`}><FolderKanban size={13}/>{projectName}</button><b>›</b>
+ <button type="button" onClick={()=>{sessionStorage.setItem('archmind-dashboard-target',`project:${projectId}`);setWorkspaceView('dashboard')}} title={`View ${environmentName} in project`}><Layers3 size={13}/>{environmentName}</button><b>›</b>
+ <button type="button" className="current" onClick={()=>setScopeManagerOpen(true)} title="Architecture navigation">{designName}</button>
+</nav><div className="design-title"><input value={designName} onChange={e=>{setDesignName(e.target.value);markChanged();}}/><div className={`save-status ${saveState}`}><Check size={12}/>{saveState==='saved'?'Saved':'Unsaved'}</div></div><div className="toolbar"><button onClick={undo}><Undo2 size={16}/></button><button onClick={redo}><Redo2 size={16}/></button><button onClick={newDesign}><FilePlus2 size={16}/><span>New</span></button><button onClick={loadTemplate}><Sparkles size={16}/><span>Template</span></button><div className="save-menu-wrap">
 <button className="save-main-button" onClick={()=>setSaveMenuOpen(v=>!v)}><Save size={16}/><span>Save</span></button>
 {saveMenuOpen&&<div className="save-export-menu save-export-menu-fixed">
 <button onClick={()=>{saveDesign();setSaveMenuOpen(false)}}><Save size={15}/><span><b>Save in Browser</b><small>Store editable design locally</small></span></button>
@@ -689,14 +691,16 @@ const selectedNode=nodes.find(n=>n.id===selectedNodeId);const selectedEdge=edges
     <VariablesManager variables={declaredVariables} locals={declaredLocals} onVariablesChange={v=>{setDeclaredVariables(v);markChanged();}} onLocalsChange={v=>{setDeclaredLocals(v);markChanged();}}/>
   </div>
 </div>}{scopeManagerOpen&&<WorkspaceScopeManager
- organization={{id:organizationId,name:organizationName,variables:declaredVariables,locals:declaredLocals}}
- project={{id:projectId,name:projectName,variables:projectVariables,locals:projectLocals}}
- environment={{id:environmentId,name:environmentName,variables:environmentVariables,locals:environmentLocals}}
- architecture={{id:designId,name:designName,variables:designVariables,locals:designLocals}}
- onOrganizationChange={s=>{setOrganizationId(s.id);setOrganizationName(s.name);setDeclaredVariables(s.variables);setDeclaredLocals(s.locals);markChanged();}}
- onProjectChange={s=>{setProjectId(s.id);setProjectName(s.name);setProjectVariables(s.variables);setProjectLocals(s.locals);markChanged();}}
- onEnvironmentChange={s=>{setEnvironmentId(s.id);setEnvironmentName(s.name);setEnvironmentVariables(s.variables);setEnvironmentLocals(s.locals);markChanged();}}
- onArchitectureChange={s=>{setDesignName(s.name);setDesignVariables(s.variables);setDesignLocals(s.locals);markChanged();}}
+ organization={{id:organizationId,name:organizationName}}
+ project={{id:projectId,name:projectName}}
+ environment={{id:environmentId,name:environmentName}}
+ architecture={{id:designId,name:designName}}
+ onGoOrganization={()=>{setScopeManagerOpen(false);sessionStorage.setItem('archmind-dashboard-target','home');setWorkspaceView('dashboard')}}
+ onGoProject={()=>{setScopeManagerOpen(false);sessionStorage.setItem('archmind-dashboard-target',`project:${projectId}`);setWorkspaceView('dashboard')}}
+ onGoEnvironment={()=>{setScopeManagerOpen(false);sessionStorage.setItem('archmind-dashboard-target',`project:${projectId}`);setWorkspaceView('dashboard')}}
+ onGoArchitecture={()=>setScopeManagerOpen(false)}
+ onOpenGlobalVariables={()=>{setScopeManagerOpen(false);setDesignVariablesOpen(true)}}
+ onOpenArchitectureVariables={()=>{setScopeManagerOpen(false);setRightPanel('variables')}}
  onClose={()=>setScopeManagerOpen(false)}
 />}<main className="workspace workspace-simple">
 <aside className="editor-left-rail">

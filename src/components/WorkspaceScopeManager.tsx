@@ -1,107 +1,51 @@
-import { useMemo, useState } from 'react';
-import { Building2, FolderKanban, Layers3, Network, X } from 'lucide-react';
-import VariablesManager from './VariablesManager';
-import type { LocalDefinition, VariableDefinition, VariableScope } from '../types';
+import { Building2, FolderKanban, Layers3, Network, Variable, X } from 'lucide-react';
 
-type ScopeData={
-  id:string;
-  name:string;
-  variables:VariableDefinition[];
-  locals:LocalDefinition[];
-};
-
+type ScopeItem={id:string;name:string};
 type Props={
-  organization:ScopeData;
-  project:ScopeData;
-  environment:ScopeData;
-  architecture:ScopeData;
-  onOrganizationChange:(v:ScopeData)=>void;
-  onProjectChange:(v:ScopeData)=>void;
-  onEnvironmentChange:(v:ScopeData)=>void;
-  onArchitectureChange:(v:ScopeData)=>void;
+  organization:ScopeItem;
+  project:ScopeItem;
+  environment:ScopeItem;
+  architecture:ScopeItem;
+  onGoOrganization:()=>void;
+  onGoProject:()=>void;
+  onGoEnvironment:()=>void;
+  onGoArchitecture:()=>void;
+  onOpenGlobalVariables:()=>void;
+  onOpenArchitectureVariables:()=>void;
   onClose:()=>void;
 };
 
-const rank:VariableScope[]=['organization','project','environment','architecture'];
-const title:Record<VariableScope,string>={
-  organization:'Organization',
-  project:'Project',
-  environment:'Environment',
-  architecture:'Architecture'
-};
-
-const withScope=(items:VariableDefinition[],scope:VariableScope)=>items.map(v=>({...v,scope}));
-const withLocalScope=(items:LocalDefinition[],scope:VariableScope)=>items.map(v=>({...v,scope}));
-
-export default function WorkspaceScopeManager({
-  organization,project,environment,architecture,
-  onOrganizationChange,onProjectChange,onEnvironmentChange,onArchitectureChange,onClose
-}:Props){
-  const[scope,setScope]=useState<VariableScope>('architecture');
-
-  const selected=scope==='organization'?organization:scope==='project'?project:scope==='environment'?environment:architecture;
-  const update=scope==='organization'?onOrganizationChange:scope==='project'?onProjectChange:scope==='environment'?onEnvironmentChange:onArchitectureChange;
-
-  const effective=useMemo(()=>{
-    const all=[
-      ...withScope(organization.variables,'organization'),
-      ...withScope(project.variables,'project'),
-      ...withScope(environment.variables,'environment'),
-      ...withScope(architecture.variables,'architecture'),
-    ];
-    const map=new Map<string,VariableDefinition>();
-    for(const s of rank){
-      all.filter(v=>v.scope===s).forEach(v=>map.set(v.name,v));
-    }
-    return [...map.values()].sort((a,b)=>a.name.localeCompare(b.name));
-  },[organization.variables,project.variables,environment.variables,architecture.variables]);
-
-  return <div className="workspace-scope-overlay" onMouseDown={onClose}>
-    <div className="workspace-scope-dialog" onMouseDown={e=>e.stopPropagation()}>
+export default function WorkspaceScopeManager(p:Props){
+  return <div className="workspace-scope-overlay" onMouseDown={p.onClose}>
+    <div className="workspace-scope-dialog workspace-navigation-dialog" onMouseDown={e=>e.stopPropagation()}>
       <div className="workspace-scope-head">
         <div>
-          <strong>Enterprise Scope Manager</strong>
-          <small>Organization → Project → Environment → Architecture</small>
+          <strong>Architecture Workspace</strong>
+          <small>Navigate your Organization → Project → Environment → Architecture</small>
         </div>
-        <button onClick={onClose}><X size={16}/></button>
+        <button onClick={p.onClose} aria-label="Close"><X size={16}/></button>
       </div>
 
-      <div className="scope-breadcrumb">
-        <button className={scope==='organization'?'active':''} onClick={()=>setScope('organization')}><Building2 size={14}/><span>{organization.name}</span><small>Organization</small></button>
+      <div className="scope-breadcrumb scope-navigation-cards">
+        <button onClick={p.onGoOrganization}><Building2 size={15}/><span>{p.organization.name}</span><small>Organization</small></button>
         <span>›</span>
-        <button className={scope==='project'?'active':''} onClick={()=>setScope('project')}><FolderKanban size={14}/><span>{project.name}</span><small>Project</small></button>
+        <button onClick={p.onGoProject}><FolderKanban size={15}/><span>{p.project.name}</span><small>Project · Back to workspace</small></button>
         <span>›</span>
-        <button className={scope==='environment'?'active':''} onClick={()=>setScope('environment')}><Layers3 size={14}/><span>{environment.name}</span><small>Environment</small></button>
+        <button onClick={p.onGoEnvironment}><Layers3 size={15}/><span>{p.environment.name}</span><small>Environment · View in project</small></button>
         <span>›</span>
-        <button className={scope==='architecture'?'active':''} onClick={()=>setScope('architecture')}><Network size={14}/><span>{architecture.name}</span><small>Architecture</small></button>
+        <button className="active" onClick={p.onGoArchitecture}><Network size={15}/><span>{p.architecture.name}</span><small>Current architecture</small></button>
       </div>
 
-      <div className="scope-manager-grid">
-        <div className="scope-editor">
-          <div className="scope-editor-title">
-            <div><strong>{title[scope]} settings</strong><small>Variables declared here are inherited by lower scopes.</small></div>
-            <label>Name<input value={selected.name} onChange={e=>update({...selected,name:e.target.value})}/></label>
-          </div>
-          <VariablesManager
-            variables={selected.variables}
-            locals={selected.locals}
-            onVariablesChange={variables=>update({...selected,variables:withScope(variables,scope)})}
-            onLocalsChange={locals=>update({...selected,locals:withLocalScope(locals,scope)})}
-          />
+      <div className="workspace-navigation-body">
+        <div className="workspace-navigation-copy">
+          <strong>Current architecture</strong>
+          <h2>{p.architecture.name}</h2>
+          <p>This window is for workspace navigation only. Variable management remains intentionally simple: one global scope and one current-architecture scope.</p>
         </div>
-
-        <aside className="effective-values-panel">
-          <div className="effective-title"><strong>Effective variables</strong><small>Most specific scope wins.</small></div>
-          {!effective.length&&<div className="effective-empty">No variables declared in the hierarchy yet.</div>}
-          {effective.map(v=><div className="effective-variable" key={v.name}>
-            <div><code>var.{v.name}</code><span className={`scope-chip ${v.scope}`}>{title[v.scope||'architecture']}</span></div>
-            <small>{v.type}{v.defaultValue!==undefined&&v.defaultValue!==''?` · ${String(v.defaultValue)}`:''}</small>
-          </div>)}
-          <div className="scope-precedence">
-            <strong>Precedence</strong>
-            <span>Architecture</span><b>›</b><span>Environment</span><b>›</b><span>Project</span><b>›</b><span>Organization</span>
-          </div>
-        </aside>
+        <div className="workspace-variable-shortcuts">
+          <button onClick={p.onOpenGlobalVariables}><Variable size={17}/><span><strong>Global Variables</strong><small>Reusable across architectures</small></span></button>
+          <button onClick={p.onOpenArchitectureVariables}><Network size={17}/><span><strong>Architecture Variables</strong><small>Only for {p.architecture.name}</small></span></button>
+        </div>
       </div>
     </div>
   </div>;

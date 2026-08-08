@@ -77,14 +77,20 @@ const defaultProjects:ProjectRecord[]=[
 ];
 
 export default function CommandCenter(p:Props){
-  const[view,setView]=useState<'home'|'projects'|'project'>('home');
+  const[view,setView]=useState<'home'|'projects'|'project'>(()=>{
+    const target=sessionStorage.getItem('archmind-dashboard-target');
+    return target?.startsWith('project:')?'project':'home';
+  });
   const[projects,setProjects]=useState<ProjectRecord[]>(()=>{
     try{
       const raw=localStorage.getItem(PROJECTS_KEY);
       return raw?JSON.parse(raw):defaultProjects;
     }catch{return defaultProjects}
   });
-  const[selectedProjectId,setSelectedProjectId]=useState<string>(projects[0]?.id||'');
+  const[selectedProjectId,setSelectedProjectId]=useState<string>(()=>{
+    const target=sessionStorage.getItem('archmind-dashboard-target');
+    return target?.startsWith('project:')?target.slice('project:'.length):(projects[0]?.id||'');
+  });
   const[createMenuOpen,setCreateMenuOpen]=useState(false);
   const[modal,setModal]=useState<'project'|'environment'|'architecture'|null>(null);
 
@@ -96,6 +102,7 @@ export default function CommandCenter(p:Props){
   const[newArchitectureEnvironment,setNewArchitectureEnvironment]=useState('');
 
   useEffect(()=>{localStorage.setItem(PROJECTS_KEY,JSON.stringify(projects));},[projects]);
+  useEffect(()=>{sessionStorage.removeItem('archmind-dashboard-target');},[]);
 
   const selectedProject=useMemo(()=>projects.find(x=>x.id===selectedProjectId)||projects[0],[projects,selectedProjectId]);
 
