@@ -18,15 +18,9 @@ export default function CommandCenter(p:Props){
       <div className="command-brand"><div className="command-brand-mark"><Sparkles size={19}/></div><div><strong>ArchMindCanvas</strong><small>Cloud Architecture Platform</small></div></div>
       <div className="command-org"><small>ORGANIZATION</small><button onClick={p.onOpenScopeManager}><Building2 size={15}/><span>{p.organizationName}</span><ChevronRight size={13}/></button></div>
       <nav className="command-nav">
-        <button className="active"><LayoutDashboard size={16}/><span>Overview</span></button>
+        <button className="active"><LayoutDashboard size={16}/><span>Home</span></button>
         <button><FolderKanban size={16}/><span>Projects</span><em>4</em></button>
-        <button><Network size={16}/><span>Architectures</span><em>12</em></button>
-        <button><Layers3 size={16}/><span>Environments</span></button>
         <button><Boxes size={16}/><span>Templates</span></button>
-        <div className="nav-divider"/>
-        <button><Sparkles size={16}/><span>AI Studio</span></button>
-        <button><ShieldCheck size={16}/><span>Governance</span></button>
-        <button><Rocket size={16}/><span>Deployments</span></button>
         <button><Activity size={16}/><span>Activity</span></button>
         <div className="nav-divider"/>
         <button><Settings size={16}/><span>Settings</span></button>

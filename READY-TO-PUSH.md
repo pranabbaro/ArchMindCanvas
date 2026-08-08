@@ -1,19 +1,26 @@
-# ArchMindCanvas v7.6.1 — Full-Width Toolbar
+# ArchMindCanvas v7.6.2 — Clean Toolbar + Simple Navigation
 
-Fixes the editor toolbar so it stays fully visible without horizontal sliding.
+This release fixes the actual editor toolbar CSS and simplifies navigation.
 
-Changes:
-- Removes horizontal scrollbar from editor toolbar
-- Keeps toolbar actions in one visible row
-- Reduces action spacing responsively
-- Allows the design-name field to shrink instead of pushing actions off-screen
-- Preserves sticky/enterprise toolbar behavior
-- Keeps Command Center and editor features unchanged
+Editor:
+- Removes the real `.toolbar { overflow-x:auto }` behavior
+- Full-width toolbar with no horizontal slider
+- Large branding removed from editor header
+- Compact hierarchy + design name + actions
+- Azure resource library becomes a slim left icon rail
+- Full Azure resource catalog opens only when Resources is clicked
+
+Command Center:
+- Home
+- Projects
+- Templates
+- Activity
+- Settings
 
 Push:
 
 ```powershell
 git add .
-git commit -m "ArchMindCanvas v7.6.1 - full width editor toolbar"
+git commit -m "ArchMindCanvas v7.6.2 - clean toolbar and simple navigation"
 git push origin main
 ```

@@ -847,3 +847,162 @@
 .toolbar-container {
   overflow-x: hidden !important;
 }
+
+/* v7.6.2 - exact toolbar + simple editor navigation */
+
+/* Actual editor header classes */
+.topbar{
+  min-height:58px!important;
+  height:58px!important;
+  padding:8px 10px!important;
+  display:flex!important;
+  align-items:center!important;
+  gap:8px!important;
+  overflow:visible!important;
+}
+.topbar .editor-home-button{
+  flex:0 0 34px!important;
+}
+.topbar .enterprise-breadcrumb{
+  flex:0 1 320px!important;
+  min-width:210px!important;
+  max-width:320px!important;
+  height:36px!important;
+  padding:5px 8px!important;
+}
+.topbar .enterprise-breadcrumb span{
+  max-width:78px!important;
+  font-size:7px!important;
+}
+.topbar .design-title{
+  display:flex!important;
+  flex:0 1 220px!important;
+  min-width:160px!important;
+  max-width:220px!important;
+  height:36px!important;
+  padding:4px 8px!important;
+}
+.topbar .design-title input{
+  text-align:left!important;
+  font-size:9px!important;
+}
+
+/* This is the class that previously forced the horizontal slider */
+.topbar .toolbar{
+  flex:1 1 auto!important;
+  min-width:0!important;
+  width:auto!important;
+  display:flex!important;
+  flex-wrap:nowrap!important;
+  align-items:center!important;
+  justify-content:flex-end!important;
+  gap:4px!important;
+  overflow:visible!important;
+  overflow-x:visible!important;
+  overflow-y:visible!important;
+  padding:0!important;
+  scrollbar-width:none!important;
+}
+.topbar .toolbar::-webkit-scrollbar{display:none!important}
+.topbar .toolbar>button,
+.topbar .toolbar>.save-menu-wrap{
+  flex:0 0 auto!important;
+}
+.topbar .toolbar button{
+  height:34px!important;
+  padding:6px 7px!important;
+  gap:4px!important;
+  font-size:8px!important;
+  white-space:nowrap!important;
+}
+.topbar .toolbar button svg{width:14px!important;height:14px!important}
+.topbar .toolbar button span{display:inline!important;font-size:7.5px!important}
+
+/* Compact labels only when genuinely required, still no scrollbar */
+@media(max-width:1380px){
+  .topbar .enterprise-breadcrumb{flex-basis:260px!important;max-width:260px!important}
+  .topbar .design-title{flex-basis:185px!important;max-width:185px!important}
+  .topbar .toolbar{gap:3px!important}
+  .topbar .toolbar button{padding:6px!important}
+  .topbar .toolbar button span{font-size:7px!important}
+}
+@media(max-width:1180px){
+  .topbar .enterprise-breadcrumb{flex-basis:220px!important;max-width:220px!important}
+  .topbar .enterprise-breadcrumb span:nth-of-type(1),
+  .topbar .enterprise-breadcrumb span:nth-of-type(2){display:none!important}
+  .topbar .enterprise-breadcrumb b:nth-of-type(1),
+  .topbar .enterprise-breadcrumb b:nth-of-type(2){display:none!important}
+  .topbar .design-title{flex-basis:165px!important;max-width:165px!important}
+  .topbar .toolbar button span{display:none!important}
+  .topbar .toolbar button{width:34px!important;justify-content:center!important;padding:6px!important}
+}
+
+/* Slim editor rail, full resource library only on demand */
+.workspace.workspace-simple{
+  position:relative!important;
+  display:grid!important;
+  grid-template-columns:54px minmax(0,1fr) 300px!important;
+}
+.editor-left-rail{
+  background:#fff;
+  border-right:1px solid #e2e8f0;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  gap:7px;
+  padding:10px 6px;
+  z-index:25;
+}
+.editor-left-rail button{
+  width:42px;
+  height:44px;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  justify-content:center;
+  gap:3px;
+  border:1px solid transparent;
+  border-radius:9px;
+  background:transparent;
+  color:#64748b;
+}
+.editor-left-rail button span{font-size:6px}
+.editor-left-rail button:hover,
+.editor-left-rail button.active{
+  background:#eff6ff;
+  border-color:#bfdbfe;
+  color:#2563eb;
+}
+.resource-library-drawer{
+  position:absolute;
+  left:54px;
+  top:0;
+  bottom:0;
+  width:276px;
+  z-index:40;
+  display:flex;
+  flex-direction:column;
+  background:#fff;
+  border-right:1px solid #dbe3ee;
+  box-shadow:10px 0 30px rgba(15,23,42,.10);
+}
+.resource-library-drawer-head{
+  height:44px;
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  padding:0 12px;
+  border-bottom:1px solid #e2e8f0;
+}
+.resource-library-drawer-head strong{font-size:10px;color:#0f172a}
+.resource-library-drawer-head button{border:0;background:transparent;font-size:18px;color:#64748b}
+.resource-library-drawer .sidebar{
+  width:auto!important;
+  border-right:0!important;
+  flex:1;
+  overflow:auto;
+  padding:11px!important;
+}
+
+/* Dashboard nav intentionally simple */
+.command-nav{gap:4px!important}
