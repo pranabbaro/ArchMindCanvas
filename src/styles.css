@@ -1006,3 +1006,20 @@
 
 /* Dashboard nav intentionally simple */
 .command-nav{gap:4px!important}
+
+/* v7.6.3 Floating ArchMind AI */
+.intelligence-grid{grid-template-columns:1fr!important}
+.ai-command{display:none!important}
+.archmind-ai-float{position:absolute;right:18px;bottom:18px;z-index:60;display:flex;flex-direction:column;align-items:flex-end;gap:10px;pointer-events:none}
+.archmind-ai-orb{position:relative;width:50px;height:50px;pointer-events:auto;display:grid;place-items:center;border:1px solid rgba(255,255,255,.35);border-radius:16px;background:linear-gradient(145deg,#174ed0,#13a7c8);color:#fff;box-shadow:0 14px 32px rgba(29,78,216,.28);cursor:pointer;transition:transform .15s ease,box-shadow .15s ease}
+.archmind-ai-orb:hover,.archmind-ai-orb.active{transform:translateY(-2px);box-shadow:0 18px 38px rgba(29,78,216,.36)}
+.ai-orb-pulse{position:absolute;right:-3px;top:-3px;width:10px;height:10px;border-radius:50%;background:#55e5ce;border:2px solid #fff}
+.archmind-ai-popup{width:360px;max-height:520px;pointer-events:auto;overflow:hidden;border:1px solid #d9e3ef;border-radius:15px;background:#fff;box-shadow:0 22px 60px rgba(15,23,42,.20)}
+.archmind-ai-popup-head{display:flex;align-items:center;gap:9px;padding:12px 13px;border-bottom:1px solid #e7edf4;background:linear-gradient(135deg,#f8fbff,#f4fbfd)}
+.archmind-ai-avatar{width:32px;height:32px;display:grid;place-items:center;border-radius:9px;background:linear-gradient(145deg,#1f5de0,#16a6c6);color:#fff}
+.archmind-ai-popup-head>div:nth-child(2){flex:1}.archmind-ai-popup-head strong{display:block;font-size:10px;color:#0f172a}.archmind-ai-popup-head small{display:block;margin-top:2px;font-size:7px;color:#64748b}.archmind-ai-popup-head>button{width:28px;height:28px;border:0;border-radius:7px;background:transparent;color:#64748b;font-size:18px}
+.archmind-ai-answer{display:flex;align-items:flex-start;gap:8px;margin:12px;padding:11px;border-radius:10px;background:#f5f9ff;color:#334155}.archmind-ai-answer svg{flex:none;margin-top:2px;color:#2776d4}.archmind-ai-answer p{margin:0;font-size:8px;line-height:1.55}
+.archmind-ai-quick{display:flex;gap:5px;padding:0 12px 10px}.archmind-ai-quick button{border:1px solid #dbe5f0;border-radius:999px;background:#fff;color:#4b6685;padding:5px 8px;font-size:7px}.archmind-ai-quick button:hover{border-color:#9fc6ee;background:#f4f9ff;color:#2563eb}
+.archmind-ai-input{display:flex;gap:7px;padding:10px 12px;border-top:1px solid #edf1f5;background:#fbfcfe}.archmind-ai-input textarea{flex:1;resize:none;border:1px solid #d5e0ec;border-radius:9px;padding:8px;font-size:8px;outline:none}.archmind-ai-input textarea:focus{border-color:#65a5e8;box-shadow:0 0 0 3px rgba(59,130,246,.08)}.archmind-ai-input button{align-self:stretch;border:0;border-radius:8px;background:#206bd5;color:#fff;padding:0 12px;font-size:8px;font-weight:700}
+.archmind-ai-popup-foot{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:8px 12px;border-top:1px solid #edf1f5}.archmind-ai-popup-foot button{display:flex;align-items:center;gap:5px;border:0;background:transparent;color:#286bb8;font-size:7px}.archmind-ai-popup-foot span{font-size:6px;color:#94a3b8}
+@media(max-width:900px){.archmind-ai-popup{width:320px}.archmind-ai-float{right:12px;bottom:12px}}

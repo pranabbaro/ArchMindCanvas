@@ -86,12 +86,7 @@ export default function CommandCenter(p:Props){
             </div>
           </div>
 
-          <div className="command-panel ai-command">
-            <div className="panel-heading"><div><span className="section-kicker">ARCHMIND AI</span><h2>Architecture copilot</h2></div><Sparkles size={18}/></div>
-            <div className="ai-prompt-box"><Sparkles size={16}/><input placeholder="Ask ArchMind AI about your cloud estate..."/><button>Ask</button></div>
-            <div className="ai-suggestions"><button>Review my architecture against Azure WAF</button><button>Find resources missing private endpoints</button><button>Reduce estimated monthly cost</button></div>
-          </div>
-        </section>
+          </section>
 
         <section className="lower-grid">
           <div className="command-panel">
