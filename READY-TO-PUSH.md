@@ -1,15 +1,13 @@
-# ArchMindCanvas v7.9.5 — Compact Navigation + Dual Collapsible Panels
+# ArchMindCanvas v7.9.6
 
-- Project › Environment › Architecture segmented navigation.
-- Each long segment truncates independently.
-- Left resource pane can collapse/expand.
-- Right inspector pane can collapse/expand.
-- Both states persist in localStorage.
-- Canvas automatically uses the freed space.
-- Both panes can be collapsed at the same time.
+Fixes GitHub Actions TypeScript build error:
+
+`src/App.tsx:908 Cannot find name 'Network'.`
+
+The `Network` icon used by the compact Architecture navigation is now explicitly imported from `lucide-react`.
 
 ```powershell
 git add .
-git commit -m "ArchMindCanvas v7.9.5 - compact navigation and dual collapsible panels"
+git commit -m "ArchMindCanvas v7.9.6 - fix Network icon import"
 git push origin main
 ```

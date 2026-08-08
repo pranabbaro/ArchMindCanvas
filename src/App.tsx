@@ -3,7 +3,7 @@ import {
   addEdge, Background, BackgroundVariant, Controls, MarkerType, MiniMap, ReactFlow, ReactFlowProvider,
   useEdgesState, useNodesState, useReactFlow, type Connection, type EdgeChange, type NodeChange,
 } from '@xyflow/react';
-import { Check, Clipboard, Copy, Download, FilePlus2, FolderOpen, Maximize2, Redo2, Save, ShieldCheck, Sparkles, Undo2, MousePointer2, Hand, Route, Square, Triangle, Type, Trash2, Bot, Code2, DollarSign, Image, FileText, BringToFront, SendToBack, Lock, Unlock, Rocket, Play, CheckCircle2, GitBranch, ServerCog, Variable, Building2, FolderKanban, Layers3, LayoutDashboard, Boxes, ChevronDown, ChevronLeft, ChevronRight} from 'lucide-react';
+import { Check, Clipboard, Copy, Download, FilePlus2, FolderOpen, Maximize2, Redo2, Save, ShieldCheck, Sparkles, Undo2, MousePointer2, Hand, Route, Square, Triangle, Type, Trash2, Bot, Code2, DollarSign, Image, FileText, BringToFront, SendToBack, Lock, Unlock, Rocket, Play, CheckCircle2, GitBranch, ServerCog, Variable, Building2, FolderKanban, Layers3, LayoutDashboard, Boxes, ChevronDown, ChevronLeft, ChevronRight, Network} from 'lucide-react';
 import { toPng, toSvg } from 'html-to-image';
 import { jsPDF } from 'jspdf';
 import ArchitectureNodeComponent from './components/ArchitectureNode';
