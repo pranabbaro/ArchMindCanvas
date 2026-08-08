@@ -104,6 +104,36 @@ export type LocalDefinition = {
   scope?:VariableScope;
 };
 
+
+export type ArchitectureOutputDefinition = {
+  id:string;
+  name:string;
+  value:string;
+  description?:string;
+  sensitive?:boolean;
+};
+
+export type ArchitectureModuleDefinition = {
+  id:string;
+  name:string;
+  source:string;
+  version?:string;
+  description?:string;
+  inputs:Record<string,string>;
+};
+
+export type ArchitectureMetadata = {
+  description:string;
+  owner:string;
+  application:string;
+  businessUnit:string;
+  costCenter:string;
+  criticality:'Low'|'Medium'|'High'|'Mission Critical';
+  lifecycle:'Experimental'|'Development'|'Production'|'Retired';
+  version:string;
+  tags:TagMap;
+};
+
 export type ResourceMode = 'create' | 'existing' | 'import';
 export type PropertyValueSource = 'literal' | 'variable' | 'resource' | 'data' | 'local' | 'moduleOutput';
 

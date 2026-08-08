@@ -1,46 +1,39 @@
-# ArchMindCanvas v7.8.0 — Enterprise Workspace
+# ArchMindCanvas v7.9.0 — Architecture Intelligence & IaC Model
 
-This combines all five requested workspace improvements in one release.
+New Architecture Model:
+- Metadata: description, owner, application, business unit, cost center, criticality, lifecycle, version and tags
+- Terraform Outputs
+- Terraform Modules with module inputs
+- Dependency intelligence derived from property bindings
 
-1. Projects
-- Create, rename, archive and delete projects
-- Architecture/environment counts
-- Last modified display
-- Three-dot actions
-- Persistent browser storage
+IaC model:
+- providers / versions
+- variables.tf
+- locals.tf
+- modules.tf
+- main.tf
+- outputs.tf
+- Resource Create / Existing(Data) / Import modes remain supported
+- Download IaC Bundle now contains separated Terraform sections
 
-2. Environments
-- Click into a dedicated environment workspace
-- Filter architectures by environment
-- Create architectures directly in an environment
-- Rename/delete environment
-- DEV / TEST / QA / STAGE / PROD / DR badges
+Validation:
+- Broken resource references
+- Missing variables
+- Missing locals
+- Missing modules referenced by resources
+- Duplicate resource names
+- Module name/source checks
+- Output name/value checks
+- Architecture metadata recommendations
 
-3. Architecture Library
-- Open
-- Rename
-- Duplicate
-- Move to another environment
-- Save as Template
-- Archive
-- Delete
-- Last modified metadata
-
-4. Navigation
-- Organization/Home → Projects → Project → Environment → Architecture
-- Consistent back navigation
-- Existing design-editor breadcrumb remains available
-
-5. Templates
-- Template library
-- Save an architecture as a reusable template
-- Create a new architecture from a template
-- Built-in starter templates
+Persistence:
+- Metadata, modules and outputs are saved with the architecture
+- JSON export/import includes the complete architecture model
 
 Push:
 
 ```powershell
 git add .
-git commit -m "ArchMindCanvas v7.8.0 - enterprise workspace"
+git commit -m "ArchMindCanvas v7.9.0 - architecture intelligence and IaC model"
 git push origin main
 ```
