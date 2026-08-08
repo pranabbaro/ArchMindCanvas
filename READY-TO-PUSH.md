@@ -1,23 +1,25 @@
-# ArchMindCanvas v7.4.0 — Design + Global Variables
+# ArchMindCanvas v7.4.1 — Design + Global Variables Build Fix
 
-Two variable scopes are now available:
+Fixes the production TypeScript error in App.tsx:
 
-## Design Variables
-Open the small **Variables** tab in the right-side design panel.
+`Type 'string | Element' is not assignable to type 'string | undefined'`
 
-These variables belong only to the currently open design.
+Cause:
+Design Variables content was accidentally placed inside the Deploy button's `className`.
 
-## Global Variables
-Open **Global Vars** from the main top toolbar.
-
-These variables are stored outside the individual design document and can be used across designs in the browser workspace.
-
-When a Design variable and Global variable have the same name, the Design variable takes precedence.
+Fixed structure:
+- Properties tab
+- Variables tab (Design scope)
+- AI
+- Validate
+- IaC
+- Deploy
+- Global Vars remains in the main toolbar
 
 Push:
 
 ```powershell
 git add .
-git commit -m "ArchMindCanvas v7.4.0 - design and global variable scopes"
+git commit -m "ArchMindCanvas v7.4.1 - fix variables tab production build"
 git push origin main
 ```
