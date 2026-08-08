@@ -1,23 +1,46 @@
-# ArchMindCanvas v7.7.1 — Project Workspace Build Fix
+# ArchMindCanvas v7.8.0 — Enterprise Workspace
 
-Fixes the production TypeScript error:
+This combines all five requested workspace improvements in one release.
 
-`Argument of type 'string' is not assignable to parameter of type
-SetStateAction<\`${string}-${string}-${string}-${string}-${string}\`>`
+1. Projects
+- Create, rename, archive and delete projects
+- Architecture/environment counts
+- Last modified display
+- Three-dot actions
+- Persistent browser storage
 
-Cause:
-`crypto.randomUUID()` caused TypeScript to infer `designId` as the UUID template-literal type.
-Project-created architecture IDs use normal string IDs (`arch-...`).
+2. Environments
+- Click into a dedicated environment workspace
+- Filter architectures by environment
+- Create architectures directly in an environment
+- Rename/delete environment
+- DEV / TEST / QA / STAGE / PROD / DR badges
 
-Fix:
-- `designId` is explicitly `useState<string>()`
-- Organization / Project / Environment ID states are also explicitly typed as `string`
-- Project → Environment → Architecture functionality is unchanged
+3. Architecture Library
+- Open
+- Rename
+- Duplicate
+- Move to another environment
+- Save as Template
+- Archive
+- Delete
+- Last modified metadata
+
+4. Navigation
+- Organization/Home → Projects → Project → Environment → Architecture
+- Consistent back navigation
+- Existing design-editor breadcrumb remains available
+
+5. Templates
+- Template library
+- Save an architecture as a reusable template
+- Create a new architecture from a template
+- Built-in starter templates
 
 Push:
 
 ```powershell
 git add .
-git commit -m "ArchMindCanvas v7.7.1 - fix project workspace ID typing"
+git commit -m "ArchMindCanvas v7.8.0 - enterprise workspace"
 git push origin main
 ```
