@@ -324,3 +324,12 @@ Important: The browser workflow is a safe scaffold/demo until the deployment API
 - Fixed `App.tsx` TypeScript error: `Type 'string | Element' is not assignable to type 'string | undefined'`
 - Corrected the Deploy tab className expression
 - Preserved the Variables inspector tab and VariablesManager render branch
+
+
+## v7.3.7 Project-Level Variables
+- Moved Variables & Locals out of the resource/component inspector
+- Added a project-level Variables button to the main design toolbar
+- Variables are shared by the entire architecture design
+- Browser save/open persists project variables and locals
+- Editable JSON export/import persists project variables and locals
+- All resource Property bindings continue to select from the same project-level declarations

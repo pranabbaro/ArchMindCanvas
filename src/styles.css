@@ -425,3 +425,69 @@
 .variables-empty{border:1px dashed #cbd5e1;border-radius:10px;padding:18px;text-align:center;display:flex;flex-direction:column;align-items:center;gap:5px;color:#64748b}.variable-card{border:1px solid #dfe7f1;border-radius:10px;padding:10px;margin-bottom:10px}.variable-card-title{display:flex;justify-content:space-between;align-items:center;margin-bottom:9px}.variable-card-title strong{font-size:9px;color:#4f46e5}.variable-card-title button{border:0;background:transparent;color:#94a3b8}
 .variable-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}.variable-grid .span-2{grid-column:1/-1}.variable-grid label{font-size:8px;font-weight:600;color:#334155}.variable-grid input,.variable-grid select,.variable-grid textarea{width:100%;margin-top:4px;border:1px solid #d6e0ec;border-radius:7px;padding:7px;font-size:8px}.variable-grid .toggle-row{display:flex;justify-content:space-between;align-items:center;border:1px solid #e2e8f0;border-radius:7px;padding:7px}.variable-grid .toggle-row input{width:auto;margin:0}
 .variables-code{padding:12px}.variables-code pre{background:#0f172a;color:#e2e8f0;padding:12px;border-radius:9px;font-size:8px;white-space:pre-wrap;overflow:auto}
+
+/* v7.3.6 - keep all inspector tabs visible/reachable */
+.inspector-tabs.v5-tabs{
+  display:flex;
+  flex-wrap:nowrap;
+  gap:4px;
+  overflow-x:auto;
+  overflow-y:hidden;
+  scrollbar-width:thin;
+  padding:6px 8px;
+  white-space:nowrap;
+}
+.inspector-tabs.v5-tabs button{
+  flex:0 0 auto;
+  min-width:max-content;
+  padding-left:10px;
+  padding-right:10px;
+}
+.inspector-tabs.v5-tabs::-webkit-scrollbar{height:5px}
+.inspector-tabs.v5-tabs::-webkit-scrollbar-thumb{background:#cbd5e1;border-radius:999px}
+
+/* v7.3.7 Project-level Variables & Locals */
+.project-variables-overlay{
+  position:fixed;inset:0;z-index:1000;
+  background:rgba(15,23,42,.38);
+  display:flex;align-items:center;justify-content:center;
+  padding:28px;
+  backdrop-filter:blur(2px);
+}
+.project-variables-dialog{
+  width:min(920px,94vw);
+  height:min(760px,88vh);
+  background:#fff;
+  border:1px solid #dbe3ee;
+  border-radius:14px;
+  box-shadow:0 24px 70px rgba(15,23,42,.25);
+  overflow:hidden;
+  display:flex;
+  flex-direction:column;
+}
+.project-variables-dialog-head{
+  flex:0 0 auto;
+  display:flex;align-items:center;justify-content:space-between;
+  padding:15px 18px;
+  border-bottom:1px solid #e2e8f0;
+  background:#fbfdff;
+}
+.project-variables-dialog-head>div{display:flex;flex-direction:column;gap:3px}
+.project-variables-dialog-head strong{font-size:13px;color:#0f172a}
+.project-variables-dialog-head small{font-size:8px;color:#64748b}
+.project-variables-dialog-head>button{
+  width:30px;height:30px;border:1px solid #dbe3ee;border-radius:8px;
+  background:#fff;color:#475569;font-size:18px;line-height:1;
+}
+.project-variables-scope-note{
+  display:flex;align-items:center;gap:9px;
+  padding:9px 18px;
+  background:#eff6ff;
+  border-bottom:1px solid #dbeafe;
+  color:#1e3a8a;
+}
+.project-variables-scope-note b{font-size:8px;text-transform:uppercase;letter-spacing:.05em}
+.project-variables-scope-note span{font-size:8px;color:#475569}
+.project-variables-dialog .variables-manager{
+  flex:1;min-height:0;height:auto;
+}

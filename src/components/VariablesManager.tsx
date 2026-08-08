@@ -32,7 +32,7 @@ export default function VariablesManager({variables,locals,onVariablesChange,onL
 
   return <div className="variables-manager">
     <div className="variables-manager-header">
-      <div><strong>Variables & Locals</strong><small>Reusable Terraform values for the complete architecture.</small></div>
+      <div><strong>Variables & Locals</strong><small>Declare reusable Terraform inputs here, then reference them from any resource property or Tags.</small></div>
       <div className="variables-manager-tabs">
         <button className={tab==='variables'?'active':''} onClick={()=>setTab('variables')}><Variable size={14}/> Variables</button>
         <button className={tab==='locals'?'active':''} onClick={()=>setTab('locals')}><Box size={14}/> Locals</button>
