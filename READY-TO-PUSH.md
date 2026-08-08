@@ -1,14 +1,15 @@
-# ArchMindCanvas v7.3.0 — Smart Reference Engine
+# ArchMindCanvas v7.3.1 — Typed Smart References
 
 Push from VS Code:
 
 ```powershell
 git add .
-git commit -m "ArchMindCanvas v7.3.0 - Smart Reference Engine"
+git commit -m "ArchMindCanvas v7.3.1 - typed smart references"
 git push origin main
 ```
 
-New capability:
-- Resource Mode: Create / Existing / Import
-- Property Value Source: Direct / Variable / Resource / Data / Local / Module Output
-- Terraform preview resolves bindings and existing-resource references
+Key changes:
+- Existing resource = name-first
+- Resource ID = optional advanced lookup
+- VM and other services now expose typed relationship selectors
+- Compatible-resource filtering is applied automatically

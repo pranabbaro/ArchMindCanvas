@@ -166,7 +166,7 @@ function SourcePicker({
 }){
   const current=data.bindings?.[field.key]||{source:'literal' as const};
   const patch=(b:PropertyBinding)=>onChange({bindings:{...(data.bindings||{}),[field.key]:b}});
-  const candidates=resources.filter(r=>r.id!==nodeId);
+  const candidates=resources.filter(r=>r.id!==nodeId&&(!field.allowedResourceTypes?.length||field.allowedResourceTypes.includes(r.data.resourceType)));
   return <div className="binding-popover">
     <div className="binding-popover-head"><strong>Value source · {field.label}</strong><button onClick={onClose}><X size={14}/></button></div>
     <div className="binding-source-grid">
@@ -210,7 +210,15 @@ function FieldEditor({
   const binding=data.bindings?.[field.key];
   const[showSource,setShowSource]=useState(false);
   const set=(v:string|number|boolean)=>onChange(patchFor(data,field.key,v));
+  const compatibleResources=resources.filter(r=>r.id!==nodeId&&(!field.allowedResourceTypes?.length||field.allowedResourceTypes.includes(r.data.resourceType)));
   const editor=
+    field.type==='resourceRef'?<label>{field.label}{field.required&&<em> *</em>}<select value={binding?.source==='resource'?(binding.targetNodeId||''):''} onChange={e=>{
+      if(!e.target.value){
+        onChange({bindings:{...(data.bindings||{}),[field.key]:{source:'literal'}}});
+        return;
+      }
+      onChange({bindings:{...(data.bindings||{}),[field.key]:{source:'resource',targetNodeId:e.target.value,targetAttribute:field.referenceAttribute||'id'}}});
+    }}><option value="">Select compatible resource...</option>{compatibleResources.map(r=><option value={r.id} key={r.id}>{r.data.label} · {resourceMap[r.data.resourceType].label} · {(r.data.resourceMode||'create')==='existing'?'Existing':'Create'}</option>)}</select><small>{field.allowedResourceTypes?.map(t=>resourceMap[t]?.label||t).join(' / ')}</small></label>:
     field.type==='boolean'?<label className="property-toggle"><span><b>{field.label}</b>{field.help&&<small>{field.help}</small>}</span><input type="checkbox" checked={Boolean(value)} onChange={e=>set(e.target.checked)}/></label>:
     field.type==='textarea'?<label>{field.label}{field.required&&<em> *</em>}<textarea rows={4} value={String(value)} placeholder={field.placeholder} readOnly={field.readOnly} onChange={e=>set(e.target.value)}/>{field.help&&<small>{field.help}</small>}</label>:
     field.type==='select'?<label>{field.label}{field.required&&<em> *</em>}<select value={String(value)} disabled={field.readOnly} onChange={e=>set(e.target.value)}>{field.options?.map(o=><option key={o}>{o}</option>)}</select>{field.help&&<small>{field.help}</small>}</label>:
@@ -255,10 +263,11 @@ export default function PropertiesPanel({nodeId,data,allResources,onChange,onDel
           <button className={resourceMode==='import'?'active':''} onClick={()=>changeResourceMode('import')}><PackageOpen size={15}/><b>Import</b><span>Adopt into state</span></button>
         </div>
         {resourceMode!=='create'&&<div className="existing-resource-box">
-          <label>Lookup method<select value={data.existingResource?.lookupType||'name'} onChange={e=>onChange({existingResource:{...(data.existingResource||{}),lookupType:e.target.value as 'name'|'resourceId'}})}><option value="name">Resource name</option><option value="resourceId">Azure resource ID</option></select></label>
-          {(data.existingResource?.lookupType||'name')==='name'
-            ?<label>Existing resource name<input value={data.existingResource?.name||data.label} onChange={e=>onChange({existingResource:{...(data.existingResource||{lookupType:'name'}),name:e.target.value}})}/></label>
-            :<label>Azure resource ID<textarea rows={3} value={data.existingResource?.resourceId||''} placeholder="/subscriptions/.../resourceGroups/.../providers/..." onChange={e=>onChange({existingResource:{...(data.existingResource||{lookupType:'resourceId'}),resourceId:e.target.value}})}/></label>}
+          <label>Existing resource name<input value={data.existingResource?.name||data.label} onChange={e=>onChange({existingResource:{...(data.existingResource||{lookupType:'name'}),lookupType:'name',name:e.target.value}})}/><small>Name is the default lookup method.</small></label>
+          <details className="advanced-existing-lookup">
+            <summary>Advanced lookup</summary>
+            <label>Azure resource ID <small>Optional. Use this only when you want to bind/import by full Azure resource ID.</small><textarea rows={3} value={data.existingResource?.resourceId||''} placeholder="/subscriptions/.../resourceGroups/.../providers/..." onChange={e=>onChange({existingResource:{...(data.existingResource||{lookupType:'name'}),resourceId:e.target.value}})}/></label>
+          </details>
         </div>}
       </section>
 

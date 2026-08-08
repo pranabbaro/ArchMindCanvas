@@ -3,7 +3,7 @@ import type { ResourceType } from './types';
 export type PropertyField = {
   key: string;
   label: string;
-  type: 'text'|'select'|'number'|'boolean'|'textarea';
+  type: 'text'|'select'|'number'|'boolean'|'textarea'|'resourceRef';
   group: string;
   required?: boolean;
   readOnly?: boolean;
@@ -12,6 +12,8 @@ export type PropertyField = {
   options?: string[];
   terraformProperty?: string;
   help?: string;
+  allowedResourceTypes?: ResourceType[];
+  referenceAttribute?: string;
 };
 
 const regions=['East US','East US 2','West Europe','North Europe','Germany West Central','Central India','South India','Southeast Asia','Australia East'];
@@ -20,6 +22,144 @@ const common=(includeRegion=true):PropertyField[]=>[
   ...(includeRegion?[{key:'region',label:'Location',type:'select' as const,group:'Main parameters',required:true,options:regions,terraformProperty:'location'}]:[]),
   {key:'owner',label:'Owner',type:'text',group:'Metadata',placeholder:'Platform team'},
 ];
+
+
+const relationshipFields:Partial<Record<ResourceType,PropertyField[]>>={
+  virtualNetwork:[
+    {key:'subscriptionRef',label:'Subscription',type:'resourceRef',group:'Relationships',allowedResourceTypes:['subscription'],referenceAttribute:'id'},
+    {key:'resourceGroupRef',label:'Resource Group',type:'resourceRef',group:'Relationships',allowedResourceTypes:['resourceGroup'],referenceAttribute:'name'},
+  ],
+  subnet:[
+    {key:'subscriptionRef',label:'Subscription',type:'resourceRef',group:'Relationships',allowedResourceTypes:['subscription'],referenceAttribute:'id'},
+    {key:'resourceGroupRef',label:'Resource Group',type:'resourceRef',group:'Relationships',allowedResourceTypes:['resourceGroup'],referenceAttribute:'name'},
+    {key:'vnetRef',label:'Virtual Network',type:'resourceRef',group:'Relationships',allowedResourceTypes:['virtualNetwork'],referenceAttribute:'name'},
+  ],
+  virtualMachine:[
+    {key:'subscriptionRef',label:'Subscription',type:'resourceRef',group:'Relationships',allowedResourceTypes:['subscription'],referenceAttribute:'id'},
+    {key:'resourceGroupRef',label:'Resource Group',type:'resourceRef',group:'Relationships',allowedResourceTypes:['resourceGroup'],referenceAttribute:'name'},
+    {key:'vnetRef',label:'Virtual Network',type:'resourceRef',group:'Relationships',allowedResourceTypes:['virtualNetwork'],referenceAttribute:'name'},
+    {key:'subnetRef',label:'Subnet',type:'resourceRef',group:'Relationships',allowedResourceTypes:['subnet'],referenceAttribute:'id'},
+    {key:'managedIdentityRef',label:'Managed Identity',type:'resourceRef',group:'Identity',allowedResourceTypes:['managedIdentity'],referenceAttribute:'id'},
+    {key:'keyVaultRef',label:'Key Vault',type:'resourceRef',group:'Identity',allowedResourceTypes:['keyVault'],referenceAttribute:'id'},
+  ],
+  vmScaleSet:[
+    {key:'subscriptionRef',label:'Subscription',type:'resourceRef',group:'Relationships',allowedResourceTypes:['subscription'],referenceAttribute:'id'},
+    {key:'resourceGroupRef',label:'Resource Group',type:'resourceRef',group:'Relationships',allowedResourceTypes:['resourceGroup'],referenceAttribute:'name'},
+    {key:'vnetRef',label:'Virtual Network',type:'resourceRef',group:'Relationships',allowedResourceTypes:['virtualNetwork'],referenceAttribute:'name'},
+    {key:'subnetRef',label:'Subnet',type:'resourceRef',group:'Relationships',allowedResourceTypes:['subnet'],referenceAttribute:'id'},
+  ],
+  storageAccount:[
+    {key:'subscriptionRef',label:'Subscription',type:'resourceRef',group:'Relationships',allowedResourceTypes:['subscription'],referenceAttribute:'id'},
+    {key:'resourceGroupRef',label:'Resource Group',type:'resourceRef',group:'Relationships',allowedResourceTypes:['resourceGroup'],referenceAttribute:'name'},
+    {key:'subnetRef',label:'Allowed Subnet',type:'resourceRef',group:'Networking',allowedResourceTypes:['subnet'],referenceAttribute:'id'},
+    {key:'privateEndpointRef',label:'Private Endpoint',type:'resourceRef',group:'Networking',allowedResourceTypes:['privateEndpoint'],referenceAttribute:'id'},
+  ],
+  blobStorage:[
+    {key:'storageAccountRef',label:'Storage Account',type:'resourceRef',group:'Relationships',allowedResourceTypes:['storageAccount'],referenceAttribute:'name'},
+  ],
+  fileShare:[
+    {key:'storageAccountRef',label:'Storage Account',type:'resourceRef',group:'Relationships',allowedResourceTypes:['storageAccount'],referenceAttribute:'name'},
+  ],
+  sqlDatabase:[
+    {key:'subscriptionRef',label:'Subscription',type:'resourceRef',group:'Relationships',allowedResourceTypes:['subscription'],referenceAttribute:'id'},
+    {key:'resourceGroupRef',label:'Resource Group',type:'resourceRef',group:'Relationships',allowedResourceTypes:['resourceGroup'],referenceAttribute:'name'},
+    {key:'privateEndpointRef',label:'Private Endpoint',type:'resourceRef',group:'Networking',allowedResourceTypes:['privateEndpoint'],referenceAttribute:'id'},
+    {key:'keyVaultRef',label:'Key Vault',type:'resourceRef',group:'Security',allowedResourceTypes:['keyVault'],referenceAttribute:'id'},
+  ],
+  sqlManagedInstance:[
+    {key:'subscriptionRef',label:'Subscription',type:'resourceRef',group:'Relationships',allowedResourceTypes:['subscription'],referenceAttribute:'id'},
+    {key:'resourceGroupRef',label:'Resource Group',type:'resourceRef',group:'Relationships',allowedResourceTypes:['resourceGroup'],referenceAttribute:'name'},
+    {key:'vnetRef',label:'Virtual Network',type:'resourceRef',group:'Networking',allowedResourceTypes:['virtualNetwork'],referenceAttribute:'name'},
+    {key:'subnetRef',label:'Subnet',type:'resourceRef',group:'Networking',allowedResourceTypes:['subnet'],referenceAttribute:'id'},
+  ],
+  appService:[
+    {key:'subscriptionRef',label:'Subscription',type:'resourceRef',group:'Relationships',allowedResourceTypes:['subscription'],referenceAttribute:'id'},
+    {key:'resourceGroupRef',label:'Resource Group',type:'resourceRef',group:'Relationships',allowedResourceTypes:['resourceGroup'],referenceAttribute:'name'},
+    {key:'subnetRef',label:'VNet Integration Subnet',type:'resourceRef',group:'Networking',allowedResourceTypes:['subnet'],referenceAttribute:'id'},
+    {key:'keyVaultRef',label:'Key Vault',type:'resourceRef',group:'Identity',allowedResourceTypes:['keyVault'],referenceAttribute:'id'},
+    {key:'managedIdentityRef',label:'Managed Identity',type:'resourceRef',group:'Identity',allowedResourceTypes:['managedIdentity'],referenceAttribute:'id'},
+  ],
+  functionApp:[
+    {key:'subscriptionRef',label:'Subscription',type:'resourceRef',group:'Relationships',allowedResourceTypes:['subscription'],referenceAttribute:'id'},
+    {key:'resourceGroupRef',label:'Resource Group',type:'resourceRef',group:'Relationships',allowedResourceTypes:['resourceGroup'],referenceAttribute:'name'},
+    {key:'storageAccountRef',label:'Storage Account',type:'resourceRef',group:'Relationships',allowedResourceTypes:['storageAccount'],referenceAttribute:'name'},
+    {key:'subnetRef',label:'Integration Subnet',type:'resourceRef',group:'Networking',allowedResourceTypes:['subnet'],referenceAttribute:'id'},
+    {key:'keyVaultRef',label:'Key Vault',type:'resourceRef',group:'Identity',allowedResourceTypes:['keyVault'],referenceAttribute:'id'},
+  ],
+  keyVault:[
+    {key:'subscriptionRef',label:'Subscription',type:'resourceRef',group:'Relationships',allowedResourceTypes:['subscription'],referenceAttribute:'id'},
+    {key:'resourceGroupRef',label:'Resource Group',type:'resourceRef',group:'Relationships',allowedResourceTypes:['resourceGroup'],referenceAttribute:'name'},
+    {key:'privateEndpointRef',label:'Private Endpoint',type:'resourceRef',group:'Networking',allowedResourceTypes:['privateEndpoint'],referenceAttribute:'id'},
+    {key:'managedIdentityRef',label:'Managed Identity',type:'resourceRef',group:'Access configuration',allowedResourceTypes:['managedIdentity'],referenceAttribute:'id'},
+  ],
+  aks:[
+    {key:'subscriptionRef',label:'Subscription',type:'resourceRef',group:'Relationships',allowedResourceTypes:['subscription'],referenceAttribute:'id'},
+    {key:'resourceGroupRef',label:'Resource Group',type:'resourceRef',group:'Relationships',allowedResourceTypes:['resourceGroup'],referenceAttribute:'name'},
+    {key:'vnetRef',label:'Virtual Network',type:'resourceRef',group:'Networking',allowedResourceTypes:['virtualNetwork'],referenceAttribute:'name'},
+    {key:'subnetRef',label:'Node Subnet',type:'resourceRef',group:'Networking',allowedResourceTypes:['subnet'],referenceAttribute:'id'},
+    {key:'acrRef',label:'Container Registry',type:'resourceRef',group:'Integrations',allowedResourceTypes:['containerRegistry'],referenceAttribute:'id'},
+    {key:'keyVaultRef',label:'Key Vault',type:'resourceRef',group:'Integrations',allowedResourceTypes:['keyVault'],referenceAttribute:'id'},
+    {key:'logAnalyticsRef',label:'Log Analytics Workspace',type:'resourceRef',group:'Monitoring',allowedResourceTypes:['logAnalytics'],referenceAttribute:'id'},
+  ],
+  containerApps:[
+    {key:'subscriptionRef',label:'Subscription',type:'resourceRef',group:'Relationships',allowedResourceTypes:['subscription'],referenceAttribute:'id'},
+    {key:'resourceGroupRef',label:'Resource Group',type:'resourceRef',group:'Relationships',allowedResourceTypes:['resourceGroup'],referenceAttribute:'name'},
+    {key:'subnetRef',label:'Infrastructure Subnet',type:'resourceRef',group:'Networking',allowedResourceTypes:['subnet'],referenceAttribute:'id'},
+    {key:'acrRef',label:'Container Registry',type:'resourceRef',group:'Integrations',allowedResourceTypes:['containerRegistry'],referenceAttribute:'id'},
+    {key:'logAnalyticsRef',label:'Log Analytics Workspace',type:'resourceRef',group:'Monitoring',allowedResourceTypes:['logAnalytics'],referenceAttribute:'id'},
+  ],
+  privateEndpoint:[
+    {key:'subscriptionRef',label:'Subscription',type:'resourceRef',group:'Relationships',allowedResourceTypes:['subscription'],referenceAttribute:'id'},
+    {key:'resourceGroupRef',label:'Resource Group',type:'resourceRef',group:'Relationships',allowedResourceTypes:['resourceGroup'],referenceAttribute:'name'},
+    {key:'vnetRef',label:'Virtual Network',type:'resourceRef',group:'Networking',allowedResourceTypes:['virtualNetwork'],referenceAttribute:'name'},
+    {key:'subnetRef',label:'Subnet',type:'resourceRef',group:'Networking',allowedResourceTypes:['subnet'],referenceAttribute:'id'},
+    {key:'targetResourceRef',label:'Target Azure Resource',type:'resourceRef',group:'Main parameters',allowedResourceTypes:['storageAccount','keyVault','sqlDatabase','sqlManagedInstance','appService','functionApp','containerRegistry','azureOpenAI','aiSearch','cosmosDb'],referenceAttribute:'id'},
+    {key:'privateDnsZoneRef',label:'Private DNS Zone',type:'resourceRef',group:'DNS',allowedResourceTypes:['privateDnsZone'],referenceAttribute:'id'},
+  ],
+  applicationGateway:[
+    {key:'subscriptionRef',label:'Subscription',type:'resourceRef',group:'Relationships',allowedResourceTypes:['subscription'],referenceAttribute:'id'},
+    {key:'resourceGroupRef',label:'Resource Group',type:'resourceRef',group:'Relationships',allowedResourceTypes:['resourceGroup'],referenceAttribute:'name'},
+    {key:'subnetRef',label:'Gateway Subnet',type:'resourceRef',group:'Networking',allowedResourceTypes:['subnet'],referenceAttribute:'id'},
+    {key:'publicIpRef',label:'Public IP',type:'resourceRef',group:'Frontend',allowedResourceTypes:['publicIp'],referenceAttribute:'id'},
+  ],
+  firewall:[
+    {key:'subscriptionRef',label:'Subscription',type:'resourceRef',group:'Relationships',allowedResourceTypes:['subscription'],referenceAttribute:'id'},
+    {key:'resourceGroupRef',label:'Resource Group',type:'resourceRef',group:'Relationships',allowedResourceTypes:['resourceGroup'],referenceAttribute:'name'},
+    {key:'subnetRef',label:'AzureFirewallSubnet',type:'resourceRef',group:'Networking',allowedResourceTypes:['subnet'],referenceAttribute:'id'},
+    {key:'publicIpRef',label:'Public IP',type:'resourceRef',group:'Networking',allowedResourceTypes:['publicIp'],referenceAttribute:'id'},
+  ],
+  azureOpenAI:[
+    {key:'subscriptionRef',label:'Subscription',type:'resourceRef',group:'Relationships',allowedResourceTypes:['subscription'],referenceAttribute:'id'},
+    {key:'resourceGroupRef',label:'Resource Group',type:'resourceRef',group:'Relationships',allowedResourceTypes:['resourceGroup'],referenceAttribute:'name'},
+    {key:'privateEndpointRef',label:'Private Endpoint',type:'resourceRef',group:'Networking',allowedResourceTypes:['privateEndpoint'],referenceAttribute:'id'},
+    {key:'managedIdentityRef',label:'Managed Identity',type:'resourceRef',group:'Identity',allowedResourceTypes:['managedIdentity'],referenceAttribute:'id'},
+  ],
+  aiSearch:[
+    {key:'subscriptionRef',label:'Subscription',type:'resourceRef',group:'Relationships',allowedResourceTypes:['subscription'],referenceAttribute:'id'},
+    {key:'resourceGroupRef',label:'Resource Group',type:'resourceRef',group:'Relationships',allowedResourceTypes:['resourceGroup'],referenceAttribute:'name'},
+    {key:'privateEndpointRef',label:'Private Endpoint',type:'resourceRef',group:'Networking',allowedResourceTypes:['privateEndpoint'],referenceAttribute:'id'},
+    {key:'managedIdentityRef',label:'Managed Identity',type:'resourceRef',group:'Identity',allowedResourceTypes:['managedIdentity'],referenceAttribute:'id'},
+  ],
+  logAnalytics:[
+    {key:'subscriptionRef',label:'Subscription',type:'resourceRef',group:'Relationships',allowedResourceTypes:['subscription'],referenceAttribute:'id'},
+    {key:'resourceGroupRef',label:'Resource Group',type:'resourceRef',group:'Relationships',allowedResourceTypes:['resourceGroup'],referenceAttribute:'name'},
+  ],
+  applicationInsights:[
+    {key:'subscriptionRef',label:'Subscription',type:'resourceRef',group:'Relationships',allowedResourceTypes:['subscription'],referenceAttribute:'id'},
+    {key:'resourceGroupRef',label:'Resource Group',type:'resourceRef',group:'Relationships',allowedResourceTypes:['resourceGroup'],referenceAttribute:'name'},
+    {key:'logAnalyticsRef',label:'Log Analytics Workspace',type:'resourceRef',group:'Monitoring',allowedResourceTypes:['logAnalytics'],referenceAttribute:'id'},
+  ],
+};
+
+const governanceTypes:ResourceType[]=['tenant','managementGroup','subscription','resourceGroup'];
+const genericRelationshipFields=(type:ResourceType):PropertyField[]=>{
+  if(governanceTypes.includes(type))return [];
+  if(relationshipFields[type])return relationshipFields[type]!;
+  return [
+    {key:'subscriptionRef',label:'Subscription',type:'resourceRef',group:'Relationships',allowedResourceTypes:['subscription'],referenceAttribute:'id'},
+    {key:'resourceGroupRef',label:'Resource Group',type:'resourceRef',group:'Relationships',allowedResourceTypes:['resourceGroup'],referenceAttribute:'name'},
+  ];
+};
 
 const schemas:Partial<Record<ResourceType,PropertyField[]>>={
   tenant:[
@@ -197,5 +337,14 @@ const generic:PropertyField[]=[
   {key:'sku',label:'SKU / Size',type:'text',group:'Main parameters'},
 ];
 
-export const getResourceSchema=(type:ResourceType):PropertyField[]=>schemas[type]||generic;
+export const getResourceSchema=(type:ResourceType):PropertyField[]=>{
+  const base=schemas[type]||generic;
+  const rel=genericRelationshipFields(type);
+  const seen=new Set<string>();
+  return [...rel,...base].filter(field=>{
+    if(seen.has(field.key))return false;
+    seen.add(field.key);
+    return true;
+  });
+};
 export const schemaGroups=(type:ResourceType)=>Array.from(new Set(getResourceSchema(type).map(f=>f.group)));

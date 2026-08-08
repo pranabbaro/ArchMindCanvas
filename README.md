@@ -304,3 +304,17 @@ Important: The browser workflow is a safe scaffold/demo until the deployment API
 - NEW/EXISTING/IMPORT badges on standard and container nodes
 - All reference metadata is stored in the architecture JSON and survives save/reopen
 - Existing v7.2.5 Azure property schemas, icons, hierarchy, connectors, save/export and deployment workflow are retained
+
+
+## v7.3.1 Typed Smart References
+- Existing resources now default to lookup by resource name
+- Full Azure resource ID moved under optional Advanced lookup
+- Added typed `resourceRef` schema fields
+- Resource selectors show only compatible diagram resources
+- VM: Subscription, Resource Group, VNet, Subnet, Managed Identity and Key Vault references
+- App Service: Subscription, Resource Group, integration Subnet, Key Vault and Managed Identity references
+- Function App: Storage Account, Subnet, Key Vault and placement references
+- AKS: VNet, Subnet, ACR, Key Vault and Log Analytics references
+- Storage, SQL, Key Vault, Private Endpoint, Application Gateway, Firewall, Azure OpenAI, AI Search and monitoring resources receive typed relationship selectors
+- All other non-governance Azure resources automatically receive Subscription + Resource Group smart references
+- Existing/Create mode of referenced resources is preserved in generated Terraform expressions
