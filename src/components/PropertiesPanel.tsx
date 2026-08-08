@@ -6,8 +6,8 @@ import {
 import { resourceMap } from '../resourceCatalog';
 import { getResourceSchema, schemaGroups, type PropertyField } from '../resourceSchemas';
 import type {
-  ArchitectureNode, ArchitectureNodeData, PropertyBinding, PropertyValueSource,
-  ResourceMode, ResourceType, TagMap
+  ArchitectureNode, ArchitectureNodeData, LocalDefinition, PropertyBinding, PropertyValueSource,
+  ResourceMode, ResourceType, TagMap, VariableDefinition
 } from '../types';
 
 type Option={id:string;label:string};
@@ -15,6 +15,8 @@ type Props={
   nodeId:string;
   data?:ArchitectureNodeData;
   allResources:ArchitectureNode[];
+  declaredVariables:VariableDefinition[];
+  declaredLocals:LocalDefinition[];
   onChange:(updates:Partial<ArchitectureNodeData>)=>void;
   onDelete:()=>void;
   onDuplicate:()=>void;
@@ -175,12 +177,14 @@ const sourceLabels:Record<PropertyValueSource,string>={
 };
 
 function SourcePicker({
-  field,data,nodeId,resources,onChange,onClose
+  field,data,nodeId,resources,declaredVariables,declaredLocals,onChange,onClose
 }:{
   field:PropertyField;
   data:ArchitectureNodeData;
   nodeId:string;
   resources:ArchitectureNode[];
+  declaredVariables:VariableDefinition[];
+  declaredLocals:LocalDefinition[];
   onChange:(u:Partial<ArchitectureNodeData>)=>void;
   onClose:()=>void;
 }){
@@ -198,8 +202,8 @@ function SourcePicker({
       <button className={current.source==='moduleOutput'?'active':''} onClick={()=>patch({source:'moduleOutput',moduleName:current.moduleName||'platform',moduleOutput:current.moduleOutput||field.key})}><PackageOpen size={14}/> Module</button>
     </div>
 
-    {current.source==='variable'&&<label>Variable name<input value={current.variableName||''} onChange={e=>patch({...current,variableName:e.target.value})}/><small>Generates var.{current.variableName||field.key}</small></label>}
-    {current.source==='local'&&<label>Local name<input value={current.localName||''} onChange={e=>patch({...current,localName:e.target.value})}/><small>Generates local.{current.localName||field.key}</small></label>}
+    {current.source==='variable'&&<label>Variable<select value={current.variableName||''} onChange={e=>patch({...current,variableName:e.target.value})}><option value="">Select declared variable...</option>{declaredVariables.map(v=><option key={v.name} value={v.name}>{v.name} · {v.type}</option>)}</select><small>{current.variableName?`Generates var.${current.variableName}`:'Declare variables from the Variables tab.'}</small></label>}
+    {current.source==='local'&&<label>Local<select value={current.localName||''} onChange={e=>patch({...current,localName:e.target.value})}><option value="">Select declared local...</option>{declaredLocals.map(v=><option key={v.name} value={v.name}>{v.name}</option>)}</select><small>{current.localName?`Generates local.${current.localName}`:'Declare locals from the Variables tab.'}</small></label>}
     {current.source==='resource'&&<>
       <label>Diagram resource<select value={current.targetNodeId||''} onChange={e=>patch({...current,targetNodeId:e.target.value})}><option value="">Select resource...</option>{candidates.map(r=><option value={r.id} key={r.id}>{r.data.label} · {resourceMap[r.data.resourceType].label}</option>)}</select></label>
       <label>Attribute<input value={current.targetAttribute||'id'} onChange={e=>patch({...current,targetAttribute:e.target.value})} placeholder="id / name / location"/></label>
@@ -218,12 +222,14 @@ function SourcePicker({
 }
 
 function FieldEditor({
-  field,data,nodeId,resources,onChange
+  field,data,nodeId,resources,declaredVariables,declaredLocals,onChange
 }:{
   field:PropertyField;
   data:ArchitectureNodeData;
   nodeId:string;
   resources:ArchitectureNode[];
+  declaredVariables:VariableDefinition[];
+  declaredLocals:LocalDefinition[];
   onChange:(u:Partial<ArchitectureNodeData>)=>void
 }){
   const value=getValue(data,field);
@@ -247,16 +253,18 @@ function FieldEditor({
   return <div className="smart-property-field">
     <div className="smart-field-row"><div className="smart-field-editor">{editor}</div><button className={`binding-button ${binding&&binding.source!=='literal'?'bound':''}`} title="Choose value source" onClick={()=>setShowSource(v=>!v)}><Link2 size={14}/></button></div>
     {binding&&binding.source!=='literal'&&<div className="binding-chip">{sourceLabels[binding.source]} · <code>{bindingExpression(binding,value,resources)}</code></div>}
-    {showSource&&<SourcePicker field={field} data={data} nodeId={nodeId} resources={resources} onChange={onChange} onClose={()=>setShowSource(false)}/>}
+    {showSource&&<SourcePicker field={field} data={data} nodeId={nodeId} resources={resources} declaredVariables={declaredVariables} declaredLocals={declaredLocals} onChange={onChange} onClose={()=>setShowSource(false)}/>}
   </div>;
 }
 
 
 function TagBindingPicker({
-  data,resources,onChange,onClose
+  data,resources,declaredVariables,declaredLocals,onChange,onClose
 }:{
   data:ArchitectureNodeData;
   resources:ArchitectureNode[];
+  declaredVariables:VariableDefinition[];
+  declaredLocals:LocalDefinition[];
   onChange:(u:Partial<ArchitectureNodeData>)=>void;
   onClose:()=>void;
 }){
@@ -275,8 +283,8 @@ function TagBindingPicker({
       <button className={current.source==='moduleOutput'?'active':''} onClick={()=>patch({source:'moduleOutput',moduleName:current.moduleName||'platform',moduleOutput:current.moduleOutput||'tags'})}><PackageOpen size={14}/> Module</button>
     </div>
 
-    {current.source==='variable'&&<label>Variable name<input value={current.variableName||''} onChange={e=>patch({...current,variableName:e.target.value})}/><small>Terraform: var.{current.variableName||'tags'}</small></label>}
-    {current.source==='local'&&<label>Local name<input value={current.localName||''} onChange={e=>patch({...current,localName:e.target.value})}/><small>Terraform: local.{current.localName||'common_tags'}</small></label>}
+    {current.source==='variable'&&<label>Variable<select value={current.variableName||''} onChange={e=>patch({...current,variableName:e.target.value})}><option value="">Select declared variable...</option>{declaredVariables.filter(v=>v.type==='map(string)'||v.type==='any').map(v=><option key={v.name} value={v.name}>{v.name} · {v.type}</option>)}</select><small>{current.variableName?`Terraform: var.${current.variableName}`:'Tags work best with map(string).'}</small></label>}
+    {current.source==='local'&&<label>Local<select value={current.localName||''} onChange={e=>patch({...current,localName:e.target.value})}><option value="">Select declared local...</option>{declaredLocals.map(v=><option key={v.name} value={v.name}>{v.name}</option>)}</select><small>{current.localName?`Terraform: local.${current.localName}`:'Choose a declared local.'}</small></label>}
     {current.source==='resource'&&<>
       <label>Diagram resource<select value={current.targetNodeId||''} onChange={e=>patch({...current,targetNodeId:e.target.value,targetAttribute:current.targetAttribute||'tags'})}><option value="">Select resource...</option>{candidates.map(r=><option value={r.id} key={r.id}>{r.data.label} · {resourceMap[r.data.resourceType].label}</option>)}</select></label>
       <label>Attribute<input value={current.targetAttribute||'tags'} onChange={e=>patch({...current,targetAttribute:e.target.value})} placeholder="tags"/></label>
@@ -294,7 +302,7 @@ function TagBindingPicker({
   </div>;
 }
 
-export default function PropertiesPanel({nodeId,data,allResources,onChange,onDelete,onDuplicate,hierarchy,parentId,onParentChange}:Props){
+export default function PropertiesPanel({nodeId,data,allResources,declaredVariables,declaredLocals,onChange,onDelete,onDuplicate,hierarchy,parentId,onParentChange}:Props){
   const[mode,setMode]=useState<'form'|'code'>('form');
   const[collapsed,setCollapsed]=useState<Record<string,boolean>>({});
   const[showTagSource,setShowTagSource]=useState(false);
@@ -346,7 +354,7 @@ export default function PropertiesPanel({nodeId,data,allResources,onChange,onDel
 
       {groups.map(group=><section className="property-section" key={group}>
         <button className="property-section-toggle" onClick={()=>setCollapsed(c=>({...c,[group]:!c[group]}))}>{collapsed[group]?<ChevronRight size={15}/>:<ChevronDown size={15}/>}<strong>{group}</strong></button>
-        {!collapsed[group]&&<div className="form-stack">{schema.filter(f=>f.group===group&&f.key!=='owner').map(f=><FieldEditor key={f.key} field={f} data={data} nodeId={nodeId} resources={allResources} onChange={onChange}/>)}</div>}
+        {!collapsed[group]&&<div className="form-stack">{schema.filter(f=>f.group===group&&f.key!=='owner').map(f=><FieldEditor key={f.key} field={f} data={data} nodeId={nodeId} resources={allResources} declaredVariables={declaredVariables} declaredLocals={declaredLocals} onChange={onChange}/>)}</div>}
       </section>)}
 
       <section className="property-section governance-section">
@@ -360,7 +368,7 @@ export default function PropertiesPanel({nodeId,data,allResources,onChange,onDel
               <button className={`binding-button ${data.bindings?.['__tags__']&&data.bindings['__tags__'].source!=='literal'?'bound':''}`} title="Choose Tags value source" onClick={()=>setShowTagSource(v=>!v)}><Link2 size={14}/></button>
             </div>
             {data.bindings?.['__tags__']&&data.bindings['__tags__'].source!=='literal'&&<div className="binding-chip">{sourceLabels[data.bindings['__tags__'].source]} · <code>{terraformTagsExpression(data,allResources)}</code></div>}
-            {showTagSource&&<TagBindingPicker data={data} resources={allResources} onChange={onChange} onClose={()=>setShowTagSource(false)}/>}
+            {showTagSource&&<TagBindingPicker data={data} resources={allResources} declaredVariables={declaredVariables} declaredLocals={declaredLocals} onChange={onChange} onClose={()=>setShowTagSource(false)}/>}
           </div>
           {Object.keys(data.inheritedTags||{}).length>0&&<label>Inherited tags <small>Read-only values inherited from parent resources.</small><textarea readOnly value={tagString(data.inheritedTags)} rows={3}/></label>}
         </div>}

@@ -80,6 +80,21 @@ export type ResourceType =
 
 export type TagMap = Record<string, string>;
 
+export type TerraformValueType = 'string' | 'number' | 'bool' | 'list(string)' | 'map(string)' | 'any';
+export type VariableDefinition = {
+  name:string;
+  type:TerraformValueType;
+  defaultValue?:string|number|boolean;
+  description?:string;
+  sensitive?:boolean;
+  nullable?:boolean;
+};
+export type LocalDefinition = {
+  name:string;
+  value:string;
+  description?:string;
+};
+
 export type ResourceMode = 'create' | 'existing' | 'import';
 export type PropertyValueSource = 'literal' | 'variable' | 'resource' | 'data' | 'local' | 'moduleOutput';
 

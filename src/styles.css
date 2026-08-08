@@ -416,3 +416,12 @@
 .smart-tags-field textarea:disabled{background:#f8fafc;color:#94a3b8;cursor:not-allowed}
 .tag-binding-popover{margin-top:7px}
 .tag-binding-popover .binding-preview code{color:#c4b5fd}
+
+/* v7.3.4 Enterprise Variables Manager */
+.variables-manager{height:100%;overflow:auto;background:#fff}.variables-manager-header{padding:14px 16px;border-bottom:1px solid #e2e8f0}
+.variables-manager-header>div:first-child{display:flex;flex-direction:column;gap:3px}.variables-manager-header strong{font-size:12px;color:#0f172a}.variables-manager-header small{font-size:8px;color:#64748b}
+.variables-manager-tabs{display:grid;grid-template-columns:repeat(3,1fr);gap:5px;margin-top:10px}.variables-manager-tabs button{display:flex;align-items:center;justify-content:center;gap:5px;border:1px solid #dbe3ee;background:#f8fafc;border-radius:7px;padding:7px;font-size:8px}.variables-manager-tabs button.active{background:#eff6ff;border-color:#60a5fa;color:#1d4ed8;font-weight:700}
+.variables-manager-body{padding:12px 14px}.variables-toolbar{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;font-size:8px;color:#64748b}.variables-toolbar button{display:flex;align-items:center;gap:5px;border:1px solid #cbd5e1;background:#fff;border-radius:7px;padding:6px 8px;font-size:8px}
+.variables-empty{border:1px dashed #cbd5e1;border-radius:10px;padding:18px;text-align:center;display:flex;flex-direction:column;align-items:center;gap:5px;color:#64748b}.variable-card{border:1px solid #dfe7f1;border-radius:10px;padding:10px;margin-bottom:10px}.variable-card-title{display:flex;justify-content:space-between;align-items:center;margin-bottom:9px}.variable-card-title strong{font-size:9px;color:#4f46e5}.variable-card-title button{border:0;background:transparent;color:#94a3b8}
+.variable-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}.variable-grid .span-2{grid-column:1/-1}.variable-grid label{font-size:8px;font-weight:600;color:#334155}.variable-grid input,.variable-grid select,.variable-grid textarea{width:100%;margin-top:4px;border:1px solid #d6e0ec;border-radius:7px;padding:7px;font-size:8px}.variable-grid .toggle-row{display:flex;justify-content:space-between;align-items:center;border:1px solid #e2e8f0;border-radius:7px;padding:7px}.variable-grid .toggle-row input{width:auto;margin:0}
+.variables-code{padding:12px}.variables-code pre{background:#0f172a;color:#e2e8f0;padding:12px;border-radius:9px;font-size:8px;white-space:pre-wrap;overflow:auto}
