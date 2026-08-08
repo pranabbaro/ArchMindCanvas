@@ -1436,3 +1436,38 @@
 .topbar{overflow:hidden!important}.topbar .segmented-context-nav{flex-shrink:1!important}.topbar .design-title{flex:0 1 225px!important;min-width:165px!important;max-width:225px!important}.topbar .toolbar{flex:1 1 auto!important;min-width:0!important}
 @media(max-width:1400px){.segmented-context-nav{flex-basis:360px;max-width:360px}.segmented-context-item.project{flex-basis:110px}.segmented-context-item.environment{flex-basis:95px}.segmented-context-item.architecture{flex-basis:130px}.topbar .design-title{flex-basis:190px!important;max-width:190px!important}}
 @media(max-width:1180px){.segmented-context-nav{flex-basis:300px;max-width:300px;min-width:220px}.segmented-context-item.project{flex-basis:88px}.segmented-context-item.environment{flex-basis:78px}.segmented-context-item.architecture{flex-basis:108px}.topbar .design-title{flex-basis:165px!important;max-width:165px!important}}
+
+/* v7.9.7 draggable canvas toolbar */
+.drawing-toolbar.draggable-canvas-toolbar{
+  will-change:transform;
+  transition:box-shadow .15s ease;
+}
+.drawing-toolbar.draggable-canvas-toolbar:has(.canvas-toolbar-drag-handle.dragging){
+  box-shadow:0 16px 38px rgba(15,23,42,.18)!important;
+}
+.canvas-toolbar-drag-handle{
+  flex:0 0 26px!important;
+  width:26px!important;
+  min-width:26px!important;
+  height:36px!important;
+  padding:0!important;
+  display:grid!important;
+  place-items:center!important;
+  border:0!important;
+  border-right:1px solid #dce5ef!important;
+  border-radius:8px 0 0 8px!important;
+  background:#f8fafc!important;
+  color:#7b8da4!important;
+  cursor:grab!important;
+  touch-action:none!important;
+  user-select:none!important;
+}
+.canvas-toolbar-drag-handle:hover{
+  background:#eef6ff!important;
+  color:#2875c8!important;
+}
+.canvas-toolbar-drag-handle.dragging{
+  cursor:grabbing!important;
+  background:#e8f2ff!important;
+  color:#1d62b3!important;
+}

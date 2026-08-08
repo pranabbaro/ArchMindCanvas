@@ -1,13 +1,17 @@
-# ArchMindCanvas v7.9.6
+# ArchMindCanvas v7.9.7 — Draggable Canvas Toolbar
 
-Fixes GitHub Actions TypeScript build error:
+Adds user-positionable drawing toolbar.
 
-`src/App.tsx:908 Cannot find name 'Network'.`
-
-The `Network` icon used by the compact Architecture navigation is now explicitly imported from `lucide-react`.
+- Dedicated drag handle added to the left side of the toolbar
+- Dragging only works from the handle, so toolbar actions remain normal
+- Position is saved in localStorage
+- Position is restored after refresh
+- Double-click the drag handle to reset to the default position
+- Movement is constrained to a safe range around the canvas
+- Existing compact navigation and dual collapsible panels are preserved
 
 ```powershell
 git add .
-git commit -m "ArchMindCanvas v7.9.6 - fix Network icon import"
+git commit -m "ArchMindCanvas v7.9.7 - draggable canvas toolbar"
 git push origin main
 ```
