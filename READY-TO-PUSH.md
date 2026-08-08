@@ -1,19 +1,32 @@
-# ArchMindCanvas v7.6.3 — Floating ArchMind AI
+# ArchMindCanvas v7.7.0 — Project / Environment / Architecture Workspace
 
-Home:
-- Removed the large Architecture Copilot panel.
-- Architecture Intelligence now uses the available width.
+Functional hierarchy:
 
-Design editor:
-- Removed AI Studio from the top toolbar.
-- Removed AI from the inspector tabs.
-- Added one floating ArchMind AI logo inside the design canvas.
-- Click it to open a compact popup assistant.
-- The assistant answers design-context questions about security, validation, score, private endpoints, cost, Terraform, resources, networking and Azure Well-Architected guidance.
-- Existing sample architecture generation remains available from the popup.
+Organization
+└── Project
+    ├── Environments
+    │   ├── DEV
+    │   ├── TEST
+    │   ├── QA
+    │   ├── PROD
+    │   └── DR
+    └── Architectures
+        └── Each architecture is assigned to an environment
+
+New functionality:
+- Create Project
+- Open Project workspace
+- Create Environment inside a Project
+- Create Architecture inside a Project
+- Choose Environment when creating Architecture
+- Project Overview / Architectures / Environments tabs
+- Open architecture into existing editor with correct Project/Environment/Architecture context
+- Project metadata is persisted in browser localStorage
+
+Push:
 
 ```powershell
 git add .
-git commit -m "ArchMindCanvas v7.6.3 - floating ArchMind AI assistant"
+git commit -m "ArchMindCanvas v7.7.0 - project environment architecture workspace"
 git push origin main
 ```

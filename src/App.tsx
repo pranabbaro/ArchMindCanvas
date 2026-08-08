@@ -639,6 +639,22 @@ const selectedNode=nodes.find(n=>n.id===selectedNodeId);const selectedEdge=edges
   onOpenEditor={()=>setWorkspaceView('editor')}
   onCreateArchitecture={()=>{newDesign();setWorkspaceView('editor');}}
   onOpenScopeManager={()=>setScopeManagerOpen(true)}
+  onOpenArchitecture={ctx=>{
+    setProjectId(ctx.projectId);
+    setProjectName(ctx.projectName);
+    setEnvironmentId(ctx.environmentId);
+    setEnvironmentName(ctx.environmentName);
+    setDesignId(ctx.architectureId);
+    setDesignName(ctx.architectureName);
+    setNodes([]);
+    setEdges([]);
+    setDesignVariables([]);
+    setDesignLocals([]);
+    setSelectedNodeId(undefined);
+    setSelectedEdgeId(undefined);
+    setSaveState('unsaved');
+    setWorkspaceView('editor');
+  }}
  />;
   return <div className="app-shell"><header className="topbar"><button className="editor-home-button" onClick={()=>setWorkspaceView('dashboard')} title="Back to Command Center"><LayoutDashboard size={15}/></button><button className="enterprise-breadcrumb" onClick={()=>setScopeManagerOpen(true)} title="Organization / Project / Environment / Architecture">
  <span><Building2 size={13}/>{organizationName}</span><b>›</b>
