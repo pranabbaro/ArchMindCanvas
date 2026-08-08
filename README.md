@@ -246,3 +246,36 @@ Important: The browser workflow is a safe scaffold/demo until the deployment API
 - Updated Azure OpenAI and Azure Machine Learning icons
 - Added Azure AI Search, Microsoft Foundry, Foundry Project, Foundry Models, Foundry Agent Service, Document Intelligence, AI Content Safety, Azure AI Services and Azure Bot Service
 - Sidebar and Canvas share one centralized icon mapping
+
+## v7.2.0 Schema-Driven Azure Properties
+- Resource-specific Azure property schemas
+- Brainboard-style Form / Code switch
+- Collapsible sections such as Compute, Networking, Security, Identity, Backup and Advanced
+- Dedicated properties for Resource Group, VNet, Subnet, VM, VMSS, Storage Account, Blob, Azure Files, SQL Database, SQL Managed Instance, App Service, Function App, Key Vault, AKS, Private Endpoint, NSG, Application Gateway, Azure Firewall, Azure OpenAI and AI Search
+- Generic fallback schema remains for resources not yet individually modeled
+- Added an extensible `properties` object to ArchitectureNodeData
+- Terraform-style resource preview generated from the selected schema
+- Existing hierarchy, tags, icons and editor behavior retained
+
+## v7.2.1 Validated Dynamic Azure Properties
+- Validated the new schema-driven PropertiesPanel with TypeScript 5.8.3
+- Validated resourceSchemas.ts, PropertiesPanel.tsx, types.ts and resourceCatalog.ts together
+- Confirmed no TypeScript syntax/type errors in the new properties engine after dependency shimming
+- Retains Brainboard-style Form / Code switch and resource-specific Azure property groups
+- Full npm production build could not be executed in this environment because the internal npm registry is currently returning 404 for required packages
+
+
+## v7.2.2 Production Build Gate
+- GitHub Actions performs a strict TypeScript production check before Vite build
+- Production build is generated in `dist/`
+- Workflow verifies `dist/index.html` and built assets exist
+- Production `dist/` is uploaded as a downloadable GitHub Actions artifact
+- GitHub Pages deploy runs only after the production build succeeds
+- Node.js 24 is used by the build job
+
+## v7.2.3 Ready-to-Push Release
+- Preserves the schema-driven Brainboard-style Azure Properties experience
+- Corrected GitHub Actions versions for the current GitHub Pages build pipeline
+- Added a strict production deployment gate
+- Retains `archmindcanvas.in` custom-domain configuration
+- Removed generated TypeScript build-info files from source control

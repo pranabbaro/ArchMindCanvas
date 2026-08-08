@@ -1,12 +1,14 @@
 {
   "name": "archmindcanvas",
   "private": true,
-  "version": "7.1.0",
+  "version": "7.2.3",
   "type": "module",
   "scripts": {
     "dev": "vite",
     "build": "tsc -b && vite build",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "typecheck": "tsc -b --pretty false",
+    "build:prod": "tsc -b --pretty false && vite build"
   },
   "dependencies": {
     "@xyflow/react": "12.11.0",

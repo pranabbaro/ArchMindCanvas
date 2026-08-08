@@ -97,6 +97,7 @@ export type ArchitectureNodeData = {
   subnet?: string;
   tags?: TagMap;
   inheritedTags?: TagMap;
+  properties?: Record<string, string | number | boolean>;
 };
 export type DrawingNodeData = {
   label: string;

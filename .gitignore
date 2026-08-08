@@ -3,3 +3,6 @@ dist
 .vscode
 .DS_Store
 *.local
+*.tsbuildinfo
+.npm/
+coverage/
