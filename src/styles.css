@@ -352,3 +352,33 @@
 .code-toolbar{display:flex;align-items:center;justify-content:space-between;margin-bottom:7px;font-size:9px;color:#64748b}
 .code-toolbar button{display:flex;align-items:center;gap:5px}
 .resource-code-view pre{margin:0;background:#0f172a;color:#e2e8f0;border-radius:9px;padding:12px;overflow:auto;white-space:pre-wrap;font-size:9px;line-height:1.55;min-height:280px}
+
+/* v7.3 Smart Reference Engine */
+.smart-resource-mode-section .property-section-title{display:flex;flex-direction:column;gap:3px}
+.smart-resource-mode-section .property-section-title small{font-size:8px;color:#64748b;font-weight:400}
+.resource-mode-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:6px}
+.resource-mode-grid button{min-width:0;border:1px solid #dbe3ee;background:#fff;border-radius:8px;padding:8px 5px;display:flex;flex-direction:column;align-items:center;gap:3px;color:#475569}
+.resource-mode-grid button b{font-size:9px}
+.resource-mode-grid button span{font-size:7px;text-align:center;line-height:1.2;color:#64748b}
+.resource-mode-grid button.active{border-color:#2563eb;background:#eff6ff;color:#1d4ed8;box-shadow:0 0 0 1px rgba(37,99,235,.12)}
+.existing-resource-box{margin-top:9px;padding:9px;border:1px solid #bfdbfe;background:#f8fbff;border-radius:9px;display:flex;flex-direction:column;gap:8px}
+.smart-property-field{position:relative}
+.smart-field-row{display:flex;align-items:flex-end;gap:5px}
+.smart-field-editor{flex:1;min-width:0}
+.binding-button{width:30px;height:30px;flex:0 0 30px;border:1px solid #dbe3ee;background:#fff;border-radius:7px;display:flex;align-items:center;justify-content:center;color:#64748b;margin-bottom:1px}
+.binding-button:hover,.binding-button.bound{border-color:#7c3aed;color:#6d28d9;background:#f5f3ff}
+.binding-chip{display:flex;align-items:center;gap:4px;margin-top:4px;padding:4px 6px;border-radius:5px;background:#f5f3ff;color:#6d28d9;font-size:7px;overflow:hidden}
+.binding-chip code{font-size:7px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.binding-popover{position:relative;margin:6px 0 9px;border:1px solid #c4b5fd;border-radius:10px;padding:9px;background:#fff;box-shadow:0 10px 25px rgba(76,29,149,.12);z-index:3}
+.binding-popover-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;font-size:9px}
+.binding-popover-head button{border:0;background:transparent;padding:2px}
+.binding-source-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:5px;margin-bottom:8px}
+.binding-source-grid button{border:1px solid #e2e8f0;background:#fff;border-radius:7px;padding:6px;display:flex;align-items:center;gap:5px;font-size:8px;color:#475569}
+.binding-source-grid button.active{border-color:#7c3aed;background:#f5f3ff;color:#6d28d9;font-weight:700}
+.binding-preview{margin-top:7px;padding:7px;border-radius:7px;background:#0f172a;color:#e2e8f0;display:flex;flex-direction:column;gap:3px}
+.binding-preview span{font-size:7px;color:#94a3b8;text-transform:uppercase}
+.binding-preview code{font-size:8px;white-space:normal;word-break:break-word}
+.resource-mode-badge{display:inline-flex;vertical-align:middle;margin-left:4px;padding:2px 4px;border-radius:999px;font-size:6px!important;line-height:1;font-weight:800;letter-spacing:.04em}
+.resource-mode-badge.create{background:#dcfce7;color:#166534}
+.resource-mode-badge.existing{background:#e0e7ff;color:#3730a3}
+.resource-mode-badge.import{background:#fef3c7;color:#92400e}

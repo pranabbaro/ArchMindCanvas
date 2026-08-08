@@ -292,3 +292,15 @@ Important: The browser workflow is a safe scaffold/demo until the deployment API
 - Terraform resource-name mapping is now typed as `Partial<Record<ResourceType,string>>`
 - Supports all current ResourceType values while retaining fallback naming for resources not explicitly mapped
 - Dynamic Azure property schemas and production workflow remain unchanged
+
+
+## v7.3.0 Smart Reference Engine
+- Resource mode: Create, Existing, Import
+- Per-property value sources: Direct, Variable, Diagram Resource, Data Source, Local, Module Output
+- Terraform expression preview for every bound field
+- Existing resources render as Terraform `data` blocks in selected-resource Code view
+- Imported resources render Terraform resource + import block
+- Diagram-resource references automatically switch to `data.*` when the target node is marked Existing
+- NEW/EXISTING/IMPORT badges on standard and container nodes
+- All reference metadata is stored in the architecture JSON and survives save/reopen
+- Existing v7.2.5 Azure property schemas, icons, hierarchy, connectors, save/export and deployment workflow are retained

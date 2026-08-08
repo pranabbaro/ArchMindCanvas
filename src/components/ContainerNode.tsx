@@ -12,7 +12,7 @@ export default function ContainerNode({ data, selected }: NodeProps<Architecture
     <NodeResizer isVisible={selected} minWidth={m.w} minHeight={m.h}/>
     <div className={`container-node hierarchy-${data.resourceType} ${selected?'selected':''}`}>
       <Handle id="left" type="target" position={Position.Left}/><Handle id="top" type="target" position={Position.Top}/>
-      <div className="container-titlebar"><span className="container-title-icon">{useFallback?<Icon size={16}/>:<img src={item.iconUrl} alt={`${item.label} icon`} draggable={false} onError={()=>setIconFailed(true)} style={{width:18,height:18,objectFit:'contain',display:'block'}}/>}</span><div><strong>{data.label}</strong><small>{item.label}{data.region?` · ${data.region}`:''}</small></div></div>
+      <div className="container-titlebar"><span className="container-title-icon">{useFallback?<Icon size={16}/>:<img src={item.iconUrl} alt={`${item.label} icon`} draggable={false} onError={()=>setIconFailed(true)} style={{width:18,height:18,objectFit:'contain',display:'block'}}/>}</span><div><strong>{data.label} <span className={`resource-mode-badge ${data.resourceMode||'create'}`}>{(data.resourceMode||'create').toUpperCase()}</span></strong><small>{item.label}{data.region?` · ${data.region}`:''}</small></div></div>
       <Handle id="right" type="source" position={Position.Right}/><Handle id="bottom" type="source" position={Position.Bottom}/>
     </div>
   </>;

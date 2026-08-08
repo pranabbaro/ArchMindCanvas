@@ -80,6 +80,29 @@ export type ResourceType =
 
 export type TagMap = Record<string, string>;
 
+export type ResourceMode = 'create' | 'existing' | 'import';
+export type PropertyValueSource = 'literal' | 'variable' | 'resource' | 'data' | 'local' | 'moduleOutput';
+
+export type PropertyBinding = {
+  source: PropertyValueSource;
+  variableName?: string;
+  targetNodeId?: string;
+  targetAttribute?: string;
+  dataSourceType?: string;
+  dataSourceName?: string;
+  dataAttribute?: string;
+  localName?: string;
+  moduleName?: string;
+  moduleOutput?: string;
+};
+
+export type ExistingResourceReference = {
+  lookupType: 'name' | 'resourceId';
+  name?: string;
+  resourceId?: string;
+};
+
+
 export type ArchitectureNodeData = {
   label: string;
   resourceType: ResourceType;
@@ -98,6 +121,9 @@ export type ArchitectureNodeData = {
   tags?: TagMap;
   inheritedTags?: TagMap;
   properties?: Record<string, string | number | boolean>;
+  resourceMode?: ResourceMode;
+  existingResource?: ExistingResourceReference;
+  bindings?: Record<string, PropertyBinding>;
 };
 export type DrawingNodeData = {
   label: string;

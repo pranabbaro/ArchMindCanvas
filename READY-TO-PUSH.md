@@ -1,11 +1,14 @@
-# ArchMindCanvas v7.2.5 — Ready to Push
+# ArchMindCanvas v7.3.0 — Smart Reference Engine
 
-This release fixes the TypeScript production build error from `PropertiesPanel.tsx` line 34.
+Push from VS Code:
 
 ```powershell
 git add .
-git commit -m "ArchMindCanvas v7.2.5 - fix Terraform resource map typing"
+git commit -m "ArchMindCanvas v7.3.0 - Smart Reference Engine"
 git push origin main
 ```
 
-GitHub Actions will run TypeScript validation and the Vite production build before deployment.
+New capability:
+- Resource Mode: Create / Existing / Import
+- Property Value Source: Direct / Variable / Resource / Data / Local / Module Output
+- Terraform preview resolves bindings and existing-resource references
