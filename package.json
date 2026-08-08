@@ -1,7 +1,7 @@
 {
   "name": "archmindcanvas",
   "private": true,
-  "version": "7.9.3",
+  "version": "7.9.5",
   "type": "module",
   "scripts": {
     "dev": "vite",

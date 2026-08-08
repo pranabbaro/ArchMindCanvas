@@ -1,22 +1,15 @@
-# ArchMindCanvas v7.9.3 — Header Breadcrumb Overlap Fix
+# ArchMindCanvas v7.9.5 — Compact Navigation + Dual Collapsible Panels
 
-Fixes the editor header overlap between:
-- Organization / Project / Environment / Architecture breadcrumb
-- Current architecture title
-- Toolbar actions
-
-Changes:
-- Breadcrumb names truncate with ellipsis
-- Breadcrumb cannot wrap
-- Architecture title has a protected width
-- Toolbar gets remaining space
-- Responsive breakpoints progressively compact the breadcrumb
-- Small screens hide the least-important breadcrumb level instead of overlapping
-
-Push:
+- Project › Environment › Architecture segmented navigation.
+- Each long segment truncates independently.
+- Left resource pane can collapse/expand.
+- Right inspector pane can collapse/expand.
+- Both states persist in localStorage.
+- Canvas automatically uses the freed space.
+- Both panes can be collapsed at the same time.
 
 ```powershell
 git add .
-git commit -m "ArchMindCanvas v7.9.3 - fix header breadcrumb overlap"
+git commit -m "ArchMindCanvas v7.9.5 - compact navigation and dual collapsible panels"
 git push origin main
 ```
