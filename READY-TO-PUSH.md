@@ -1,30 +1,27 @@
-# ArchMindCanvas v7.2.3 — Ready to Push
+# ArchMindCanvas v7.2.4 — Ready to Push
 
-This repository is prepared for the existing GitHub Pages custom domain:
+This release fixes the GitHub Actions failure:
 
-- Domain: `archmindcanvas.in`
-- Branch: `main`
-- Vite base path: `/`
-- Custom-domain CNAME: `public/CNAME`
-- Production workflow: `.github/workflows/deploy.yml`
+`Dependencies lock file is not found`
+
+The project currently does not commit `package-lock.json`, so npm caching has been removed from `actions/setup-node`.
+The workflow now installs dependencies directly with `npm install`.
 
 ## Push from VS Code
 
 ```powershell
 git add .
-git commit -m "ArchMindCanvas v7.2.3 - dynamic Azure properties"
+git commit -m "ArchMindCanvas v7.2.4 - fix production workflow"
 git push origin main
 ```
 
-After pushing, open **GitHub → Actions → Build and Deploy ArchMindCanvas**.
+The production workflow will run:
 
-The `deploy` job runs only if these production gates pass:
-
-1. npm dependency installation
-2. TypeScript validation
-3. Vite production build
-4. `dist/index.html` validation
-5. production assets validation
-6. custom-domain `CNAME` validation
-
-Do not commit `node_modules`, `dist`, or `*.tsbuildinfo`.
+1. Checkout
+2. Setup Node.js 24
+3. `npm install`
+4. TypeScript validation
+5. Vite production build
+6. Verify `dist`
+7. Upload production artifact
+8. Deploy GitHub Pages

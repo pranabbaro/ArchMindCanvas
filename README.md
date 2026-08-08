@@ -279,3 +279,9 @@ Important: The browser workflow is a safe scaffold/demo until the deployment API
 - Added a strict production deployment gate
 - Retains `archmindcanvas.in` custom-domain configuration
 - Removed generated TypeScript build-info files from source control
+
+## v7.2.4 GitHub Production Workflow Fix
+- Fixed `setup-node` failure caused by npm caching without a lock file
+- Removed `cache: npm` and package-manager cache configuration
+- Uses normal `npm install` before TypeScript and Vite production build
+- Existing dynamic Azure Properties engine is unchanged
