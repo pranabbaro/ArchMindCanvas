@@ -1,22 +1,19 @@
-# ArchMindCanvas v7.6.0 — Cloud Architecture Command Center
+# ArchMindCanvas v7.6.1 — Full-Width Toolbar
 
-New enterprise workspace shell:
-- Command Center dashboard
-- ArchMindCanvas-specific navigation and visual identity
-- Universal Create menu
-- Recent architecture intelligence cards
-- Architecture health / governance panel
-- ArchMind AI area
-- Deployment pipeline status
-- Recent activity
-- Organization selector
-- Continue Designing opens the existing editor
-- Home button returns from editor to Command Center
+Fixes the editor toolbar so it stays fully visible without horizontal sliding.
 
-Existing Organization → Project → Environment → Architecture foundation and all editor features are preserved.
+Changes:
+- Removes horizontal scrollbar from editor toolbar
+- Keeps toolbar actions in one visible row
+- Reduces action spacing responsively
+- Allows the design-name field to shrink instead of pushing actions off-screen
+- Preserves sticky/enterprise toolbar behavior
+- Keeps Command Center and editor features unchanged
+
+Push:
 
 ```powershell
 git add .
-git commit -m "ArchMindCanvas v7.6.0 - cloud architecture command center"
+git commit -m "ArchMindCanvas v7.6.1 - full width editor toolbar"
 git push origin main
 ```

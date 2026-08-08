@@ -725,3 +725,125 @@
 .activity-list>div,.deployment-list>div{display:flex;align-items:center;gap:9px;padding:10px 0;border-top:1px solid #edf1f6}.activity-list>div:first-child,.deployment-list>div:first-child{border-top:0}.activity-icon{width:28px;height:28px;display:grid;place-items:center;border-radius:8px;background:#eff6ff;color:#2877d5}.activity-list div div,.deployment-list div div{flex:1}.activity-list strong,.deployment-list strong{display:block;font-size:8px}.activity-list small,.deployment-list small{display:block;margin-top:2px;font-size:7px;color:#94a3b8}.activity-list em{font-style:normal;width:24px;height:24px;border-radius:7px;display:grid;place-items:center;background:#f1f5f9;font-size:7px;font-weight:800;color:#64748b}.deploy-dot{width:8px;height:8px;border-radius:50%}.deploy-dot.passed{background:#22c55e}.deploy-dot.running{background:#3b82f6}.deploy-dot.failed{background:#ef4444}.deployment-list b{font-size:6px;padding:3px 6px;border-radius:999px;background:#f1f5f9;color:#64748b}
 .editor-home-button{width:34px;height:34px;display:grid;place-items:center;border:1px solid #26364f!important;border-radius:8px!important;background:#101d31!important;color:#9cc8f0!important}
 @media(max-width:1100px){.command-center-shell{grid-template-columns:78px minmax(0,1fr)}.command-brand>div:last-child,.command-org,.command-nav button span,.command-nav button em,.command-sidebar-footer{display:none}.command-brand{justify-content:center}.command-nav button{justify-content:center}.metric-grid{grid-template-columns:1fr 1fr}.architecture-card-grid{grid-template-columns:1fr 1fr}.intelligence-grid,.lower-grid{grid-template-columns:1fr}}
+
+/* v7.6.1 Full-width editor toolbar */
+.topbar,
+.app-topbar,
+.editor-topbar,
+.top-toolbar,
+.main-toolbar {
+  overflow: visible !important;
+}
+
+.topbar > *,
+.app-topbar > *,
+.editor-topbar > *,
+.top-toolbar > *,
+.main-toolbar > * {
+  min-width: 0;
+}
+
+.topbar-actions,
+.toolbar-actions,
+.header-actions,
+.main-toolbar-actions {
+  display: flex !important;
+  flex-wrap: nowrap !important;
+  align-items: center !important;
+  gap: 6px !important;
+  overflow: visible !important;
+  white-space: nowrap !important;
+  scrollbar-width: none !important;
+}
+
+.topbar-actions::-webkit-scrollbar,
+.toolbar-actions::-webkit-scrollbar,
+.header-actions::-webkit-scrollbar,
+.main-toolbar-actions::-webkit-scrollbar {
+  display: none !important;
+}
+
+.topbar-actions button,
+.toolbar-actions button,
+.header-actions button,
+.main-toolbar-actions button {
+  flex: 0 0 auto !important;
+  min-width: auto !important;
+  padding-left: 9px !important;
+  padding-right: 9px !important;
+}
+
+.design-title,
+.design-name,
+.topbar .design-title,
+.app-topbar .design-title {
+  flex: 0 1 300px !important;
+  min-width: 180px !important;
+  max-width: 300px !important;
+}
+
+.design-title input,
+.design-name input {
+  min-width: 0 !important;
+  width: 100% !important;
+}
+
+@media (max-width: 1500px) {
+  .topbar-actions,
+  .toolbar-actions,
+  .header-actions,
+  .main-toolbar-actions {
+    gap: 4px !important;
+  }
+
+  .topbar-actions button,
+  .toolbar-actions button,
+  .header-actions button,
+  .main-toolbar-actions button {
+    padding-left: 7px !important;
+    padding-right: 7px !important;
+  }
+
+  .topbar-actions button span,
+  .toolbar-actions button span,
+  .header-actions button span,
+  .main-toolbar-actions button span {
+    font-size: 7px !important;
+  }
+
+  .design-title,
+  .design-name,
+  .topbar .design-title,
+  .app-topbar .design-title {
+    flex-basis: 250px !important;
+    max-width: 250px !important;
+  }
+}
+
+@media (max-width: 1280px) {
+  .topbar-actions button,
+  .toolbar-actions button,
+  .header-actions button,
+  .main-toolbar-actions button {
+    padding-left: 6px !important;
+    padding-right: 6px !important;
+  }
+
+  .design-title,
+  .design-name,
+  .topbar .design-title,
+  .app-topbar .design-title {
+    flex-basis: 220px !important;
+    max-width: 220px !important;
+  }
+}
+
+/* Remove accidental horizontal scrollbar from the editor header area */
+.topbar,
+.app-topbar,
+.editor-topbar,
+.editor-header,
+.toolbar-wrap,
+.toolbar-container {
+  overflow-x: hidden !important;
+}
