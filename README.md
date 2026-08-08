@@ -318,3 +318,9 @@ Important: The browser workflow is a safe scaffold/demo until the deployment API
 - Storage, SQL, Key Vault, Private Endpoint, Application Gateway, Firewall, Azure OpenAI, AI Search and monitoring resources receive typed relationship selectors
 - All other non-governance Azure resources automatically receive Subscription + Resource Group smart references
 - Existing/Create mode of referenced resources is preserved in generated Terraform expressions
+
+
+## v7.3.5 Variables Manager Build Fix
+- Fixed `App.tsx` TypeScript error: `Type 'string | Element' is not assignable to type 'string | undefined'`
+- Corrected the Deploy tab className expression
+- Preserved the Variables inspector tab and VariablesManager render branch
