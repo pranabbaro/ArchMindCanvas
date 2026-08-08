@@ -1,25 +1,30 @@
-# ArchMindCanvas v7.4.1 — Design + Global Variables Build Fix
+# ArchMindCanvas v7.5.0 — Enterprise Hierarchy Foundation
 
-Fixes the production TypeScript error in App.tsx:
+This is the first platform-foundation release.
 
-`Type 'string | Element' is not assignable to type 'string | undefined'`
+Hierarchy:
+Organization → Project → Environment → Architecture
 
-Cause:
-Design Variables content was accidentally placed inside the Deploy button's `className`.
+Variable inheritance:
+Organization < Project < Environment < Architecture
 
-Fixed structure:
-- Properties tab
-- Variables tab (Design scope)
-- AI
-- Validate
-- IaC
-- Deploy
-- Global Vars remains in the main toolbar
+The most specific declaration wins.
+
+New:
+- Enterprise hierarchy breadcrumb in the top bar
+- Enterprise Scope Manager
+- Variables and Locals at all four scopes
+- Effective variable view with source scope
+- Organization variables persisted across the workspace
+- Project and Environment scope persisted across the workspace
+- Architecture variables remain stored with the design
+- Design JSON now carries hierarchy IDs and names
+- Resource property bindings consume resolved effective variables
 
 Push:
 
 ```powershell
 git add .
-git commit -m "ArchMindCanvas v7.4.1 - fix variables tab production build"
+git commit -m "ArchMindCanvas v7.5.0 - enterprise hierarchy foundation"
 git push origin main
 ```

@@ -81,6 +81,13 @@ export type ResourceType =
 export type TagMap = Record<string, string>;
 
 export type TerraformValueType = 'string' | 'number' | 'bool' | 'list(string)' | 'map(string)' | 'any';
+export type VariableScope = 'organization' | 'project' | 'environment' | 'architecture';
+export type WorkspaceScope = {
+  id:string;
+  name:string;
+  variables:VariableDefinition[];
+  locals:LocalDefinition[];
+};
 export type VariableDefinition = {
   name:string;
   type:TerraformValueType;
@@ -88,11 +95,13 @@ export type VariableDefinition = {
   description?:string;
   sensitive?:boolean;
   nullable?:boolean;
+  scope?:VariableScope;
 };
 export type LocalDefinition = {
   name:string;
   value:string;
   description?:string;
+  scope?:VariableScope;
 };
 
 export type ResourceMode = 'create' | 'existing' | 'import';

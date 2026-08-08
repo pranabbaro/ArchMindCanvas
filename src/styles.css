@@ -620,3 +620,85 @@
   line-height:1.35;
 }
 .design-variable-button span{white-space:nowrap}
+
+/* v7.5.0 Enterprise hierarchy foundation */
+.enterprise-breadcrumb{
+  display:flex;
+  align-items:center;
+  gap:5px;
+  max-width:520px;
+  min-width:240px;
+  padding:7px 9px;
+  border:1px solid #26364f;
+  border-radius:8px;
+  background:#101d31;
+  color:#dbeafe;
+}
+.enterprise-breadcrumb span{
+  display:flex;
+  align-items:center;
+  gap:4px;
+  min-width:0;
+  max-width:125px;
+  overflow:hidden;
+  text-overflow:ellipsis;
+  white-space:nowrap;
+  font-size:8px;
+}
+.enterprise-breadcrumb b{color:#64748b;font-size:10px}
+
+.workspace-scope-overlay{
+  position:fixed;inset:0;z-index:1200;
+  display:flex;align-items:center;justify-content:center;
+  padding:24px;background:rgba(15,23,42,.42);backdrop-filter:blur(3px)
+}
+.workspace-scope-dialog{
+  width:min(1120px,96vw);height:min(780px,92vh);
+  display:flex;flex-direction:column;overflow:hidden;
+  background:#fff;border:1px solid #dbe3ee;border-radius:15px;
+  box-shadow:0 28px 80px rgba(15,23,42,.30)
+}
+.workspace-scope-head{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:15px 18px;border-bottom:1px solid #e2e8f0;background:#fbfdff
+}
+.workspace-scope-head>div{display:flex;flex-direction:column;gap:3px}
+.workspace-scope-head strong{font-size:13px;color:#0f172a}
+.workspace-scope-head small{font-size:8px;color:#64748b}
+.workspace-scope-head>button{width:30px;height:30px;border:1px solid #dbe3ee;border-radius:8px;background:#fff}
+
+.scope-breadcrumb{
+  display:flex;align-items:stretch;gap:6px;padding:10px 14px;
+  border-bottom:1px solid #e2e8f0;background:#f8fafc
+}
+.scope-breadcrumb>span{display:flex;align-items:center;color:#94a3b8}
+.scope-breadcrumb button{
+  flex:1;min-width:0;display:grid;grid-template-columns:auto 1fr;column-gap:6px;
+  padding:8px;border:1px solid #dbe3ee;border-radius:9px;background:#fff;text-align:left;color:#475569
+}
+.scope-breadcrumb button svg{grid-row:1/3;align-self:center}
+.scope-breadcrumb button span{font-size:8px;font-weight:700;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.scope-breadcrumb button small{font-size:7px;color:#94a3b8}
+.scope-breadcrumb button.active{border-color:#6366f1;background:#eef2ff;color:#3730a3}
+
+.scope-manager-grid{flex:1;min-height:0;display:grid;grid-template-columns:minmax(0,1fr) 300px}
+.scope-editor{min-width:0;min-height:0;display:flex;flex-direction:column;border-right:1px solid #e2e8f0}
+.scope-editor-title{display:flex;align-items:flex-end;justify-content:space-between;gap:20px;padding:10px 14px;border-bottom:1px solid #eef2f7}
+.scope-editor-title>div{display:flex;flex-direction:column;gap:2px}.scope-editor-title strong{font-size:10px}.scope-editor-title small{font-size:7px;color:#64748b}
+.scope-editor-title label{font-size:7px;color:#475569}.scope-editor-title input{display:block;margin-top:3px;width:220px;border:1px solid #cbd5e1;border-radius:7px;padding:6px 8px;font-size:8px}
+.scope-editor .variables-manager{flex:1;min-height:0;height:auto}
+
+.effective-values-panel{padding:14px;overflow:auto;background:#fbfcfe}
+.effective-title{display:flex;flex-direction:column;gap:2px;margin-bottom:10px}
+.effective-title strong{font-size:10px}.effective-title small{font-size:7px;color:#64748b}
+.effective-empty{padding:12px;border:1px dashed #cbd5e1;border-radius:8px;font-size:8px;color:#64748b}
+.effective-variable{padding:8px 0;border-bottom:1px solid #e2e8f0}
+.effective-variable>div{display:flex;align-items:center;justify-content:space-between;gap:6px}
+.effective-variable code{font-size:8px;color:#312e81}.effective-variable small{display:block;margin-top:3px;font-size:7px;color:#64748b}
+.scope-chip{padding:2px 5px;border-radius:999px;font-size:6px;font-weight:800;text-transform:uppercase;letter-spacing:.04em}
+.scope-chip.organization{background:#f1f5f9;color:#475569}
+.scope-chip.project{background:#ecfeff;color:#0e7490}
+.scope-chip.environment{background:#fef3c7;color:#92400e}
+.scope-chip.architecture{background:#ede9fe;color:#6d28d9}
+.scope-precedence{margin-top:15px;padding:9px;border:1px solid #dbe3ee;border-radius:8px;background:#fff;display:flex;flex-wrap:wrap;gap:4px;align-items:center;font-size:7px}
+.scope-precedence strong{width:100%;font-size:8px;margin-bottom:3px}.scope-precedence b{color:#94a3b8}
