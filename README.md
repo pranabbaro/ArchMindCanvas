@@ -344,3 +344,12 @@ Important: The browser workflow is a safe scaffold/demo until the deployment API
 - JSON export/import carries designId, variables and locals
 - New Design starts a fresh variable/local catalog
 - Resource properties reference the variables declared for the current design only
+
+
+## v7.4.0 Design and Global Variable Scopes
+- Added Design Variables back to the small right-side Variables tab
+- Existing top toolbar Vars manager is now Global Vars
+- Design variables are stored with the current design
+- Global variables are persisted separately in browser workspace storage
+- Resources can reference both scopes
+- Design variable names override Global variables with the same name

@@ -1,18 +1,23 @@
-# ArchMindCanvas v7.3.9 — Top-Right Design Variables
+# ArchMindCanvas v7.4.0 — Design + Global Variables
 
-Variables & Locals are now accessed from a small design-level toolbar button instead of the Properties inspector tabs.
+Two variable scopes are now available:
 
-Behavior:
-- `Vars` appears in the main top toolbar near IaC / Deploy.
-- Clicking it opens Design Variables & Locals.
-- Variables remain scoped to the current design only.
-- Resource properties continue to reference those design variables through the link/binding button.
-- Browser Save/Open and JSON export/import continue to preserve the design's variables and locals.
+## Design Variables
+Open the small **Variables** tab in the right-side design panel.
+
+These variables belong only to the currently open design.
+
+## Global Variables
+Open **Global Vars** from the main top toolbar.
+
+These variables are stored outside the individual design document and can be used across designs in the browser workspace.
+
+When a Design variable and Global variable have the same name, the Design variable takes precedence.
 
 Push:
 
 ```powershell
 git add .
-git commit -m "ArchMindCanvas v7.3.9 - top right design variables"
+git commit -m "ArchMindCanvas v7.4.0 - design and global variable scopes"
 git push origin main
 ```

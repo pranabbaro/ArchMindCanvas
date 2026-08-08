@@ -587,3 +587,36 @@
   min-height:0;
   height:auto;
 }
+
+/* v7.4.0 Design + Global variable scopes */
+.design-scope-variable-panel{height:100%;overflow:auto;background:#fff}
+.design-scope-banner{
+  margin:10px 12px 0;
+  padding:9px 10px;
+  border:1px solid #bfdbfe;
+  border-radius:9px;
+  background:#eff6ff;
+  display:grid;
+  grid-template-columns:auto 1fr;
+  gap:2px 7px;
+}
+.design-scope-banner strong{
+  grid-column:1;
+  font-size:8px;
+  color:#1d4ed8;
+  text-transform:uppercase;
+  letter-spacing:.05em;
+}
+.design-scope-banner span{
+  grid-column:2;
+  font-size:8px;
+  color:#0f172a;
+  font-weight:700;
+}
+.design-scope-banner small{
+  grid-column:1/-1;
+  color:#64748b;
+  font-size:7px;
+  line-height:1.35;
+}
+.design-variable-button span{white-space:nowrap}
