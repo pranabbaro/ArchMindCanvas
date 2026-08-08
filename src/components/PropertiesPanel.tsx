@@ -31,7 +31,7 @@ const patchFor=(data:ArchitectureNodeData,key:string,value:string|number|boolean
   return {properties:{...(data.properties||{}),[key]:value}};
 };
 
-const tfName=(type:ResourceType)=>({
+const terraformResourceNames:Partial<Record<ResourceType,string>>={
   resourceGroup:'azurerm_resource_group',
   virtualNetwork:'azurerm_virtual_network',
   subnet:'azurerm_subnet',
@@ -52,7 +52,8 @@ const tfName=(type:ResourceType)=>({
   firewall:'azurerm_firewall',
   azureOpenAI:'azurerm_cognitive_account',
   aiSearch:'azurerm_search_service',
-}[type]||`azurerm_${type}`);
+};
+const tfName=(type:ResourceType)=>terraformResourceNames[type]||`azurerm_${type}`;
 
 const terraformPreview=(data:ArchitectureNodeData)=>{
   const schema=getResourceSchema(data.resourceType);

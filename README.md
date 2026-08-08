@@ -285,3 +285,10 @@ Important: The browser workflow is a safe scaffold/demo until the deployment API
 - Removed `cache: npm` and package-manager cache configuration
 - Uses normal `npm install` before TypeScript and Vite production build
 - Existing dynamic Azure Properties engine is unchanged
+
+
+## v7.2.5 Terraform Resource Map Type Fix
+- Fixed GitHub production TypeScript errors in PropertiesPanel.tsx line 34
+- Terraform resource-name mapping is now typed as `Partial<Record<ResourceType,string>>`
+- Supports all current ResourceType values while retaining fallback naming for resources not explicitly mapped
+- Dynamic Azure property schemas and production workflow remain unchanged
