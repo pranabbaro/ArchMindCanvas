@@ -675,9 +675,13 @@ const selectedNode=nodes.find(n=>n.id===selectedNodeId);const selectedEdge=edges
  const terraformLocalsCode=useMemo(()=>`locals {\n${effectiveLocals.length?effectiveLocals.map(l=>`  ${l.name} = ${l.value}`).join('\n'):'  # No locals declared'}\n}`,[effectiveLocals]);
 
  const terraformModulesCode=useMemo(()=>architectureModules.map(m=>{
+  if(!m.name.trim()||!m.source.trim())return `# INVALID MODULE: ${m.name||'unnamed'}\n# Configure both module name and source in Model → Modules before deployment.`;
   const lines=[`module "${m.name}" {`,`  source = ${JSON.stringify(m.source)}`];
   if(m.version)lines.push(`  version = ${JSON.stringify(m.version)}`);
-  Object.entries(m.inputs).forEach(([k,v])=>lines.push(`  ${k} = ${v||'null'}`));
+  Object.entries(m.inputs).forEach(([k,v])=>{
+   if(!v.trim())lines.push(`  # ${k} = null  # TODO: provide a value`);
+   else lines.push(`  ${k} = ${v}`);
+  });
   lines.push('}');
   return lines.join('\n');
  }).join('\n\n'),[architectureModules]);
@@ -690,22 +694,95 @@ const selectedNode=nodes.find(n=>n.id===selectedNodeId);const selectedEdge=edges
   return lines.join('\n');
  }).join('\n\n'),[architectureOutputs]);
 
+
+ const extractTfReferences=(expr:string)=>{
+  const refs:{kind:'var'|'local'|'data'|'module'|'resource';root:string;full:string}[]=[];
+  const seen=new Set<string>();
+  const patterns=[
+   {kind:'var' as const,re:/\bvar\.([A-Za-z_][A-Za-z0-9_]*)\b/g},
+   {kind:'local' as const,re:/\blocal\.([A-Za-z_][A-Za-z0-9_]*)\b/g},
+   {kind:'data' as const,re:/\bdata\.([A-Za-z_][A-Za-z0-9_]*)\.([A-Za-z_][A-Za-z0-9_]*)\b/g},
+   {kind:'module' as const,re:/\bmodule\.([A-Za-z_][A-Za-z0-9_]*)\b/g},
+   {kind:'resource' as const,re:/\b(azurerm_[A-Za-z0-9_]+)\.([A-Za-z_][A-Za-z0-9_]*)\b/g},
+  ];
+  for(const p of patterns){
+   let m:RegExpExecArray|null;
+   while((m=p.re.exec(expr))!==null){
+    if(seen.has(m[0]))continue;
+    seen.add(m[0]);
+    refs.push({kind:p.kind,root:(p.kind==='data'||p.kind==='resource')?`${m[1]}.${m[2]}`:m[1],full:m[0]});
+   }
+  }
+  return refs;
+ };
+ const referencedDataSources=useMemo(()=>{
+  const expressions=[
+   ...architectureOutputs.map(o=>o.value),
+   ...architectureModules.flatMap(m=>Object.values(m.inputs)),
+   ...architectureNodes.flatMap(n=>Object.values(n.data.bindings||{}).map(b=>b.source==='data'?`data.${b.dataSourceType||'azurerm_resource_group'}.${b.dataSourceName||'existing'}.${b.dataAttribute||'id'}`:''))
+  ];
+  const map=new Map<string,{type:string;name:string}>();
+  expressions.forEach(expr=>extractTfReferences(expr||'').filter(r=>r.kind==='data').forEach(r=>{
+   const [type,name]=r.root.split('.');
+   map.set(`${type}.${name}`,{type,name});
+  }));
+  return [...map.values()];
+ },[architectureOutputs,architectureModules,architectureNodes]);
+ const terraformDataSourcesCode=useMemo(()=>referencedDataSources.map(d=>{
+  if(d.type==='azurerm_subscription')return `data "azurerm_subscription" "${d.name}" {}`;
+  return `data "${d.type}" "${d.name}" {\n  # TODO: configure lookup arguments required by this data source\n}`;
+ }).join('\n\n'),[referencedDataSources]);
  const terraformProvidersCode=`terraform {\n  required_version = ">= 1.6.0"\n  required_providers {\n    azurerm = {\n      source  = "hashicorp/azurerm"\n      version = "~> 4.0"\n    }\n  }\n}\n\nprovider "azurerm" {\n  features {}\n}`;
  const terraformMetadataCode=`# Architecture: ${designName}\n# Version: ${architectureMetadata.version}\n# Owner: ${architectureMetadata.owner||'Not specified'}\n# Application: ${architectureMetadata.application||'Not specified'}\n# Criticality: ${architectureMetadata.criticality}\n# Lifecycle: ${architectureMetadata.lifecycle}\n# Description: ${architectureMetadata.description||'Not specified'}`;
- const terraformCode=useMemo(()=>[terraformMetadataCode,terraformProvidersCode,terraformVariablesCode,terraformLocalsCode,terraformModulesCode,terraformMainCode,terraformOutputsCode].filter(Boolean).join('\n\n'),[terraformMetadataCode,terraformVariablesCode,terraformLocalsCode,terraformModulesCode,terraformMainCode,terraformOutputsCode]);
+ const terraformCode=useMemo(()=>[
+  terraformMetadataCode,terraformProvidersCode,terraformVariablesCode,terraformLocalsCode,
+  terraformDataSourcesCode,terraformModulesCode,terraformMainCode,terraformOutputsCode
+ ].filter(Boolean).join('\n\n'),[
+  terraformMetadataCode,terraformVariablesCode,terraformLocalsCode,terraformDataSourcesCode,
+  terraformModulesCode,terraformMainCode,terraformOutputsCode
+ ]);
  const bicepCode=useMemo(()=>{const lines=["targetScope = 'subscription'",''];architectureNodes.filter(n=>n.data.resourceType==='resourceGroup').forEach((n,i)=>lines.push(`resource rg${i} 'Microsoft.Resources/resourceGroups@2024-03-01' = {\n  name: '${n.data.label}'\n  location: '${n.data.region}'\n}\n`));architectureNodes.filter(n=>!['tenant','managementGroup','subscription','resourceGroup'].includes(n.data.resourceType)).forEach(n=>lines.push(`// TODO ${n.data.resourceType}: ${n.data.label} | RG: ${n.data.resourceGroup||'unassigned'} | ${n.data.region}`));return lines.join('\n');},[architectureNodes]);
  const iacCode=iacMode==='terraform'?terraformCode:bicepCode;
  const copyIac=()=>navigator.clipboard.writeText(iacCode);
  const downloadIac=()=>download(new Blob([iacCode],{type:'text/plain'}),iacMode==='terraform'?'main.tf':'main.bicep');
  const downloadIacBundle=()=>{const files=iacMode==='terraform'
- ? `# ==================== versions/providers.tf ====================\n${terraformProvidersCode}\n\n# ==================== variables.tf ====================\n${terraformVariablesCode||'# No variables declared'}\n\n# ==================== locals.tf ====================\n${terraformLocalsCode}\n\n# ==================== modules.tf ====================\n${terraformModulesCode||'# No modules declared'}\n\n# ==================== main.tf ====================\n${terraformMetadataCode}\n\n${terraformMainCode||'# No Azure resources modeled'}\n\n# ==================== outputs.tf ====================\n${terraformOutputsCode||'# No outputs declared'}`
- : `// main.bicep\n${bicepCode}\n\n// parameters.bicepparam\nusing './main.bicep'`;
+ ? `# ==================== versions/providers.tf ====================
+${terraformProvidersCode}
+
+# ==================== variables.tf ====================
+${terraformVariablesCode||'# No variables declared'}
+
+# ==================== locals.tf ====================
+${terraformLocalsCode}
+
+# ==================== data.tf ====================
+${terraformDataSourcesCode||'# No referenced data sources'}
+
+# ==================== modules.tf ====================
+${terraformModulesCode||'# No modules declared'}
+
+# ==================== main.tf ====================
+${terraformMetadataCode}
+
+${terraformMainCode||'# No Azure resources modeled'}
+
+# ==================== outputs.tf ====================
+${terraformOutputsCode||'# No outputs declared'}`
+ : `// main.bicep
+${bicepCode}
+
+// parameters.bicepparam
+using './main.bicep'`;
  download(new Blob([files],{type:'text/plain'}),iacMode==='terraform'?'archmindcanvas-terraform-bundle.txt':'archmindcanvas-bicep-bundle.txt');};
  const prepareRepoPush=()=>{if(!repoName.trim()){alert('Enter a repository name first.');return;}alert(`Repository package prepared for ${repoProvider==='github'?'GitHub':'Azure DevOps'}: ${repoName} / ${repoBranch} / ${repoFolder}.\n\nFor security, v5.3 does not store PATs or tokens in the browser. Connect a secure backend/GitHub App or Azure DevOps OAuth service to enable direct push.`);};
 
  const findings=useMemo<ValidationFinding[]>(()=>{
   const r:ValidationFinding[]=[];
   const resourceNames=new Map<string,string[]>();
+  const createdResourceRefs=new Set(architectureNodes.filter(n=>(n.data.resourceMode||'create')!=='existing').map(n=>`${terraformResourceType(n.data.resourceType)}.${tfSafe(n.data.label)}`));
+  const dataResourceRefs=new Set(architectureNodes.filter(n=>(n.data.resourceMode||'create')==='existing').map(n=>`${terraformResourceType(n.data.resourceType)}.${tfSafe(n.data.label)}`));
+  const declaredDataRefs=new Set(referencedDataSources.map(d=>`${d.type}.${d.name}`));
+
   architectureNodes.forEach(n=>{
     const key=n.data.label.trim().toLowerCase();
     resourceNames.set(key,[...(resourceNames.get(key)||[]),n.id]);
@@ -715,29 +792,49 @@ const selectedNode=nodes.find(n=>n.id===selectedNodeId);const selectedEdge=edges
     if(!['tenant','managementGroup','subscription','resourceGroup'].includes(n.data.resourceType)&&!n.data.resourceGroup)r.push({id:`rg-${n.id}`,severity:'warning',title:'Resource Group not linked',message:'Assign a Resource Group parent.',nodeId:n.id});
     if(n.data.resourceType==='virtualMachine'&&!n.data.subnet)r.push({id:`net-${n.id}`,severity:'warning',title:'VM has no subnet',message:'Place the VM under a VNet/Subnet hierarchy.',nodeId:n.id});
 
+    if((n.data.resourceMode||'create')==='existing'&&!n.data.existingResource?.name&&!n.data.existingResource?.resourceId)r.push({id:`existing-${n.id}`,severity:'critical',title:'Existing resource lookup incomplete',message:`${n.data.label} is marked Existing but has no name or resource ID lookup value.`,nodeId:n.id});
+    if((n.data.resourceMode||'create')==='import'&&!n.data.existingResource?.resourceId)r.push({id:`import-${n.id}`,severity:'critical',title:'Import ID missing',message:`${n.data.label} is marked Import but has no Azure resource ID.`,nodeId:n.id});
+
     Object.entries(n.data.bindings||{}).forEach(([field,b])=>{
       if(b.source==='resource'&&(!b.targetNodeId||!architectureNodes.some(x=>x.id===b.targetNodeId)))r.push({id:`ref-${n.id}-${field}`,severity:'critical',title:'Broken resource reference',message:`${n.data.label}.${field} references a missing diagram resource.`,nodeId:n.id});
       if(b.source==='variable'&&(!b.variableName||!effectiveVariables.some(v=>v.name===b.variableName)))r.push({id:`var-${n.id}-${field}`,severity:'critical',title:'Unresolved variable',message:`${n.data.label}.${field} references var.${b.variableName||'unknown'} which is not declared.`,nodeId:n.id});
       if(b.source==='local'&&(!b.localName||!effectiveLocals.some(v=>v.name===b.localName)))r.push({id:`local-${n.id}-${field}`,severity:'critical',title:'Unresolved local',message:`${n.data.label}.${field} references local.${b.localName||'unknown'} which is not declared.`,nodeId:n.id});
-      if(b.source==='moduleOutput'&&(!b.moduleName||!architectureModules.some(m=>m.name===b.moduleName)))r.push({id:`modref-${n.id}-${field}`,severity:'critical',title:'Unresolved module output',message:`${n.data.label}.${field} references a module that is not configured.`,nodeId:n.id});
+      if(b.source==='moduleOutput'&&(!b.moduleName||!architectureModules.some(m=>m.name===b.moduleName&&m.source.trim())))r.push({id:`modref-${n.id}-${field}`,severity:'critical',title:'Unresolved module output',message:`${n.data.label}.${field} references a module that is not fully configured.`,nodeId:n.id});
     });
   });
 
   resourceNames.forEach((ids,name)=>{if(name&&ids.length>1)r.push({id:`dup-${name}`,severity:'critical',title:'Duplicate resource name',message:`${ids.length} resources use the name "${name}". Terraform resource names must be unique in this architecture.`})});
+
   architectureModules.forEach(m=>{
     if(!m.name.trim())r.push({id:`module-name-${m.id}`,severity:'critical',title:'Module name missing',message:'A Terraform module has no name.'});
     if(!m.source.trim())r.push({id:`module-source-${m.id}`,severity:'critical',title:'Module source missing',message:`module.${m.name||'unnamed'} requires a Registry or Git source.`});
+    Object.entries(m.inputs).forEach(([k,v])=>{if(!v.trim())r.push({id:`module-input-${m.id}-${k}`,severity:'warning',title:'Module input incomplete',message:`module.${m.name||'unnamed'}.${k} has no value.`})});
   });
+
+  const validateExpression=(expr:string,owner:string,idPrefix:string)=>{
+    extractTfReferences(expr||'').forEach(ref=>{
+      if(ref.kind==='var'&&!effectiveVariables.some(v=>v.name===ref.root))r.push({id:`${idPrefix}-var-${ref.root}`,severity:'critical',title:'Undeclared Terraform variable',message:`${owner} references ${ref.full}, but that variable is not declared.`});
+      if(ref.kind==='local'&&!effectiveLocals.some(v=>v.name===ref.root))r.push({id:`${idPrefix}-local-${ref.root}`,severity:'critical',title:'Undeclared Terraform local',message:`${owner} references ${ref.full}, but that local is not declared.`});
+      if(ref.kind==='module'&&!architectureModules.some(m=>m.name===ref.root&&m.source.trim()))r.push({id:`${idPrefix}-module-${ref.root}`,severity:'critical',title:'Undeclared Terraform module',message:`${owner} references ${ref.full}, but that module is not fully configured.`});
+      if(ref.kind==='data'&&!declaredDataRefs.has(ref.root)&&!dataResourceRefs.has(ref.root))r.push({id:`${idPrefix}-data-${ref.root}`,severity:'critical',title:'Undeclared Terraform data source',message:`${owner} references data.${ref.root}, but no matching data source can be generated.`});
+      if(ref.kind==='resource'&&!createdResourceRefs.has(ref.root))r.push({id:`${idPrefix}-resource-${ref.root}`,severity:'critical',title:'Undeclared Terraform resource',message:`${owner} references ${ref.full}, but no matching created/imported resource exists.`});
+    });
+  };
+
   architectureOutputs.forEach(o=>{
     if(!o.name.trim())r.push({id:`output-name-${o.id}`,severity:'critical',title:'Output name missing',message:'An architecture output has no name.'});
     if(!o.value.trim())r.push({id:`output-value-${o.id}`,severity:'warning',title:'Output value missing',message:`output.${o.name||'unnamed'} has no Terraform expression.`});
+    else validateExpression(o.value,`output.${o.name||'unnamed'}`,`output-${o.id}`);
   });
+
+  architectureModules.forEach(m=>Object.entries(m.inputs).forEach(([k,v])=>{if(v.trim())validateExpression(v,`module.${m.name}.${k}`,`module-${m.id}-${k}`)}));
+
   if(!architectureMetadata.owner.trim())r.push({id:'meta-owner',severity:'info',title:'Architecture owner not set',message:'Set an owner in Model → Metadata for enterprise traceability.'});
   if(!architectureMetadata.description.trim())r.push({id:'meta-description',severity:'info',title:'Architecture description not set',message:'Document the architecture purpose in Model → Metadata.'});
 
-  if(!r.some(x=>x.severity==='critical'||x.severity==='warning'))r.push({id:'ok',severity:'success',title:'Architecture model checks passed',message:'Hierarchy, references, modules and outputs are structurally valid.'});
+  if(!r.some(x=>x.severity==='critical'||x.severity==='warning'))r.push({id:'ok',severity:'success',title:'IaC integrity checks passed',message:'Hierarchy, references, data sources, modules and outputs are structurally consistent.'});
   return r;
- },[architectureNodes,effectiveVariables,effectiveLocals,architectureModules,architectureOutputs,architectureMetadata]);
+ },[architectureNodes,effectiveVariables,effectiveLocals,architectureModules,architectureOutputs,architectureMetadata,referencedDataSources]);
  const score=Math.max(35,100-findings.filter(f=>f.severity==='warning').length*6-findings.filter(f=>f.severity==='critical').length*20);
  const saveDesign=useCallback(()=>{
   const document={version:'7.9.0',designId,designName,organizationId,organizationName,projectId,projectName,environmentId,environmentName,nodes,edges,variables:designVariables,locals:designLocals,outputs:architectureOutputs,modules:architectureModules,metadata:architectureMetadata,updatedAt:new Date().toISOString()};
