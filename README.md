@@ -333,3 +333,14 @@ Important: The browser workflow is a safe scaffold/demo until the deployment API
 - Browser save/open persists project variables and locals
 - Editable JSON export/import persists project variables and locals
 - All resource Property bindings continue to select from the same project-level declarations
+
+
+## v7.3.8 Design-Scoped Variables
+- Variables tab returned to the right design inspector
+- Variables are not component-scoped
+- Every design has its own `designId`
+- Variables and locals are stored with that design document
+- Browser saves use design-specific keys
+- JSON export/import carries designId, variables and locals
+- New Design starts a fresh variable/local catalog
+- Resource properties reference the variables declared for the current design only

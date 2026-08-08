@@ -491,3 +491,99 @@
 .project-variables-dialog .variables-manager{
   flex:1;min-height:0;height:auto;
 }
+
+/* v7.3.8 Design-scoped Variables */
+.inspector-tabs.v5-tabs{
+  display:flex;
+  flex-wrap:nowrap;
+  gap:3px;
+  overflow-x:auto;
+  overflow-y:hidden;
+  white-space:nowrap;
+}
+.inspector-tabs.v5-tabs button{flex:0 0 auto;min-width:max-content}
+.variables-manager-header::before{
+  content:"DESIGN SCOPE";
+  display:inline-flex;
+  width:max-content;
+  margin-bottom:5px;
+  padding:2px 6px;
+  border-radius:999px;
+  background:#eef2ff;
+  color:#4338ca;
+  font-size:7px;
+  font-weight:800;
+  letter-spacing:.06em;
+}
+
+/* v7.3.9 Top-right design variables */
+.design-variable-button{
+  min-width:38px;
+}
+.design-vars-overlay{
+  position:fixed;
+  inset:0;
+  z-index:1100;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  padding:28px;
+  background:rgba(15,23,42,.36);
+  backdrop-filter:blur(2px);
+}
+.design-vars-dialog{
+  width:min(900px,94vw);
+  height:min(740px,88vh);
+  display:flex;
+  flex-direction:column;
+  overflow:hidden;
+  background:#fff;
+  border:1px solid #dbe3ee;
+  border-radius:14px;
+  box-shadow:0 24px 70px rgba(15,23,42,.26);
+}
+.design-vars-dialog-head{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  padding:14px 17px;
+  border-bottom:1px solid #e2e8f0;
+  background:#fbfdff;
+}
+.design-vars-dialog-head>div{
+  display:flex;
+  flex-direction:column;
+  gap:3px;
+}
+.design-vars-dialog-head strong{
+  font-size:13px;
+  color:#0f172a;
+}
+.design-vars-dialog-head small{
+  font-size:8px;
+  color:#64748b;
+}
+.design-vars-dialog-head>button{
+  width:30px;
+  height:30px;
+  border:1px solid #dbe3ee;
+  border-radius:8px;
+  background:#fff;
+  color:#475569;
+  font-size:18px;
+}
+.design-vars-scope{
+  display:flex;
+  align-items:center;
+  gap:7px;
+  padding:8px 17px;
+  background:#eef2ff;
+  border-bottom:1px solid #e0e7ff;
+  color:#4338ca;
+  font-size:8px;
+}
+.design-vars-dialog .variables-manager{
+  flex:1;
+  min-height:0;
+  height:auto;
+}

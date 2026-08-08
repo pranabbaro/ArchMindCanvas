@@ -1,19 +1,18 @@
-# ArchMindCanvas v7.3.7 — Project-Level Variables
+# ArchMindCanvas v7.3.9 — Top-Right Design Variables
 
-Variables and locals now belong to the complete design project.
+Variables & Locals are now accessed from a small design-level toolbar button instead of the Properties inspector tabs.
 
-## Push
+Behavior:
+- `Vars` appears in the main top toolbar near IaC / Deploy.
+- Clicking it opens Design Variables & Locals.
+- Variables remain scoped to the current design only.
+- Resource properties continue to reference those design variables through the link/binding button.
+- Browser Save/Open and JSON export/import continue to preserve the design's variables and locals.
+
+Push:
 
 ```powershell
 git add .
-git commit -m "ArchMindCanvas v7.3.7 - project level variables"
+git commit -m "ArchMindCanvas v7.3.9 - top right design variables"
 git push origin main
 ```
-
-Behavior:
-- Open Variables from the main top toolbar.
-- One variable/local catalog is shared by every component in the design.
-- Component Properties only reference project variables.
-- Browser Save/Open preserves variables and locals.
-- Save As JSON / JSON Import preserves variables and locals.
-- New Design starts with a fresh project-level variable catalog.
