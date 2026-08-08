@@ -1,7 +1,7 @@
 {
   "name": "archmindcanvas",
   "private": true,
-  "version": "7.9.1",
+  "version": "7.9.2",
   "type": "module",
   "scripts": {
     "dev": "vite",
@@ -16,7 +16,8 @@
     "react": "18.3.1",
     "react-dom": "18.3.1",
     "html-to-image": "1.11.13",
-    "jspdf": "2.5.2"
+    "jspdf": "2.5.2",
+    "jszip": "3.10.1"
   },
   "devDependencies": {
     "@types/node": "22.10.2",
