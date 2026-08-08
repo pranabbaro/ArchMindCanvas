@@ -1,30 +1,22 @@
-# ArchMindCanvas v7.5.0 — Enterprise Hierarchy Foundation
+# ArchMindCanvas v7.6.0 — Cloud Architecture Command Center
 
-This is the first platform-foundation release.
+New enterprise workspace shell:
+- Command Center dashboard
+- ArchMindCanvas-specific navigation and visual identity
+- Universal Create menu
+- Recent architecture intelligence cards
+- Architecture health / governance panel
+- ArchMind AI area
+- Deployment pipeline status
+- Recent activity
+- Organization selector
+- Continue Designing opens the existing editor
+- Home button returns from editor to Command Center
 
-Hierarchy:
-Organization → Project → Environment → Architecture
-
-Variable inheritance:
-Organization < Project < Environment < Architecture
-
-The most specific declaration wins.
-
-New:
-- Enterprise hierarchy breadcrumb in the top bar
-- Enterprise Scope Manager
-- Variables and Locals at all four scopes
-- Effective variable view with source scope
-- Organization variables persisted across the workspace
-- Project and Environment scope persisted across the workspace
-- Architecture variables remain stored with the design
-- Design JSON now carries hierarchy IDs and names
-- Resource property bindings consume resolved effective variables
-
-Push:
+Existing Organization → Project → Environment → Architecture foundation and all editor features are preserved.
 
 ```powershell
 git add .
-git commit -m "ArchMindCanvas v7.5.0 - enterprise hierarchy foundation"
+git commit -m "ArchMindCanvas v7.6.0 - cloud architecture command center"
 git push origin main
 ```
