@@ -1,32 +1,22 @@
-# ArchMindCanvas v7.9.2 — Real IaC ZIP Bundle
+# ArchMindCanvas v7.9.3 — Header Breadcrumb Overlap Fix
 
-Fixes the IaC Bundle download.
+Fixes the editor header overlap between:
+- Organization / Project / Environment / Architecture breadcrumb
+- Current architecture title
+- Toolbar actions
 
-Terraform now downloads as a real ZIP containing:
-- providers.tf
-- variables.tf
-- locals.tf
-- data.tf
-- modules.tf
-- main.tf
-- outputs.tf
-- README.md
-
-Bicep downloads as a ZIP containing:
-- main.bicep
-- main.bicepparam
-- README.md
-
-The ZIP filename is derived from the architecture name.
-
-Implementation:
-- Added JSZip 3.10.1
-- Existing IaC generation and validation logic from v7.9.1 is preserved
+Changes:
+- Breadcrumb names truncate with ellipsis
+- Breadcrumb cannot wrap
+- Architecture title has a protected width
+- Toolbar gets remaining space
+- Responsive breakpoints progressively compact the breadcrumb
+- Small screens hide the least-important breadcrumb level instead of overlapping
 
 Push:
 
 ```powershell
 git add .
-git commit -m "ArchMindCanvas v7.9.2 - real IaC zip bundle"
+git commit -m "ArchMindCanvas v7.9.3 - fix header breadcrumb overlap"
 git push origin main
 ```

@@ -1112,3 +1112,138 @@
 @media(max-width:1280px){.inspector-tabs{grid-template-columns:repeat(3,minmax(0,1fr))!important}}
 .iac-code,.code-panel pre,.iac-panel pre,pre.iac-code,.inspector-content pre{white-space:pre-wrap!important;overflow-wrap:anywhere!important;word-break:break-word!important;overflow-x:hidden!important;tab-size:2}
 .iac-panel code,.code-panel code{white-space:inherit!important}
+
+/* v7.9.3 Header breadcrumb overlap fix */
+.topbar{
+  display:flex!important;
+  align-items:center!important;
+  gap:8px!important;
+  min-width:0!important;
+  overflow:hidden!important;
+}
+
+.topbar .editor-home-button{
+  flex:0 0 34px!important;
+}
+
+.topbar .enterprise-breadcrumb{
+  flex:0 1 360px!important;
+  width:auto!important;
+  min-width:220px!important;
+  max-width:360px!important;
+  height:36px!important;
+  display:flex!important;
+  align-items:center!important;
+  gap:3px!important;
+  overflow:hidden!important;
+  white-space:nowrap!important;
+  padding:4px 7px!important;
+}
+
+.topbar .enterprise-breadcrumb>button{
+  flex:0 1 auto!important;
+  min-width:0!important;
+  max-width:92px!important;
+  overflow:hidden!important;
+  text-overflow:ellipsis!important;
+  white-space:nowrap!important;
+  padding:4px 5px!important;
+}
+
+.topbar .enterprise-breadcrumb>button svg{
+  flex:0 0 auto!important;
+}
+
+.topbar .enterprise-breadcrumb>button.current{
+  max-width:105px!important;
+}
+
+.topbar .enterprise-breadcrumb>b{
+  flex:0 0 auto!important;
+  font-size:8px!important;
+  color:#72829a!important;
+}
+
+.topbar .design-title{
+  flex:0 0 280px!important;
+  width:280px!important;
+  min-width:220px!important;
+  max-width:280px!important;
+  height:36px!important;
+  overflow:hidden!important;
+}
+
+.topbar .design-title input{
+  min-width:0!important;
+  width:100%!important;
+  overflow:hidden!important;
+  text-overflow:ellipsis!important;
+  white-space:nowrap!important;
+}
+
+.topbar .toolbar{
+  flex:1 1 auto!important;
+  min-width:0!important;
+  justify-content:flex-end!important;
+}
+
+/* Compact progressively instead of allowing collision */
+@media(max-width:1500px){
+  .topbar .enterprise-breadcrumb{
+    flex-basis:310px!important;
+    max-width:310px!important;
+  }
+  .topbar .enterprise-breadcrumb>button{
+    max-width:76px!important;
+  }
+  .topbar .enterprise-breadcrumb>button.current{
+    max-width:88px!important;
+  }
+  .topbar .design-title{
+    flex-basis:240px!important;
+    width:240px!important;
+    max-width:240px!important;
+  }
+}
+
+@media(max-width:1300px){
+  .topbar .enterprise-breadcrumb{
+    flex-basis:260px!important;
+    max-width:260px!important;
+  }
+  .topbar .enterprise-breadcrumb>button:nth-of-type(1){
+    max-width:58px!important;
+  }
+  .topbar .enterprise-breadcrumb>button:nth-of-type(2){
+    max-width:65px!important;
+  }
+  .topbar .enterprise-breadcrumb>button:nth-of-type(3){
+    max-width:65px!important;
+  }
+  .topbar .enterprise-breadcrumb>button.current{
+    max-width:72px!important;
+  }
+  .topbar .design-title{
+    flex-basis:205px!important;
+    width:205px!important;
+    min-width:180px!important;
+    max-width:205px!important;
+  }
+}
+
+@media(max-width:1150px){
+  .topbar .enterprise-breadcrumb{
+    flex-basis:205px!important;
+    max-width:205px!important;
+  }
+  .topbar .enterprise-breadcrumb>button:nth-of-type(1),
+  .topbar .enterprise-breadcrumb>b:nth-of-type(1){
+    display:none!important;
+  }
+  .topbar .design-title{
+    flex-basis:185px!important;
+    width:185px!important;
+    min-width:165px!important;
+    max-width:185px!important;
+  }
+}
