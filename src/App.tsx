@@ -678,97 +678,154 @@ const selectedNode=nodes.find(n=>n.id===selectedNodeId);const selectedEdge=edges
 
  const terraformMainCode=useMemo(()=>{
   const lines:string[]=[];
+  const internalFields=new Set([
+    'resourceGroupRef','subscriptionRef','vnetRef','subnetRef','parentRef','environment',
+    'owner','costCenter','businessUnit','application','managed_by','managedBy'
+  ]);
+
+  const findRg=(name?:string)=>architectureNodes.find(x=>x.data.resourceType==='resourceGroup'&&x.data.label===name);
+  const findVnet=(name?:string)=>architectureNodes.find(x=>x.data.resourceType==='virtualNetwork'&&x.data.label===name);
+  const findSubnet=(name?:string)=>architectureNodes.find(x=>x.data.resourceType==='subnet'&&x.data.label===name);
+
+  const rgExpr=(n:ArchitectureNode)=>{
+    const rg=findRg(n.data.resourceGroup);
+    return rg?terraformAttributeRef(rg,'name'):(n.data.resourceGroup?JSON.stringify(n.data.resourceGroup):'var.resource_group_name');
+  };
+  const locExpr=(n:ArchitectureNode)=>{
+    const rg=findRg(n.data.resourceGroup);
+    return rg?terraformAttributeRef(rg,'location'):JSON.stringify(n.data.region||'Central India');
+  };
 
   architectureNodes.forEach((n,i)=>{
-   if(['tenant','managementGroup','subscription'].includes(n.data.resourceType))return;
-   const tfType=terraformResourceType(n.data.resourceType);
-   const name=tfSafe(n.data.label||`resource_${i}`);
-   const mode=n.data.resourceMode||'create';
+    if(['tenant','managementGroup','subscription'].includes(n.data.resourceType))return;
+    const tfType=terraformResourceType(n.data.resourceType);
+    const name=tfSafe(n.data.label||`resource_${i}`);
+    const mode=n.data.resourceMode||'create';
 
-   if(mode==='existing'){
-    const lookupName=n.data.existingResource?.name||n.data.label;
-    const lookupId=n.data.existingResource?.resourceId;
-    const body=[`data "${tfType}" "${name}" {`];
-    if(lookupId)body.push(`  # Lookup requested by Azure resource ID: ${lookupId}`);
-    body.push(`  name = ${JSON.stringify(lookupName)}`);
-    if(n.data.resourceGroup&&n.data.resourceType!=='resourceGroup')body.push(`  resource_group_name = ${JSON.stringify(n.data.resourceGroup)}`);
+    if(mode==='existing'){
+      const lookupName=n.data.existingResource?.name||n.data.label;
+      const body=[`data "${tfType}" "${name}" {`,`  name = ${JSON.stringify(lookupName)}`];
+      if(n.data.resourceGroup&&n.data.resourceType!=='resourceGroup')body.push(`  resource_group_name = ${rgExpr(n)}`);
+      body.push('}');
+      lines.push(body.join('\n')+'\n');
+      return;
+    }
+
+    if(n.data.resourceType==='subnet'){
+      const vnet=findVnet(n.data.vnet);
+      const prefix=(n.data.properties?.addressPrefix||n.data.properties?.address_prefix||'10.0.1.0/24') as any;
+      lines.push([
+        `resource "azurerm_subnet" "${name}" {`,
+        `  name                 = ${JSON.stringify(n.data.label)}`,
+        `  resource_group_name  = ${rgExpr(n)}`,
+        `  virtual_network_name = ${vnet?terraformAttributeRef(vnet,'name'):(n.data.vnet?JSON.stringify(n.data.vnet):'var.virtual_network_name')}`,
+        `  address_prefixes     = [${quoteTf(prefix)}]`,
+        `}`
+      ].join('\n')+'\n');
+      return;
+    }
+
+    if(n.data.resourceType==='virtualMachine'){
+      const subnet=findSubnet(n.data.subnet);
+      const nicName=`${name}_nic`;
+      const image=(n.data.properties?.image||'2022-datacenter-azure-edition') as string;
+      const size=(n.data.properties?.size||'Standard_D2s_v5') as string;
+      const admin=(n.data.properties?.admin_username||n.data.properties?.adminUsername||'azureadmin') as string;
+
+      lines.push([
+        `resource "azurerm_network_interface" "${nicName}" {`,
+        `  name                = ${JSON.stringify(`nic-${n.data.label}`)}`,
+        `  location            = ${locExpr(n)}`,
+        `  resource_group_name = ${rgExpr(n)}`,
+        ``,
+        `  ip_configuration {`,
+        `    name                          = "internal"`,
+        `    subnet_id                     = ${subnet?terraformAttributeRef(subnet,'id'):'var.subnet_id'}`,
+        `    private_ip_address_allocation = "Dynamic"`,
+        `  }`,
+        `}`
+      ].join('\n')+'\n');
+
+      lines.push([
+        `resource "azurerm_windows_virtual_machine" "${name}" {`,
+        `  name                = ${JSON.stringify(n.data.label)}`,
+        `  resource_group_name = ${rgExpr(n)}`,
+        `  location            = ${locExpr(n)}`,
+        `  size                = ${JSON.stringify(size)}`,
+        `  admin_username      = ${JSON.stringify(admin)}`,
+        `  admin_password      = var.vm_admin_password`,
+        `  network_interface_ids = [`,
+        `    azurerm_network_interface.${nicName}.id`,
+        `  ]`,
+        ``,
+        `  os_disk {`,
+        `    caching              = "ReadWrite"`,
+        `    storage_account_type = "Premium_LRS"`,
+        `  }`,
+        ``,
+        `  source_image_reference {`,
+        `    publisher = "MicrosoftWindowsServer"`,
+        `    offer     = "WindowsServer"`,
+        `    sku       = ${JSON.stringify(image)}`,
+        `    version   = "latest"`,
+        `  }`,
+        `}`
+      ].join('\n')+'\n');
+      return;
+    }
+
+    const body=[`resource "${tfType}" "${name}" {`,`  name = ${JSON.stringify(n.data.label)}`];
+
+    if(n.data.resourceType==='resourceGroup'){
+      body.push(`  location = ${JSON.stringify(n.data.region||'Central India')}`);
+    }else{
+      body.push(`  location = ${locExpr(n)}`);
+      if(n.data.resourceGroup)body.push(`  resource_group_name = ${rgExpr(n)}`);
+    }
+
+    if(n.data.resourceType==='virtualNetwork'){
+      const address=(n.data.properties?.addressSpace||n.data.properties?.address_space||'10.0.0.0/16') as any;
+      body.push(`  address_space = [${quoteTf(address)}]`);
+    }
+    if(n.data.resourceType==='publicIp')body.push(`  allocation_method = "Static"`);
+    if(n.data.resourceType==='storageAccount'){
+      body.push(`  account_tier = "Standard"`);
+      body.push(`  account_replication_type = "LRS"`);
+    }
+
+    Object.entries(n.data.properties||{}).forEach(([field,literal])=>{
+      if(internalFields.has(field))return;
+      if(['addressSpace','address_space','addressPrefix','address_prefix','image','size','admin_username','adminUsername'].includes(field))return;
+      const binding=(n.data.bindings||{})[field];
+      if(binding)body.push(`  ${field} = ${resolveBindingExpression(binding,literal as any)}`);
+    });
+
+    if(n.data.tags&&Object.keys(n.data.tags).length){
+      body.push('  tags = {');
+      Object.entries(n.data.tags).forEach(([k,v])=>body.push(`    ${JSON.stringify(k)} = ${JSON.stringify(v)}`));
+      body.push('  }');
+    }
+
     body.push('}');
-    lines.push(body.join('\n')+'\n');
-    return;
-   }
-
-   const body=[`resource "${tfType}" "${name}" {`,`  name = ${JSON.stringify(n.data.label)}`];
-
-   if(n.data.resourceType==='resourceGroup'){
-    body.push(`  location = ${JSON.stringify(n.data.region||'Central India')}`);
-   }else{
-    if(n.data.region)body.push(`  location = ${JSON.stringify(n.data.region)}`);
-    if(n.data.resourceGroup){
-     const rgNode=architectureNodes.find(x=>x.data.resourceType==='resourceGroup'&&x.data.label===n.data.resourceGroup);
-     body.push(`  resource_group_name = ${rgNode?terraformAttributeRef(rgNode,'name'):JSON.stringify(n.data.resourceGroup)}`);
+    let block=body.join('\n');
+    if(mode==='import'){
+      const id=n.data.existingResource?.resourceId||'/subscriptions/.../resourceGroups/.../providers/...';
+      block+=`\n\nimport {\n  to = ${tfType}.${name}\n  id = ${JSON.stringify(id)}\n}`;
     }
-   }
-
-   if(n.data.resourceType==='virtualNetwork'){
-    const address=(n.data.properties?.addressSpace||n.data.properties?.address_space||'10.0.0.0/16') as any;
-    body.push(`  address_space = [${quoteTf(address)}]`);
-   }
-
-   if(n.data.resourceType==='subnet'){
-    const vnetNode=architectureNodes.find(x=>x.data.resourceType==='virtualNetwork'&&x.data.label===n.data.vnet);
-    if(vnetNode)body.push(`  virtual_network_name = ${terraformAttributeRef(vnetNode,'name')}`);
-    else if(n.data.vnet)body.push(`  virtual_network_name = ${JSON.stringify(n.data.vnet)}`);
-    const prefix=(n.data.properties?.addressPrefix||n.data.properties?.address_prefix||'10.0.1.0/24') as any;
-    body.push(`  address_prefixes = [${quoteTf(prefix)}]`);
-   }
-
-   if(n.data.resourceType==='networkSecurityGroup'){
-    // location/resource group are handled above
-   }
-
-   if(n.data.resourceType==='publicIp'){
-    body.push(`  allocation_method = "Static"`);
-   }
-
-   if(n.data.resourceType==='storageAccount'){
-    body.push(`  account_tier = "Standard"`);
-    body.push(`  account_replication_type = "LRS"`);
-   }
-
-   Object.entries(n.data.properties||{}).forEach(([field,literal])=>{
-    if(['addressSpace','address_space','addressPrefix','address_prefix'].includes(field))return;
-    const binding=(n.data.bindings||{})[field];
-    if(binding){
-     body.push(`  ${field} = ${resolveBindingExpression(binding,literal as any)}`);
-    }
-   });
-
-   Object.entries(n.data.bindings||{}).forEach(([field,b]:any)=>{
-    if(field==='__tags__'||Object.prototype.hasOwnProperty.call(n.data.properties||{},field))return;
-    body.push(`  ${field} = ${resolveBindingExpression(b,'')}`);
-   });
-
-   if(n.data.tags&&Object.keys(n.data.tags).length){
-    body.push('  tags = {');
-    Object.entries(n.data.tags).forEach(([k,v])=>body.push(`    ${JSON.stringify(k)} = ${JSON.stringify(v)}`));
-    body.push('  }');
-   }
-
-   body.push('}');
-   let block=body.join('\n');
-
-   if(mode==='import'){
-    const id=n.data.existingResource?.resourceId||'/subscriptions/.../resourceGroups/.../providers/...';
-    block+=`\n\nimport {\n  to = ${tfType}.${name}\n  id = ${JSON.stringify(id)}\n}`;
-   }
-
-   lines.push(block+'\n');
+    lines.push(block+'\n');
   });
 
   return lines.join('\n');
  },[architectureNodes]);
 
- const terraformVariablesCode=useMemo(()=>effectiveVariables.map(v=>{
+ 
+ const vmPasswordVariableCode=useMemo(()=>architectureNodes.some(n=>n.data.resourceType==='virtualMachine')?
+`variable "vm_admin_password" {
+  description = "Administrator password for Windows virtual machines."
+  type        = string
+  sensitive   = true
+}`:'',[architectureNodes]);
+const terraformVariablesCode=useMemo(()=>effectiveVariables.map(v=>{
   const lines=[`variable "${v.name}" {`,`  type = ${v.type}`];
   if(v.description)lines.push(`  description = ${JSON.stringify(v.description)}`);
   if(v.defaultValue!==undefined&&v.defaultValue!==''){
@@ -901,10 +958,10 @@ const selectedNode=nodes.find(n=>n.id===selectedNodeId);const selectedEdge=edges
  const terraformProvidersCode=`terraform {\n  required_version = ">= 1.6.0"\n  required_providers {\n    azurerm = {\n      source  = "hashicorp/azurerm"\n      version = "~> 4.0"\n    }\n  }\n}\n\nprovider "azurerm" {\n  features {}\n}`;
  const terraformMetadataCode=`# Architecture: ${designName}\n# Version: ${architectureMetadata.version}\n# Owner: ${architectureMetadata.owner||'Not specified'}\n# Application: ${architectureMetadata.application||'Not specified'}\n# Criticality: ${architectureMetadata.criticality}\n# Lifecycle: ${architectureMetadata.lifecycle}\n# Description: ${architectureMetadata.description||'Not specified'}`;
  const terraformCode=useMemo(()=>[
-  terraformMetadataCode,terraformProvidersCode,terraformVariablesCode,terraformLocalsCode,
+  terraformMetadataCode,terraformProvidersCode,terraformVariablesCode,vmPasswordVariableCode,terraformLocalsCode,
   terraformDataSourcesCode,terraformModulesCode,terraformMainCode,terraformOutputsCode
  ].filter(Boolean).join('\n\n'),[
-  terraformMetadataCode,terraformVariablesCode,terraformLocalsCode,terraformDataSourcesCode,
+  terraformMetadataCode,terraformVariablesCode,vmPasswordVariableCode,terraformLocalsCode,terraformDataSourcesCode,
   terraformModulesCode,terraformMainCode,terraformOutputsCode
  ]);
  const bicepCode=useMemo(()=>{const lines=["targetScope = 'subscription'",''];architectureNodes.filter(n=>n.data.resourceType==='resourceGroup').forEach((n,i)=>lines.push(`resource rg${i} 'Microsoft.Resources/resourceGroups@2024-03-01' = {\n  name: '${n.data.label}'\n  location: '${n.data.region}'\n}\n`));architectureNodes.filter(n=>!['tenant','managementGroup','subscription','resourceGroup'].includes(n.data.resourceType)).forEach(n=>lines.push(`// TODO ${n.data.resourceType}: ${n.data.label} | RG: ${n.data.resourceGroup||'unassigned'} | ${n.data.region}`));return lines.join('\n');},[architectureNodes]);
@@ -917,7 +974,7 @@ const selectedNode=nodes.find(n=>n.id===selectedNodeId);const selectedEdge=edges
 
   if(iacMode==='terraform'){
     zip.file('providers.tf',terraformProvidersCode);
-    zip.file('variables.tf',terraformVariablesCode||'# No variables declared\n');
+    zip.file('variables.tf',[terraformVariablesCode,vmPasswordVariableCode].filter(Boolean).join('\n\n')||'# No variables declared\n');
     zip.file('locals.tf',terraformLocalsCode);
     zip.file('data.tf',terraformDataSourcesCode||'# No referenced data sources\n');
     zip.file('modules.tf',terraformModulesCode||'# No modules declared\n');
