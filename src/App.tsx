@@ -1226,8 +1226,17 @@ const selectedNode=nodes.find(n=>n.id===selectedNodeId);const selectedEdge=edges
  <div className="archmind-ai-float">
   {archMindOpen&&<div className="archmind-ai-popup">
     <div className="archmind-ai-popup-head">
-      <div className="archmind-ai-avatar"><Sparkles size={17}/></div>
-      <div><strong>ArchMind AI</strong><small>Architecture assistant · {designName}</small></div>
+      <div className="archmind-ai-avatar"><div className="archmind-robot-head" aria-hidden="true">
+      <span className="archmind-robot-antenna"><i/></span>
+      <span className="archmind-robot-ear left"/>
+      <span className="archmind-robot-ear right"/>
+      <span className="archmind-robot-face">
+        <i className="archmind-robot-eye left"/>
+        <i className="archmind-robot-eye right"/>
+        <i className="archmind-robot-mouth"/>
+      </span>
+    </div></div>
+      <div><strong>archmind</strong><small>Architecture assistant · {designName}</small></div>
       <button onClick={()=>setArchMindOpen(false)} aria-label="Close">×</button>
     </div>
     <div className="archmind-ai-answer"><Sparkles size={14}/><p>{archMindAnswer}</p></div>
@@ -1245,8 +1254,19 @@ const selectedNode=nodes.find(n=>n.id===selectedNodeId);const selectedEdge=edges
       <span>Design-aware MVP assistant</span>
     </div>
   </div>}
-  <button className={`archmind-ai-orb ${archMindOpen?'active':''}`} onClick={()=>setArchMindOpen(v=>!v)} title="Ask ArchMind AI">
-    <Sparkles size={22}/><span className="ai-orb-pulse"/>
+  <button className={`archmind-ai-orb ${archMindOpen?'active':''}`} onClick={()=>setArchMindOpen(v=>!v)} title="Ask archmind">
+    <div className="archmind-robot-head" aria-hidden="true">
+      <span className="archmind-robot-antenna"><i/></span>
+      <span className="archmind-robot-ear left"/>
+      <span className="archmind-robot-ear right"/>
+      <span className="archmind-robot-face">
+        <i className="archmind-robot-eye left"/>
+        <i className="archmind-robot-eye right"/>
+        <i className="archmind-robot-mouth"/>
+      </span>
+    </div>
+    <span className="archmind-ai-name">archmind</span>
+    <span className="ai-orb-pulse"/>
   </button>
  </div>
  {contextMenu&&<div className="node-context-menu" style={{left:contextMenu.x,top:contextMenu.y}} onMouseDown={e=>e.stopPropagation()}><button onClick={duplicateSelection}>Duplicate <kbd>Ctrl+D</kbd></button><button onClick={copySelection}>Copy <kbd>Ctrl+C</kbd></button><button onClick={pasteSelection}>Paste <kbd>Ctrl+V</kbd></button><hr/><button onClick={lockSelection}>Lock</button><button onClick={unlockSelection}>Unlock</button><hr/><button onClick={bringForward}>Bring Forward</button><button onClick={sendBackward}>Send Backward</button><hr/><button onClick={groupSelection}>Group</button><button onClick={ungroupSelection}>Ungroup</button><hr/><button className="danger" onClick={deleteSelected}>Delete <kbd>Del</kbd></button></div>}<div className="inspector-shell">

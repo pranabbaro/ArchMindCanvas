@@ -1,22 +1,19 @@
-# ArchMindCanvas v8.1.1 — Architecture Tools Flyout UI Fix
+# ArchMindCanvas v8.1.2 — archmind Robot Assistant
 
-This release changes only the Architecture Tools flyout styling.
+Replaces the floating sparkle AI button with a compact robot-head assistant.
 
-Fixes:
-- Compact 338px flyout width
-- Proper card rows
-- Visible icons
-- Tight vertical spacing
-- Better typography
-- Hover states
-- Right-arrow alignment
-- Controlled flyout height with scrolling
-- Prevents left-rail styles from flattening the flyout content
+Changes:
+- Small robot head in the bottom-right assistant button
+- Assistant label: `archmind`
+- Matching robot avatar inside the assistant popup
+- Small online-status indicator retained
+- Existing assistant click/open/query behavior is unchanged
+- v8.1.1 Architecture Tools and v8.0.1 IaC functionality are preserved
 
-All v8.1.0 functionality is unchanged.
+No external image asset is required; the robot is rendered with lightweight HTML/CSS.
 
 ```powershell
 git add .
-git commit -m "ArchMindCanvas v8.1.1 - fix architecture tools flyout UI"
+git commit -m "ArchMindCanvas v8.1.2 - archmind robot assistant"
 git push origin main
 ```

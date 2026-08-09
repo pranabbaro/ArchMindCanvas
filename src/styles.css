@@ -1792,3 +1792,155 @@
   background:#cbd5e1!important;
   border-radius:999px!important;
 }
+
+/* v8.1.2 — archmind robot assistant */
+.archmind-ai-float{
+  right:16px!important;
+  bottom:16px!important;
+  gap:10px!important;
+}
+
+/* Replace the former sparkle orb with a compact robot + label */
+.archmind-ai-orb{
+  width:70px!important;
+  height:74px!important;
+  padding:6px 6px 7px!important;
+  display:flex!important;
+  flex-direction:column!important;
+  align-items:center!important;
+  justify-content:center!important;
+  gap:3px!important;
+  border:1px solid #d7e5f2!important;
+  border-radius:22px!important;
+  background:rgba(255,255,255,.96)!important;
+  color:#0f172a!important;
+  box-shadow:0 14px 34px rgba(15,23,42,.16)!important;
+  backdrop-filter:blur(8px)!important;
+}
+.archmind-ai-orb:hover,
+.archmind-ai-orb.active{
+  transform:translateY(-2px)!important;
+  border-color:#a9cff0!important;
+  box-shadow:0 18px 40px rgba(22,91,171,.20)!important;
+}
+.archmind-ai-name{
+  display:block!important;
+  font-size:8px!important;
+  line-height:1!important;
+  font-weight:900!important;
+  letter-spacing:-.02em!important;
+  color:#145bd7!important;
+  text-transform:lowercase!important;
+}
+
+.archmind-robot-head{
+  position:relative;
+  width:44px;
+  height:38px;
+  flex:0 0 38px;
+}
+.archmind-robot-face{
+  position:absolute;
+  left:4px;
+  right:4px;
+  top:7px;
+  bottom:2px;
+  display:block;
+  border:2px solid #d9e8f5;
+  border-radius:13px;
+  background:linear-gradient(150deg,#17345c 0%,#07182f 72%);
+  box-shadow:
+    inset 0 0 0 1px rgba(255,255,255,.08),
+    0 4px 10px rgba(15,23,42,.14);
+}
+.archmind-robot-antenna{
+  position:absolute;
+  left:50%;
+  top:0;
+  width:2px;
+  height:8px;
+  transform:translateX(-50%);
+  border-radius:2px;
+  background:#2e91b3;
+}
+.archmind-robot-antenna i{
+  position:absolute;
+  left:50%;
+  top:-3px;
+  width:7px;
+  height:7px;
+  transform:translateX(-50%);
+  border-radius:50%;
+  background:#19b7a4;
+  box-shadow:0 0 0 2px #e7fbf7;
+}
+.archmind-robot-ear{
+  position:absolute;
+  top:15px;
+  width:6px;
+  height:13px;
+  border-radius:5px;
+  background:linear-gradient(#52b8df,#218aca);
+}
+.archmind-robot-ear.left{left:0}
+.archmind-robot-ear.right{right:0}
+.archmind-robot-eye{
+  position:absolute;
+  top:9px;
+  width:5px;
+  height:8px;
+  border-radius:999px;
+  background:#20d8e2;
+  box-shadow:0 0 7px rgba(32,216,226,.55);
+}
+.archmind-robot-eye.left{left:9px}
+.archmind-robot-eye.right{right:9px}
+.archmind-robot-mouth{
+  position:absolute;
+  left:50%;
+  bottom:6px;
+  width:12px;
+  height:5px;
+  transform:translateX(-50%);
+  border-bottom:2px solid #36d9c8;
+  border-radius:0 0 12px 12px;
+}
+
+/* Online indicator stays small and unobtrusive */
+.archmind-ai-orb .ai-orb-pulse{
+  right:4px!important;
+  top:5px!important;
+  width:8px!important;
+  height:8px!important;
+  background:#42d7c4!important;
+  border:2px solid #fff!important;
+}
+
+/* Popup uses a smaller matching robot avatar */
+.archmind-ai-avatar{
+  width:38px!important;
+  height:38px!important;
+  padding:2px!important;
+  display:grid!important;
+  place-items:center!important;
+  border:1px solid #d8e6f3!important;
+  border-radius:11px!important;
+  background:#f4f9ff!important;
+  color:inherit!important;
+}
+.archmind-ai-avatar .archmind-robot-head{
+  transform:scale(.72);
+  transform-origin:center;
+}
+.archmind-ai-popup-head strong{
+  text-transform:lowercase;
+  font-size:11px!important;
+}
+
+@media(max-width:900px){
+  .archmind-ai-orb{
+    width:62px!important;
+    height:68px!important;
+  }
+  .archmind-ai-name{font-size:7px!important}
+}
