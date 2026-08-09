@@ -230,3 +230,33 @@ Enabled AWS Terraform resources:
 The generated provider bundle adds `hashicorp/aws` only when one of the mapped AWS resources is present. `aws_region` is generated automatically. VPC/Subnet hierarchy references are generated from the canvas when available, with input-variable fallbacks for externally managed VPCs/subnets.
 
 All other AWS services remain diagram/property-only and are explicitly commented as not yet Terraform-mapped. This prevents accidental generation of invalid generic AWS resources.
+
+
+## v8.5.5 — AWS Cost Foundation
+
+Cost Intelligence is now provider-aware.
+
+Added:
+- AWS monthly architecture estimates in an isolated `src/cloud/aws/awsPricing.ts`.
+- AWS cost categories.
+- Azure and AWS monthly subtotals.
+- Combined multi-cloud monthly and annual estimate.
+- Cost breakdown by provider + category.
+- Per-resource pricing-source labels.
+- Existing Azure live Retail Prices refresh remains Azure-only and unchanged in principle.
+
+AWS cost coverage currently includes estimates for:
+EC2 + root EBS, Auto Scaling, Lambda, ECS/EKS/ECR/Fargate, S3/EBS/Backup,
+RDS/Aurora/DynamoDB, Transit Gateway, Direct Connect, Site-to-Site VPN,
+CloudFront, Route 53, ALB/NLB, PrivateLink, API Gateway, Network Firewall,
+KMS, Secrets Manager, Security Hub, CloudWatch, CloudTrail, SQS/SNS,
+EventBridge and Step Functions.
+
+Important:
+- AWS figures are architecture estimates based on configured node properties.
+- The official AWS Price List GetProducts API requires authenticated calls.
+- No AWS credential is stored or embedded in the frontend.
+- A future backend can replace AWS estimates with live AWS Price List results.
+
+No canvas, icon, hierarchy, property schema, connector, template, validation,
+Azure/AWS Terraform, backend-state, save/deploy or Architecture Guidance behavior changed.
