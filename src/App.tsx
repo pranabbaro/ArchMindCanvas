@@ -39,7 +39,36 @@ type Tool='select'|'hand'|'rectangle'|'triangle'|'text';
 
 function Designer(){
  const{screenToFlowPosition,fitView}=useReactFlow();
- const[nodes,setNodes,onNodesChangeBase]=useNodesState<CanvasNode>(starterNodes);const[edges,setEdges,onEdgesChangeBase]=useEdgesState<CanvasEdge>(starterEdges);
+ const[nodes,setNodes,onNodesChangeBase]=useNodesState<CanvasNode>(starterNodes);
+
+ const normalizeCanvasLayering=useCallback((input:CanvasNode[])=>{
+  const byId=new Map(input.map(n=>[n.id,n]));
+  const depthOf=(n:CanvasNode)=>{
+   let depth=0, cur:CanvasNode|undefined=n;
+   const seen=new Set<string>();
+   while(cur?.parentId&&byId.has(cur.parentId)&&!seen.has(cur.parentId)){
+    seen.add(cur.parentId); depth++; cur=byId.get(cur.parentId);
+   }
+   return depth;
+  };
+  return input.map(n=>{
+   const depth=depthOf(n);
+   const isArch=n.type!=='drawing';
+   const container=isArch&&isContainerType((n as ArchitectureNode).data.resourceType);
+   const selected=n.selected===true;
+   return {...n,zIndex:selected?1000:(container?1+depth:100+depth)};
+  });
+ },[]);
+
+ const onNodesChange=useCallback((changes:NodeChange<CanvasNode>[])=>{
+  onNodesChangeBase(changes);
+  requestAnimationFrame(()=>setNodes(current=>normalizeCanvasLayering(current)));
+ },[onNodesChangeBase,setNodes,normalizeCanvasLayering]);
+
+ useEffect(()=>{
+  setNodes(current=>normalizeCanvasLayering(current));
+ },[normalizeCanvasLayering,setNodes]);
+const[edges,setEdges,onEdgesChangeBase]=useEdgesState<CanvasEdge>(starterEdges);
  const[selectedNodeId,setSelectedNodeId]=useState<string>();const[designId,setDesignId]=useState<string>(()=>crypto.randomUUID());const[selectedEdgeId,setSelectedEdgeId]=useState<string>();const[designName,setDesignName]=useState('My Azure Architecture');const[saveState,setSaveState]=useState<'saved'|'unsaved'>('saved');const[rightPanel,setRightPanel]=useState<'properties'|'variables'|'model'|'validation'|'iac'|'cost'|'import'|'deploy'>('properties');const[declaredVariables,setDeclaredVariables]=useState<VariableDefinition[]>([]);const[declaredLocals,setDeclaredLocals]=useState<LocalDefinition[]>([]);const[designVariables,setDesignVariables]=useState<VariableDefinition[]>([]);const[designLocals,setDesignLocals]=useState<LocalDefinition[]>([]);
  const[architectureOutputs,setArchitectureOutputs]=useState<ArchitectureOutputDefinition[]>([]);
  const[architectureModules,setArchitectureModules]=useState<ArchitectureModuleDefinition[]>([]);
