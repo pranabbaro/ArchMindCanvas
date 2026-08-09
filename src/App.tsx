@@ -3,7 +3,7 @@ import {
   addEdge, Background, BackgroundVariant, Controls, MarkerType, MiniMap, ReactFlow, ReactFlowProvider,
   useEdgesState, useNodesState, useReactFlow, type Connection, type EdgeChange, type NodeChange,
 } from '@xyflow/react';
-import { Check, Clipboard, Copy, Download, FilePlus2, FolderOpen, Maximize2, Redo2, Save, ShieldCheck, Sparkles, Undo2, MousePointer2, Hand, Route, Square, Triangle, Type, Trash2, Bot, Code2, DollarSign, Image, FileText, BringToFront, SendToBack, Lock, Unlock, Rocket, Play, CheckCircle2, GitBranch, ServerCog, Variable, Building2, FolderKanban, Layers3, LayoutDashboard, Boxes, ChevronDown, ChevronLeft, ChevronRight, Network, GripVertical} from 'lucide-react';
+import { Check, Clipboard, Copy, Download, FilePlus2, FolderOpen, Maximize2, Redo2, Save, ShieldCheck, Sparkles, Undo2, MousePointer2, Hand, Route, Square, Triangle, Type, Trash2, Bot, Code2, DollarSign, Image, FileText, BringToFront, SendToBack, Lock, Unlock, Rocket, Play, CheckCircle2, GitBranch, ServerCog, Variable, Building2, FolderKanban, Layers3, LayoutDashboard, Boxes, ChevronDown, ChevronLeft, ChevronRight, Network, GripVertical, LayoutTemplate} from 'lucide-react';
 import { toPng, toSvg } from 'html-to-image';
 import { jsPDF } from 'jspdf';
 import ArchitectureNodeComponent from './components/ArchitectureNode';
@@ -1421,7 +1421,7 @@ const terraformVariablesCode=useMemo(()=>effectiveVariables.map(v=>{
  <button className="segmented-context-item environment" onClick={()=>{sessionStorage.setItem('archmind-dashboard-target',`project:${projectId}`);setWorkspaceView('dashboard')}} title={environmentName}><Layers3 size={13}/><span>{environmentName}</span></button>
  <b>›</b>
  <button className="segmented-context-item architecture current" onClick={()=>setScopeManagerOpen(true)} title={designName}><Network size={13}/><span>{designName}</span></button>
-</nav><div className="design-title"><input value={designName} onChange={e=>{setDesignName(e.target.value);markChanged();}}/><div className={`save-status ${saveState}`}><Check size={12}/>{saveState==='saved'?'Saved':'Unsaved'}</div></div><div className="toolbar"><button onClick={undo}><Undo2 size={16}/></button><button onClick={redo}><Redo2 size={16}/></button><button onClick={newDesign}><FilePlus2 size={16}/><span>New</span></button><button onClick={loadTemplate}><Sparkles size={16}/><span>Template</span></button><div className="save-menu-wrap">
+</nav><div className="design-title"><input value={designName} onChange={e=>{setDesignName(e.target.value);markChanged();}}/><div className={`save-status ${saveState}`}><Check size={12}/>{saveState==='saved'?'Saved':'Unsaved'}</div></div><div className="toolbar"><button onClick={undo}><Undo2 size={16}/></button><button onClick={redo}><Redo2 size={16}/></button><button onClick={newDesign}><FilePlus2 size={16}/><span>New</span></button><button onClick={loadTemplate}><LayoutTemplate size={16}/><span>Template</span></button><div className="save-menu-wrap">
 <button className="save-main-button" onClick={()=>setSaveMenuOpen(v=>!v)}><Save size={16}/><span>Save</span></button>
 {saveMenuOpen&&<div className="save-export-menu save-export-menu-fixed">
 <button onClick={()=>{saveDesign();setSaveMenuOpen(false)}}><Save size={15}/><span><b>Save in Browser</b><small>Store editable design locally</small></span></button>
@@ -1500,7 +1500,7 @@ const terraformVariablesCode=useMemo(()=>effectiveVariables.map(v=>{
 
       <div className="architecture-tools-group-label">ARCHMINDCANVAS</div>
       <button onClick={()=>{setArchitectureToolsMenuOpen(false);sessionStorage.setItem('archmind-dashboard-target','home');setWorkspaceView('dashboard')}}>
-        <Boxes size={15}/><span><strong>Architecture Templates</strong><small>Reusable ArchMindCanvas starters</small></span><ChevronRight size={14}/>
+        <LayoutTemplate size={15}/><span><strong>Architecture Templates</strong><small>Reusable ArchMindCanvas starters</small></span><ChevronRight size={14}/>
       </button>
       <button onClick={()=>{setArchitectureToolsMenuOpen(false);setRightPanel('validation')}}>
         <CheckCircle2 size={15}/><span><strong>Architecture Review</strong><small>Review the current design</small></span><ChevronRight size={14}/>
