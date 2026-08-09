@@ -25,8 +25,14 @@ export default function Sidebar({onAddResource}:Props){
   const[query,setQuery]=useState('');
   const[provider,setProvider]=useState<CloudProvider>(()=>(localStorage.getItem('archmind-resource-provider') as CloudProvider)||'azure');
   const[providerOpen,setProviderOpen]=useState(false);
+
+  const current=providerInfo[provider];
+  const selectedCatalog=getCloudCatalog(provider);
+  const categories=selectedCatalog.categories as ResourceCategory[];
+  const resourceCatalog=selectedCatalog.resources;
+
   const[open,setOpen]=useState<Record<ResourceCategory,boolean>>(
-    ()=>Object.fromEntries(categories.map(c=>[c,c==='Governance'||c==='Networking'])) as Record<ResourceCategory,boolean>
+    ()=>Object.fromEntries((getCloudCatalog('azure').categories as ResourceCategory[]).map(c=>[c,c==='Governance'||c==='Networking'])) as Record<ResourceCategory,boolean>
   );
 
   const selectProvider=(next:CloudProvider)=>{
@@ -35,11 +41,6 @@ export default function Sidebar({onAddResource}:Props){
     setQuery('');
     localStorage.setItem('archmind-resource-provider',next);
   };
-
-  const current=providerInfo[provider];
-  const selectedCatalog=getCloudCatalog(provider);
-  const categories=selectedCatalog.categories as ResourceCategory[];
-  const resourceCatalog=selectedCatalog.resources;
   const normalized=query.trim().toLowerCase();
   const resources=useMemo(
     ()=>resourceCatalog.filter(i=>`${i.label} ${i.description} ${i.category}`.toLowerCase().includes(normalized)),

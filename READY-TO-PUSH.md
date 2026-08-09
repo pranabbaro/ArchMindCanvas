@@ -94,3 +94,23 @@ Internal structure:
 No layout, icons, Azure resource definitions, drag/drop behavior, canvas behavior,
 Terraform/IaC, remote backend, validation, templates, reference starters,
 connectors, Architecture Guidance, cost, save, deploy or archmind logic was changed.
+
+
+## v8.4.8 — Resources blank-page runtime fix
+
+Focused bug fix only.
+
+Cause:
+- `Sidebar.tsx` initialized category state using `categories` before the
+  selected provider catalog was resolved.
+- The Sidebar mounts only when Resources is opened, causing a runtime
+  blank page at that exact point.
+
+Fix:
+- Resolve provider/catalog before category state initialization.
+- Initialize the existing Azure category state from
+  `getCloudCatalog('azure').categories`.
+
+No layout, icons, provider selector UI, Azure catalog definitions,
+Terraform/IaC, backend, validation, templates, reference starters,
+connectors, Architecture Guidance, cost, save, deploy or archmind behavior changed.
