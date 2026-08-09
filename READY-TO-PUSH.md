@@ -168,3 +168,28 @@ Safety:
 - Azure behavior and Azure IaC generation remain unchanged.
 
 Next phase can add AWS hierarchy/container semantics and AWS Terraform mapping independently.
+
+
+## v8.5.2 — AWS hierarchy and container support
+
+Adds provider-aware AWS hierarchy without changing the Azure hierarchy.
+
+AWS containers:
+- AWS Account
+- Amazon VPC
+- AWS Subnet
+
+Containment:
+- AWS Account -> VPC
+- VPC -> Subnet
+- AWS service -> Subnet / VPC / Account
+- AWS nodes cannot auto-parent into Azure containers.
+- Azure nodes cannot auto-parent into AWS containers.
+
+AWS inherited metadata:
+- awsAccountId
+- awsVpc
+- awsSubnet
+
+Azure hierarchy, Azure Terraform, backend, validation, templates, connectors,
+Architecture Guidance, cost, save/deploy and archmind behavior are unchanged.

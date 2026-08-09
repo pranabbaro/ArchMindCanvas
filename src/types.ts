@@ -76,6 +76,8 @@ export type ResourceType =
   | 'documentIntelligence'
   | 'contentSafety'
   | 'cognitiveServices'
+  | 'awsAccount'
+  | 'awsSubnet'
   | 'botService'
   | 'awsCloudFormation'
   | 'awsCloudWatch'
@@ -196,6 +198,9 @@ export type ArchitectureNodeData = {
   label: string;
   cloudProvider?: 'azure' | 'aws' | 'gcp';
   terraformReady?: boolean;
+  awsAccountId?: string;
+  awsVpc?: string;
+  awsSubnet?: string;
   resourceType: ResourceType;
   description: string;
   region: string;

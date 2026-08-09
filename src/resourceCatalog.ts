@@ -11,4 +11,6 @@ export const resourceMap = {
 } as Record<ResourceType, (typeof resourceCatalog)[number] | (typeof awsResources)[number]>;
 
 export const isContainerType = (type:ResourceType) =>
-  type.startsWith('aws') ? false : isAzureContainerType(type);
+  type.startsWith('aws')
+    ? Boolean((resourceMap[type] as any)?.container)
+    : isAzureContainerType(type);

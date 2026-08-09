@@ -14,22 +14,26 @@ const item = (
   iconCategory:string,
   iconFile:string,
   fallbackIcon:any,
-  sku='Standard'
+  sku='Standard',
+  container=false
 ):CloudResourceItem => ({
   type,label,description,category,sku,
   iconUrl:awsIcon(iconCategory,iconFile),
   fallbackIcon,
   canvasReady:true,
+  container,
 });
 
 export const awsResources:CloudResourceItem[] = [
+  item('awsAccount','AWS Account','AWS account boundary for resources','Management & Governance','General','AWSCloud',Cloud,'Account',true),
   // Management & Governance
   item('awsCloudFormation','AWS CloudFormation','Infrastructure as code and stack orchestration','Management & Governance','ManagementGovernance','CloudFormation',Workflow),
   item('awsCloudWatch','Amazon CloudWatch','Metrics, logs, alarms and observability','Management & Governance','ManagementGovernance','CloudWatch',Gauge),
   item('awsCloudTrail','AWS CloudTrail','API activity and governance audit trail','Management & Governance','ManagementGovernance','CloudTrail',Activity),
 
   // Networking & Content Delivery
-  item('awsVpc','Amazon VPC','Isolated virtual network for AWS resources','Networking & Content Delivery','NetworkingContentDelivery','NetworkingContentDelivery',Network),
+  item('awsVpc','Amazon VPC','Isolated virtual network for AWS resources','Networking & Content Delivery','NetworkingContentDelivery','NetworkingContentDelivery',Network,'Standard',true),
+  item('awsSubnet','AWS Subnet','Network segment inside an Amazon VPC','Networking & Content Delivery','NetworkingContentDelivery','VPCSubnet',Network,'Standard',true),
   item('awsTransitGateway','AWS Transit Gateway','Central hub for VPC and hybrid network connectivity','Networking & Content Delivery','NetworkingContentDelivery','TransitGateway',Router),
   item('awsDirectConnect','AWS Direct Connect','Dedicated private connectivity to AWS','Networking & Content Delivery','NetworkingContentDelivery','DirectConnect',Network),
   item('awsSiteToSiteVpn','AWS Site-to-Site VPN','Encrypted VPN connectivity to AWS','Networking & Content Delivery','NetworkingContentDelivery','SitetoSiteVPN',Shield),

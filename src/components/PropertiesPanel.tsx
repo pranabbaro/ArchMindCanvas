@@ -312,7 +312,13 @@ export default function PropertiesPanel({nodeId,data,allResources,declaredVariab
   if(!data)return <aside className="properties-panel"><div className="empty-properties"><div className="empty-icon">◇</div><strong>No resource selected</strong><span>Select a node to edit its Azure configuration.</span></div></aside>;
 
   const item=resourceMap[data.resourceType];const Icon=item.fallbackIcon;
-  const parentOptions=data.resourceType==='managementGroup'?hierarchy.tenants:data.resourceType==='subscription'?hierarchy.managementGroups:data.resourceType==='resourceGroup'?hierarchy.subscriptions:data.resourceType==='virtualNetwork'?hierarchy.resourceGroups:data.resourceType==='subnet'?hierarchy.vnets:[...hierarchy.subnets,...hierarchy.resourceGroups];
+  const parentOptions=data.cloudProvider==='aws'
+    ? data.resourceType==='awsVpc'
+      ? allResources.filter(r=>r.data.resourceType==='awsAccount').map(r=>({id:r.id,label:r.data.label}))
+      : data.resourceType==='awsSubnet'
+        ? allResources.filter(r=>r.data.resourceType==='awsVpc').map(r=>({id:r.id,label:r.data.label}))
+        : allResources.filter(r=>['awsSubnet','awsVpc','awsAccount'].includes(r.data.resourceType)).map(r=>({id:r.id,label:r.data.label}))
+    : data.resourceType==='managementGroup'?hierarchy.tenants:data.resourceType==='subscription'?hierarchy.managementGroups:data.resourceType==='resourceGroup'?hierarchy.subscriptions:data.resourceType==='virtualNetwork'?hierarchy.resourceGroups:data.resourceType==='subnet'?hierarchy.vnets:[...hierarchy.subnets,...hierarchy.resourceGroups];
   const showParent=data.resourceType!=='tenant';
   const resourceMode=data.resourceMode||'create';
 
@@ -327,7 +333,7 @@ export default function PropertiesPanel({nodeId,data,allResources,declaredVariab
       <div className="property-mode-switch"><button className={mode==='form'?'active':''} onClick={()=>setMode('form')}><FormInput size={14}/> Form</button>{data.cloudProvider!=='aws'&&<button className={mode==='code'?'active':''} onClick={()=>setMode('code')}><Code2 size={14}/> Code</button>}</div>
     </div>
 
-    {data.cloudProvider==='aws'?<div className="aws-diagram-mode-note"><strong>AWS diagram mode</strong><span>This AWS service can be placed, moved, connected, saved and documented. Terraform generation will be enabled separately for mapped AWS services.</span></div>:mode==='code'?<div className={`resource-code-view ${codeExpanded?'expanded':''}`}>
+    {data.cloudProvider==='aws'?<div className="aws-diagram-mode-note"><strong>AWS diagram mode</strong><span>This AWS service supports provider-aware hierarchy and canvas placement. AWS Account, VPC and Subnet act as containers. Terraform generation will be enabled separately for mapped AWS services.</span></div>:mode==='code'?<div className={`resource-code-view ${codeExpanded?'expanded':''}`}>
       <div className="code-toolbar">
         <span>{resourceMode==='existing'?'data':resourceMode} · {tfName(data.resourceType)}</span>
         <div className="code-toolbar-actions">

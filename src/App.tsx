@@ -32,14 +32,14 @@ const makeData=(type:ResourceType,label?:string):ArchitectureNodeData=>{
   cloudProvider:aws?'aws':'azure',
   terraformReady:!aws,
   description:item.description,
-  region:aws?'ap-south-1':(['tenant','managementGroup'].includes(type)?'Global':'Central India'),
+  region:aws?(type==='awsAccount'?'Global':'ap-south-1'):(['tenant','managementGroup'].includes(type)?'Global':'Central India'),
   sku:item.sku,
   environment:'Production',
   owner:'',
   tags:{}
  };
 };
-const containerSizes:Partial<Record<ResourceType,{width:number;height:number}>>={tenant:{width:1200,height:850},managementGroup:{width:1050,height:740},subscription:{width:920,height:650},resourceGroup:{width:780,height:540},virtualNetwork:{width:620,height:420},subnet:{width:360,height:270}};
+const containerSizes:Partial<Record<ResourceType,{width:number;height:number}>>={tenant:{width:1200,height:850},managementGroup:{width:1050,height:740},subscription:{width:920,height:650},resourceGroup:{width:780,height:540},virtualNetwork:{width:620,height:420},subnet:{width:360,height:270},awsAccount:{width:980,height:700},awsVpc:{width:760,height:540},awsSubnet:{width:420,height:300}};
 const containerSize=(type:ResourceType)=>containerSizes[type]||{width:420,height:300};
 const starterNodes:CanvasNode[]=[
  {id:'sub',type:'container',position:{x:60,y:50},style:containerSize('subscription'),data:{...makeData('subscription','Contoso Production Subscription'),subscriptionName:'Contoso Production Subscription',subscriptionId:'00000000-0000-0000-0000-000000000000',tags:{Environment:'Production',CostCenter:'CC100'}}},
@@ -192,13 +192,37 @@ const selectedNode=nodes.find(n=>n.id===selectedNodeId);const selectedEdge=edges
   subnets:nodes.filter((n):n is ArchitectureNode=>n.type!=='drawing'&&n.data.resourceType==='subnet').map(n=>({id:n.id,label:n.data.label})),
  }),[nodes]);
 
- const inheritFor=(node:ArchitectureNode,all:CanvasNode[])=>{let cur:CanvasNode|undefined=node;const chain:ArchitectureNode[]=[];const seen=new Set<string>();while(cur?.parentId&&!seen.has(cur.parentId)){seen.add(cur.parentId);const p=all.find(n=>n.id===cur!.parentId);if(!p||p.type==='drawing')break;chain.unshift(p as ArchitectureNode);cur=p;}const data={...node.data};const inherited:TagMap={};for(const p of chain){Object.assign(inherited,p.data.tags||{});if(p.data.resourceType==='tenant')data.tenantId=p.data.tenantId;if(p.data.resourceType==='managementGroup')data.managementGroup=p.data.label;if(p.data.resourceType==='subscription'){data.subscriptionName=p.data.subscriptionName||p.data.label;data.subscriptionId=p.data.subscriptionId;}if(p.data.resourceType==='resourceGroup')data.resourceGroup=p.data.resourceGroup||p.data.label;if(p.data.resourceType==='virtualNetwork')data.vnet=p.data.label;if(p.data.resourceType==='subnet')data.subnet=p.data.label;if(p.data.region&&p.data.region!=='Global'&&!['tenant','managementGroup'].includes(node.data.resourceType))data.region=p.data.region;}data.inheritedTags=inherited;return data;};
+ const inheritFor=(node:ArchitectureNode,all:CanvasNode[])=>{let cur:CanvasNode|undefined=node;const chain:ArchitectureNode[]=[];const seen=new Set<string>();while(cur?.parentId&&!seen.has(cur.parentId)){seen.add(cur.parentId);const p=all.find(n=>n.id===cur!.parentId);if(!p||p.type==='drawing')break;chain.unshift(p as ArchitectureNode);cur=p;}const data={...node.data};const inherited:TagMap={};for(const p of chain){Object.assign(inherited,p.data.tags||{});if(p.data.resourceType==='tenant')data.tenantId=p.data.tenantId;if(p.data.resourceType==='managementGroup')data.managementGroup=p.data.label;if(p.data.resourceType==='subscription'){data.subscriptionName=p.data.subscriptionName||p.data.label;data.subscriptionId=p.data.subscriptionId;}if(p.data.resourceType==='resourceGroup')data.resourceGroup=p.data.resourceGroup||p.data.label;if(p.data.resourceType==='virtualNetwork')data.vnet=p.data.label;if(p.data.resourceType==='subnet')data.subnet=p.data.label;if(p.data.resourceType==='awsAccount')data.awsAccountId=p.data.label;if(p.data.resourceType==='awsVpc')data.awsVpc=p.data.label;if(p.data.resourceType==='awsSubnet')data.awsSubnet=p.data.label;if(p.data.region&&p.data.region!=='Global'&&!['tenant','managementGroup'].includes(node.data.resourceType))data.region=p.data.region;}data.inheritedTags=inherited;return data;};
  const recalcHierarchy=useCallback((input:CanvasNode[])=>input.map(n=>n.type==='drawing'?n:{...n,data:inheritFor(n as ArchitectureNode,input)} as CanvasNode),[]);
 
- const compatibleParent=(type:ResourceType)=>type==='managementGroup'?['tenant']:type==='subscription'?['managementGroup','tenant']:type==='resourceGroup'?['subscription']:type==='virtualNetwork'?['resourceGroup']:type==='subnet'?['virtualNetwork']:['subnet','resourceGroup'];
- const findContainer=useCallback((point:{x:number;y:number},type:ResourceType)=>{const wanted=compatibleParent(type);return [...nodes].reverse().find((n):n is ArchitectureNode=>n.type==='container'&&wanted.includes((n as ArchitectureNode).data.resourceType)&&point.x>=n.position.x&&point.x<=n.position.x+Number(n.style?.width||600)&&point.y>=n.position.y&&point.y<=n.position.y+Number(n.style?.height||400));},[nodes]);
- const createResource=useCallback((type:ResourceType,position?:{x:number;y:number})=>{if(!resourceMap[type])return;pushHistory();const o=nextPos.current++%8,id=`${type}-${Date.now()}-${o}`,requested=position||{x:300+o*24,y:180+o*24},isAws=String(type).startsWith('aws'),parent=position&&!isAws?findContainer(requested,type):undefined,isContainer=!isAws&&isContainerType(type);let node:ArchitectureNode={id,type:isContainer?'container':'architecture',position:parent?{x:Math.max(30,requested.x-parent.position.x),y:Math.max(70,requested.y-parent.position.y)}:requested,data:makeData(type),...(isContainer?{style:containerSize(type)}:{}),...(parent?{parentId:parent.id,extent:'parent' as const}:{})};node={...node,data:inheritFor(node,[...nodes,node])};setNodes(c=>recalcHierarchy([...c,node]));setSelectedNodeId(id);setSelectedEdgeId(undefined);setRightPanel('properties');markChanged();},[pushHistory,findContainer,setNodes,markChanged,nodes,recalcHierarchy]);
- const changeParent=(parentId?:string)=>{if(!selectedNodeId)return;pushHistory();setNodes(current=>{const updated=current.map(n=>n.id===selectedNodeId&&n.type!=='drawing'?{...n,parentId,extent:parentId?'parent' as const:undefined,position:parentId?{x:40,y:90}:n.position}:n);return recalcHierarchy(updated);});markChanged();};
+ const compatibleParent=(type:ResourceType)=>{
+  if(String(type).startsWith('aws')){
+    if(type==='awsAccount')return [];
+    if(type==='awsVpc')return ['awsAccount'] as ResourceType[];
+    if(type==='awsSubnet')return ['awsVpc'] as ResourceType[];
+    return ['awsSubnet','awsVpc','awsAccount'] as ResourceType[];
+  }
+  return type==='managementGroup'?['tenant']:
+    type==='subscription'?['managementGroup','tenant']:
+    type==='resourceGroup'?['subscription']:
+    type==='virtualNetwork'?['resourceGroup']:
+    type==='subnet'?['virtualNetwork']:
+    ['subnet','resourceGroup'];
+ };
+ const findContainer=useCallback((point:{x:number;y:number},type:ResourceType)=>{
+  const wanted=compatibleParent(type);
+  const childProvider=String(type).startsWith('aws')?'aws':'azure';
+  return [...nodes].reverse().find((n):n is ArchitectureNode=>{
+    if(n.type!=='container')return false;
+    const parentType=(n as ArchitectureNode).data.resourceType;
+    const parentProvider=(n as ArchitectureNode).data.cloudProvider|| (String(parentType).startsWith('aws')?'aws':'azure');
+    if(parentProvider!==childProvider)return false;
+    if(!wanted.includes(parentType))return false;
+    return point.x>=n.position.x&&point.x<=n.position.x+Number(n.style?.width||600)&&point.y>=n.position.y&&point.y<=n.position.y+Number(n.style?.height||400);
+  });
+ },[nodes]);
+ const createResource=useCallback((type:ResourceType,position?:{x:number;y:number})=>{if(!resourceMap[type])return;pushHistory();const o=nextPos.current++%8,id=`${type}-${Date.now()}-${o}`,requested=position||{x:300+o*24,y:180+o*24},isAws=String(type).startsWith('aws'),parent=position?findContainer(requested,type):undefined,isContainer=isContainerType(type);let node:ArchitectureNode={id,type:isContainer?'container':'architecture',position:parent?{x:Math.max(30,requested.x-parent.position.x),y:Math.max(70,requested.y-parent.position.y)}:requested,data:makeData(type),...(isContainer?{style:containerSize(type)}:{}),...(parent?{parentId:parent.id,extent:'parent' as const}:{})};node={...node,data:inheritFor(node,[...nodes,node])};setNodes(c=>recalcHierarchy([...c,node]));setSelectedNodeId(id);setSelectedEdgeId(undefined);setRightPanel('properties');markChanged();},[pushHistory,findContainer,setNodes,markChanged,nodes,recalcHierarchy]);
+ const changeParent=(parentId?:string)=>{if(!selectedNodeId)return;pushHistory();setNodes(current=>{const selected=current.find(n=>n.id===selectedNodeId&&n.type!=='drawing') as ArchitectureNode|undefined;const parent=parentId?current.find(n=>n.id===parentId&&n.type!=='drawing') as ArchitectureNode|undefined:undefined;if(selected&&parent){const childProvider=selected.data.cloudProvider||'azure';const parentProvider=parent.data.cloudProvider||'azure';if(childProvider!==parentProvider)return current;}const updated=current.map(n=>n.id===selectedNodeId&&n.type!=='drawing'?{...n,parentId,extent:parentId?'parent' as const:undefined,position:parentId?{x:40,y:90}:n.position}:n);return recalcHierarchy(updated);});markChanged();};
  const updateArchitecture=(updates:Partial<ArchitectureNodeData>)=>{if(!selectedNodeId)return;setNodes(current=>{const updated=current.map(n=>n.id===selectedNodeId&&n.type!=='drawing'?{...n,data:{...n.data,...updates}}:n);return recalcHierarchy(updated);});markChanged();};
  const createDrawing=useCallback((shape:DrawingNode['data']['shape'],position:{x:number;y:number})=>{pushHistory();const id=`${shape}-${Date.now()}`;const node:DrawingNode={id,type:'drawing',position,data:{label:shape==='text'?'Text label':shape==='rectangle'?'Rectangle':'Triangle',shape,fill:shape==='rectangle'?'#ffffff':'#dbeafe',border:'#2563eb',textColor:'#0f172a',fontSize:18},style:shape==='rectangle'?{width:220,height:120}:shape==='triangle'?{width:180,height:150}:{width:150,height:45}};setNodes(c=>[...c,node]);setSelectedNodeId(id);markChanged();},[pushHistory,setNodes,markChanged]);
  const onPaneClick=useCallback((e:React.MouseEvent)=>{if(tool==='select'){setSelectedNodeId(undefined);setSelectedEdgeId(undefined);return;}if(tool==='hand')return;createDrawing(tool,screenToFlowPosition({x:e.clientX,y:e.clientY}));setTool('select');},[tool,createDrawing,screenToFlowPosition]);const onDrop=useCallback((e:DragEvent)=>{e.preventDefault();const type=e.dataTransfer.getData('application/cloud-resource') as ResourceType;if(type)createResource(type,screenToFlowPosition({x:e.clientX,y:e.clientY}));},[createResource,screenToFlowPosition]);
