@@ -12,6 +12,7 @@ export type CloudResourceItem = {
   iconUrl: string;
   fallbackIcon: LucideIcon;
   container?: boolean;
+  canvasReady?: boolean;
 };
 
 export type CloudCatalog = {

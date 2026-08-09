@@ -114,3 +114,33 @@ Fix:
 No layout, icons, provider selector UI, Azure catalog definitions,
 Terraform/IaC, backend, validation, templates, reference starters,
 connectors, Architecture Guidance, cost, save, deploy or archmind behavior changed.
+
+
+## v8.5.0 — AWS core resource catalog with official architecture icons
+
+AWS catalog phase 1.
+
+Added:
+- 35 core AWS services across:
+  - Management & Governance
+  - Networking & Content Delivery
+  - Compute
+  - Containers
+  - Storage
+  - Database
+  - Security, Identity & Compliance
+  - Application Integration
+- AWS icon source is isolated in `src/cloud/aws/awsIconSource.ts`.
+- AWS categories are isolated in `src/cloud/aws/awsCategories.ts`.
+- AWS resources are isolated in `src/cloud/aws/awsCatalog.ts`.
+- Icons are referenced from the AWS-owned `awslabs/aws-icons-for-plantuml`
+  repository, whose assets are generated from official AWS Architecture Icons.
+- Search and category expansion work independently for AWS.
+
+Safety:
+- Existing Azure catalog, Azure drag/drop, Azure canvas nodes, Terraform/IaC,
+  backend, validation, templates, connectors, Architecture Guidance, cost,
+  save/deploy and archmind behavior are unchanged.
+- AWS resources are intentionally catalog-only in this phase (`canvasReady:false`)
+  so they cannot accidentally enter the existing Azure-specific Terraform pipeline.
+- Provider-specific AWS canvas/IaC support is the next isolated phase.

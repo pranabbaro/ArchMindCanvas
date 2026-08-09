@@ -2136,3 +2136,27 @@
   font-size:8px;
   font-weight:700;
 }
+
+
+/* v8.5.0 — AWS core catalog preview */
+.resource-item.catalog-only{
+  cursor:default;
+}
+.resource-item.catalog-only:hover{
+  background:#f8fafc;
+}
+.catalog-preview-badge{
+  margin-left:auto;
+  align-self:center;
+  padding:2px 5px;
+  border:1px solid #d8e3ee;
+  border-radius:999px;
+  background:#f8fafc;
+  color:#738397;
+  font-size:5.5px;
+  font-weight:800;
+  letter-spacing:.04em;
+}
+.aws-catalog-note{
+  line-height:1.5;
+}

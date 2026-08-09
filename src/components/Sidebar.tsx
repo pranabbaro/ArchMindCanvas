@@ -63,12 +63,15 @@ export default function Sidebar({onAddResource}:Props){
       </div>}
     </div>
 
-    {provider==='azure'?<>
+    {provider!=='gcp'?<>
       <div className="sidebar-heading">
-        <div><div className="panel-title">Azure resource library</div><div className="panel-subtitle">Hierarchy, services and architecture elements</div></div>
+        <div>
+          <div className="panel-title">{provider==='azure'?'Azure resource library':'AWS resource library'}</div>
+          <div className="panel-subtitle">{provider==='azure'?'Hierarchy, services and architecture elements':'Core AWS services and architecture elements'}</div>
+        </div>
         <span className="count-badge">{resourceCatalog.length}</span>
       </div>
-      <div className="search-box"><Search size={16}/><input value={query} onChange={e=>setQuery(e.target.value)} placeholder="Search Azure resources"/></div>
+      <div className="search-box"><Search size={16}/><input value={query} onChange={e=>setQuery(e.target.value)} placeholder={provider==='azure'?'Search Azure resources':'Search AWS resources'}/></div>
       <div className="resource-groups">
         {categories.map(category=>{
           const items=resources.filter(i=>i.category===category);
@@ -79,18 +82,31 @@ export default function Sidebar({onAddResource}:Props){
               <span>{expanded?<ChevronDown size={15}/>:<ChevronRight size={15}/>} {category}</span><small>{items.length}</small>
             </button>
             {expanded&&<div className="resource-list">
-              {items.map(resource=><button key={resource.type} className="resource-item" draggable onDoubleClick={()=>onAddResource(resource.type)} onDragStart={e=>{
-                e.dataTransfer.setData('application/cloud-resource',resource.type);
-                e.dataTransfer.effectAllowed='move';
-              }}>
-                <span className="resource-icon azure-service-icon-small"><ResourceIcon iconUrl={resource.iconUrl} label={resource.label} FallbackIcon={resource.fallbackIcon}/></span>
-                <span className="resource-copy"><strong>{resource.label}</strong><small>{resource.description}</small></span>
-              </button>)}
+              {items.map(resource=>{
+                const canvasReady=resource.canvasReady!==false;
+                return <button
+                  key={resource.type}
+                  className={`resource-item ${canvasReady?'':'catalog-only'}`}
+                  draggable={canvasReady}
+                  title={canvasReady?`Drag ${resource.label} to canvas`:`${resource.label} catalog icon loaded. AWS canvas/IaC support will be enabled in the provider-specific canvas phase.`}
+                  onDoubleClick={()=>{if(canvasReady)onAddResource(resource.type)}}
+                  onDragStart={e=>{
+                    if(!canvasReady){e.preventDefault();return;}
+                    e.dataTransfer.setData('application/cloud-resource',resource.type);
+                    e.dataTransfer.effectAllowed='move';
+                  }}>
+                  <span className="resource-icon azure-service-icon-small"><ResourceIcon iconUrl={resource.iconUrl} label={resource.label} FallbackIcon={resource.fallbackIcon}/></span>
+                  <span className="resource-copy"><strong>{resource.label}</strong><small>{resource.description}</small></span>
+                  {!canvasReady&&<span className="catalog-preview-badge">ICON</span>}
+                </button>;
+              })}
             </div>}
           </section>;
         })}
       </div>
-      <div className="sidebar-help"><strong>Tip:</strong> Drag a Subscription, Resource Group, VNet or Subnet first, then place resources inside or link hierarchy from Properties.</div>
+      {provider==='azure'
+        ?<div className="sidebar-help"><strong>Tip:</strong> Drag a Subscription, Resource Group, VNet or Subnet first, then place resources inside or link hierarchy from Properties.</div>
+        :<div className="sidebar-help aws-catalog-note"><strong>AWS catalog:</strong> Official AWS architecture icon set is loaded for the core services. Canvas placement will be enabled after provider-specific AWS node and IaC handling is isolated from Azure.</div>}
     </>:<div className="provider-coming-soon">
       <ProviderLogo provider={provider}/>
       <strong>{current.resourceLabel}</strong>
