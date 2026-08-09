@@ -992,6 +992,39 @@ const terraformVariablesCode=useMemo(()=>effectiveVariables.map(v=>{
  const iacCode=iacMode==='terraform'?terraformCode:bicepCode;
  const copyIac=()=>navigator.clipboard.writeText(iacCode);
  const downloadIac=()=>download(new Blob([iacCode],{type:'text/plain'}),iacMode==='terraform'?'main.tf':'main.bicep');
+
+ const terraformTfvarsExampleCode=useMemo(()=>{
+  const lines:string[]=[
+   '# ArchMindCanvas generated example variable values',
+   '# Copy this file to terraform.tfvars and replace placeholders as needed.',
+   '# Never commit real secrets.',
+   ''
+  ];
+  const declared=new Set<string>();
+
+  effectiveVariables.forEach(v=>{
+   if(!v.name||declared.has(v.name))return;
+   declared.add(v.name);
+   const raw=(v as any).defaultValue ?? (v as any).value ?? '';
+   const sensitive=(v as any).sensitive===true||/password|secret|token|key/i.test(v.name);
+   if(sensitive){
+    lines.push(`# ${v.name} = "REPLACE_WITH_SECURE_VALUE"`);
+   }else if(typeof raw==='number'||typeof raw==='boolean'){
+    lines.push(`${v.name} = ${raw}`);
+   }else if(String(raw).trim()){
+    lines.push(`${v.name} = ${JSON.stringify(String(raw))}`);
+   }else{
+    lines.push(`# ${v.name} = "REPLACE_ME"`);
+   }
+  });
+
+  if(architectureNodes.some(n=>n.data.resourceType==='virtualMachine')&&!declared.has('vm_admin_password')){
+   lines.push('# vm_admin_password = "REPLACE_WITH_SECURE_VALUE"');
+  }
+
+  return lines.join('\n')+'\n';
+ },[effectiveVariables,architectureNodes]);
+
  const downloadIacBundle=async()=>{
   const zip=new JSZip();
   const safeName=(designName||'archmindcanvas-architecture').trim().toLowerCase().replace(/[^a-z0-9-_]+/g,'-').replace(/^-+|-+$/g,'')||'archmindcanvas-architecture';
@@ -999,6 +1032,7 @@ const terraformVariablesCode=useMemo(()=>effectiveVariables.map(v=>{
   if(iacMode==='terraform'){
     zip.file('providers.tf',terraformProvidersCode);
     zip.file('variables.tf',[terraformVariablesCode,vmPasswordVariableCode].filter(Boolean).join('\n\n')||'# No variables declared\n');
+    zip.file('terraform.tfvars.example',terraformTfvarsExampleCode);
     zip.file('locals.tf',terraformLocalsCode);
     zip.file('data.tf',terraformDataSourcesCode||'# No referenced data sources\n');
     zip.file('modules.tf',terraformModulesCode||'# No modules declared\n');
@@ -1018,11 +1052,22 @@ const terraformVariablesCode=useMemo(()=>effectiveVariables.map(v=>{
       '## Files',
       '- providers.tf',
       '- variables.tf',
+      '- terraform.tfvars.example',
       '- locals.tf',
       '- data.tf',
       '- modules.tf',
       '- main.tf',
       '- outputs.tf',
+      '',
+      '## Quick start',
+      '1. terraform init',
+      '2. terraform validate',
+      '3. Copy terraform.tfvars.example to terraform.tfvars and replace placeholders',
+      '4. terraform plan',
+      '',
+      '## Security',
+      '- Do not commit real passwords, secrets, tokens, or private keys.',
+      '- terraform.tfvars.example contains safe placeholders for sensitive values.',
       '',
       'Review validation findings in ArchMindCanvas before terraform plan/apply.'
     ].join('\n');
