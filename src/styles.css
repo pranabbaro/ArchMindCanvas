@@ -2017,3 +2017,25 @@
   .command-brand{justify-content:center!important}.command-nav button{justify-content:center!important}
   .topbar .toolbar button span{display:none!important}.topbar .toolbar button{width:34px!important;min-width:34px!important;padding:6px!important}
 }
+
+
+/* v8.4.3 — clean connection controls */
+.drawing-toolbar .connector-style-select,
+.drawing-toolbar .connector-arrow-select{
+  height:36px;
+  border:1px solid #d8e2ec;
+  border-radius:8px;
+  background:#fff;
+  color:#43556b;
+  padding:0 30px 0 10px;
+  font-size:12px;
+  outline:none;
+}
+.drawing-toolbar .connector-arrow-select{
+  min-width:126px;
+}
+.drawing-toolbar .connector-style-select:focus,
+.drawing-toolbar .connector-arrow-select:focus{
+  border-color:#6aa6e8;
+  box-shadow:0 0 0 2px rgba(59,130,246,.10);
+}

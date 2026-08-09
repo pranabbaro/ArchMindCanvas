@@ -267,7 +267,7 @@ export default function CommandCenter(p:Props){
         <button><Activity size={16}/><span>Activity</span></button>
         <div className="nav-divider"/><button><Settings size={16}/><span>Settings</span></button>
       </nav>
-      <div className="command-sidebar-footer"><div className="org-health"><span className="health-dot"/><div><strong>Platform healthy</strong><small>All systems operational</small></div></div><button className="profile-button"><span>PB</span><div><strong>Pranab Baro</strong><small>Organization Admin</small></div></button></div>
+      <div className="command-sidebar-footer"><div className="org-health"><span className="health-dot"/><div><strong>Platform healthy</strong><small>All systems operational</small></div></div><button className="profile-button"><span>PB</span><div><strong>Pranab Baro</strong><small>Founder · ArchMindCanvas</small></div></button></div>
     </aside>
 
     <main className="command-main">
