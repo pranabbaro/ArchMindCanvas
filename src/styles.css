@@ -1610,3 +1610,32 @@
 @media(min-width:1500px){
   .workspace.workspace-simple{--inspector-width:420px}
 }
+
+/* v8.0 deployment readiness */
+.deployment-readiness-banner{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:10px;
+  margin:8px 0 10px;
+  padding:9px 10px;
+  border:1px solid #dbe5ef;
+  border-radius:9px;
+  background:#f8fafc;
+}
+.deployment-readiness-banner>div{display:flex;flex-direction:column;gap:2px;min-width:0}
+.deployment-readiness-banner strong{font-size:8px;color:#1e293b}
+.deployment-readiness-banner span{font-size:6px;color:#64748b;line-height:1.4}
+.deployment-readiness-banner.ready{border-color:#bbf7d0;background:#f0fdf4}
+.deployment-readiness-banner.ready strong{color:#166534}
+.deployment-readiness-banner.blocked{border-color:#fecaca;background:#fff7f7}
+.deployment-readiness-banner.blocked strong{color:#b91c1c}
+.deployment-readiness-banner button{
+  flex:0 0 auto;
+  border:1px solid #d5e0eb;
+  border-radius:7px;
+  background:#fff;
+  padding:6px 8px;
+  color:#286bb8;
+  font-size:7px;
+}

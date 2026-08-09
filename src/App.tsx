@@ -647,34 +647,93 @@ const selectedNode=nodes.find(n=>n.id===selectedNodeId);const selectedEdge=edges
  const quoteTf=(v:string|number|boolean)=>typeof v==='number'||typeof v==='boolean'?String(v):JSON.stringify(String(v));
  const terraformMainCode=useMemo(()=>{
   const lines:string[]=[];
+
   architectureNodes.forEach((n,i)=>{
    if(['tenant','managementGroup','subscription'].includes(n.data.resourceType))return;
-   const tfType=terraformResourceType(n.data.resourceType),name=tfSafe(n.data.label||`resource_${i}`),mode=n.data.resourceMode||'create';
+   const tfType=terraformResourceType(n.data.resourceType);
+   const name=tfSafe(n.data.label||`resource_${i}`);
+   const mode=n.data.resourceMode||'create';
+
    if(mode==='existing'){
-    lines.push(`data "${tfType}" "${name}" {\n  name = ${JSON.stringify(n.data.existingResource?.name||n.data.label)}\n  # Existing resource lookup managed by ArchMindCanvas\n}\n`);
+    const lookupName=n.data.existingResource?.name||n.data.label;
+    const lookupId=n.data.existingResource?.resourceId;
+    const body=[`data "${tfType}" "${name}" {`];
+    if(lookupId)body.push(`  # Lookup requested by Azure resource ID: ${lookupId}`);
+    body.push(`  name = ${JSON.stringify(lookupName)}`);
+    if(n.data.resourceGroup&&n.data.resourceType!=='resourceGroup')body.push(`  resource_group_name = ${JSON.stringify(n.data.resourceGroup)}`);
+    body.push('}');
+    lines.push(body.join('\n')+'\n');
     return;
    }
-   const resourceLines=[`resource "${tfType}" "${name}" {`,`  name = ${JSON.stringify(n.data.label)}`];
-   if(n.data.region)resourceLines.push(`  location = ${JSON.stringify(n.data.region)}`);
-   if(n.data.resourceGroup&&n.data.resourceType!=='resourceGroup')resourceLines.push(`  # resource_group_name = ${JSON.stringify(n.data.resourceGroup)}`);
-   Object.entries(n.data.bindings||{}).forEach(([field,b])=>{
-    if(field==='__tags__')return;
-    if(b.source==='variable'&&b.variableName)resourceLines.push(`  # ${field} = var.${b.variableName}`);
-    if(b.source==='local'&&b.localName)resourceLines.push(`  # ${field} = local.${b.localName}`);
-    if(b.source==='resource'&&b.targetNodeId){
-     const target=architectureNodes.find(x=>x.id===b.targetNodeId);
-     if(target)resourceLines.push(`  # ${field} = ${terraformResourceType(target.data.resourceType)}.${tfSafe(target.data.label)}.${b.targetAttribute||'id'}`);
+
+   const body=[`resource "${tfType}" "${name}" {`,`  name = ${JSON.stringify(n.data.label)}`];
+
+   if(n.data.resourceType==='resourceGroup'){
+    body.push(`  location = ${JSON.stringify(n.data.region||'Central India')}`);
+   }else{
+    if(n.data.region)body.push(`  location = ${JSON.stringify(n.data.region)}`);
+    if(n.data.resourceGroup){
+     const rgNode=architectureNodes.find(x=>x.data.resourceType==='resourceGroup'&&x.data.label===n.data.resourceGroup);
+     body.push(`  resource_group_name = ${rgNode?terraformAttributeRef(rgNode,'name'):JSON.stringify(n.data.resourceGroup)}`);
     }
-    if(b.source==='moduleOutput'&&b.moduleName)resourceLines.push(`  # ${field} = module.${b.moduleName}.${b.moduleOutput||'output'}`);
+   }
+
+   if(n.data.resourceType==='virtualNetwork'){
+    const address=(n.data.properties?.addressSpace||n.data.properties?.address_space||'10.0.0.0/16') as any;
+    body.push(`  address_space = [${quoteTf(address)}]`);
+   }
+
+   if(n.data.resourceType==='subnet'){
+    const vnetNode=architectureNodes.find(x=>x.data.resourceType==='virtualNetwork'&&x.data.label===n.data.vnet);
+    if(vnetNode)body.push(`  virtual_network_name = ${terraformAttributeRef(vnetNode,'name')}`);
+    else if(n.data.vnet)body.push(`  virtual_network_name = ${JSON.stringify(n.data.vnet)}`);
+    const prefix=(n.data.properties?.addressPrefix||n.data.properties?.address_prefix||'10.0.1.0/24') as any;
+    body.push(`  address_prefixes = [${quoteTf(prefix)}]`);
+   }
+
+   if(n.data.resourceType==='networkSecurityGroup'){
+    // location/resource group are handled above
+   }
+
+   if(n.data.resourceType==='publicIp'){
+    body.push(`  allocation_method = "Static"`);
+   }
+
+   if(n.data.resourceType==='storageAccount'){
+    body.push(`  account_tier = "Standard"`);
+    body.push(`  account_replication_type = "LRS"`);
+   }
+
+   Object.entries(n.data.properties||{}).forEach(([field,literal])=>{
+    if(['addressSpace','address_space','addressPrefix','address_prefix'].includes(field))return;
+    const binding=(n.data.bindings||{})[field];
+    if(binding){
+     body.push(`  ${field} = ${resolveBindingExpression(binding,literal as any)}`);
+    }
    });
-   resourceLines.push('}');
-   let block=resourceLines.join('\n');
+
+   Object.entries(n.data.bindings||{}).forEach(([field,b]:any)=>{
+    if(field==='__tags__'||Object.prototype.hasOwnProperty.call(n.data.properties||{},field))return;
+    body.push(`  ${field} = ${resolveBindingExpression(b,'')}`);
+   });
+
+   if(n.data.tags&&Object.keys(n.data.tags).length){
+    body.push('  tags = {');
+    Object.entries(n.data.tags).forEach(([k,v])=>body.push(`    ${JSON.stringify(k)} = ${JSON.stringify(v)}`));
+    body.push('  }');
+   }
+
+   body.push('}');
+   let block=body.join('\n');
+
    if(mode==='import'){
     const id=n.data.existingResource?.resourceId||'/subscriptions/.../resourceGroups/.../providers/...';
     block+=`\n\nimport {\n  to = ${tfType}.${name}\n  id = ${JSON.stringify(id)}\n}`;
    }
+
    lines.push(block+'\n');
   });
+
   return lines.join('\n');
  },[architectureNodes]);
 
@@ -751,6 +810,92 @@ const selectedNode=nodes.find(n=>n.id===selectedNodeId);const selectedEdge=edges
   if(d.type==='azurerm_subscription')return `data "azurerm_subscription" "${d.name}" {}`;
   return `data "${d.type}" "${d.name}" {\n  # TODO: configure lookup arguments required by this data source\n}`;
  }).join('\n\n'),[referencedDataSources]);
+
+ const terraformNodeAddress=(n:ArchitectureNode)=>{
+  const tfType=terraformResourceType(n.data.resourceType);
+  const name=tfSafe(n.data.label);
+  return (n.data.resourceMode||'create')==='existing'
+   ? `data.${tfType}.${name}`
+   : `${tfType}.${name}`;
+ };
+ const terraformAttributeRef=(n:ArchitectureNode,attribute='id')=>`${terraformNodeAddress(n)}.${attribute}`;
+
+ const resolveBindingExpression=(binding:any,literal:any)=>{
+  if(!binding||binding.source==='literal')return quoteTf(literal);
+  if(binding.source==='variable')return `var.${binding.variableName||'value'}`;
+  if(binding.source==='local')return `local.${binding.localName||'value'}`;
+  if(binding.source==='moduleOutput')return `module.${binding.moduleName||'module'}.${binding.moduleOutput||'output'}`;
+  if(binding.source==='data')return `data.${binding.dataSourceType||'azurerm_resource_group'}.${binding.dataSourceName||'existing'}.${binding.dataAttribute||'id'}`;
+  if(binding.source==='resource'&&binding.targetNodeId){
+   const target=architectureNodes.find(x=>x.id===binding.targetNodeId);
+   if(target)return terraformAttributeRef(target,binding.targetAttribute||'id');
+  }
+  return quoteTf(literal);
+ };
+
+ const inferParentReferences=(n:ArchitectureNode)=>{
+  const refs:string[]=[];
+  const parent=n.parentId?architectureNodes.find(x=>x.id===n.parentId):undefined;
+  if(parent)refs.push(terraformNodeAddress(parent));
+  return refs;
+ };
+
+ const deploymentReadiness=useMemo(()=>{
+  const critical:string[]=[];
+  const warnings:string[]=[];
+  const readyNodes:string[]=[];
+  const seenNames=new Map<string,string[]>();
+
+  architectureNodes.forEach(n=>{
+   const mode=n.data.resourceMode||'create';
+   const tfType=terraformResourceType(n.data.resourceType);
+   const tfName=tfSafe(n.data.label);
+   const key=`${tfType}.${tfName}`;
+   seenNames.set(key,[...(seenNames.get(key)||[]),n.id]);
+
+   if(!n.data.label.trim())critical.push(`Resource ${n.id} has no name.`);
+   if(mode==='existing'&&!n.data.existingResource?.name&&!n.data.existingResource?.resourceId)critical.push(`${n.data.label}: Existing resource lookup is incomplete.`);
+   if(mode==='import'&&!n.data.existingResource?.resourceId)critical.push(`${n.data.label}: Import resource ID is missing.`);
+
+   Object.entries(n.data.bindings||{}).forEach(([field,b]:any)=>{
+    if(b.source==='resource'){
+     const target=architectureNodes.find(x=>x.id===b.targetNodeId);
+     if(!target)critical.push(`${n.data.label}.${field}: referenced resource is missing.`);
+    }
+    if(b.source==='variable'&&!effectiveVariables.some(v=>v.name===b.variableName))critical.push(`${n.data.label}.${field}: variable ${b.variableName||'(missing)'} is undeclared.`);
+    if(b.source==='local'&&!effectiveLocals.some(v=>v.name===b.localName))critical.push(`${n.data.label}.${field}: local ${b.localName||'(missing)'} is undeclared.`);
+    if(b.source==='moduleOutput'&&!architectureModules.some(m=>m.name===b.moduleName&&m.source.trim()))critical.push(`${n.data.label}.${field}: module ${b.moduleName||'(missing)'} is not deployment-ready.`);
+   });
+
+   if(['virtualMachine','vmScaleSet','appService','functionApp','aks','containerApps'].includes(n.data.resourceType)&&!n.data.subscriptionName)warnings.push(`${n.data.label}: subscription relationship is not set.`);
+   if(!['tenant','managementGroup','subscription','resourceGroup'].includes(n.data.resourceType)&&!n.data.resourceGroup)warnings.push(`${n.data.label}: resource group relationship is not set.`);
+
+   readyNodes.push(n.id);
+  });
+
+  seenNames.forEach((ids,address)=>{
+   if(ids.length>1)critical.push(`Duplicate Terraform address: ${address}`);
+  });
+
+  architectureModules.forEach(m=>{
+   if(!m.name.trim())critical.push('A Terraform module has no name.');
+   if(!m.source.trim())critical.push(`module.${m.name||'unnamed'} has no source.`);
+   Object.entries(m.inputs).forEach(([k,v])=>{if(!String(v).trim())warnings.push(`module.${m.name||'unnamed'}.${k} has no value.`)});
+  });
+
+  architectureOutputs.forEach(o=>{
+   if(!o.name.trim())critical.push('An output has no name.');
+   if(!o.value.trim())warnings.push(`output.${o.name||'unnamed'} has no expression.`);
+  });
+
+  return {
+   ready:critical.length===0,
+   critical,
+   warnings,
+   resourceCount:architectureNodes.length,
+   readyResourceCount:readyNodes.length
+  };
+ },[architectureNodes,effectiveVariables,effectiveLocals,architectureModules,architectureOutputs]);
  const terraformProvidersCode=`terraform {\n  required_version = ">= 1.6.0"\n  required_providers {\n    azurerm = {\n      source  = "hashicorp/azurerm"\n      version = "~> 4.0"\n    }\n  }\n}\n\nprovider "azurerm" {\n  features {}\n}`;
  const terraformMetadataCode=`# Architecture: ${designName}\n# Version: ${architectureMetadata.version}\n# Owner: ${architectureMetadata.owner||'Not specified'}\n# Application: ${architectureMetadata.application||'Not specified'}\n# Criticality: ${architectureMetadata.criticality}\n# Lifecycle: ${architectureMetadata.lifecycle}\n# Description: ${architectureMetadata.description||'Not specified'}`;
  const terraformCode=useMemo(()=>[
@@ -866,9 +1011,12 @@ const selectedNode=nodes.find(n=>n.id===selectedNodeId);const selectedEdge=edges
   if(!architectureMetadata.owner.trim())r.push({id:'meta-owner',severity:'info',title:'Architecture owner not set',message:'Set an owner in Model → Metadata for enterprise traceability.'});
   if(!architectureMetadata.description.trim())r.push({id:'meta-description',severity:'info',title:'Architecture description not set',message:'Document the architecture purpose in Model → Metadata.'});
 
+  deploymentReadiness.critical.forEach((message,i)=>r.push({id:`readiness-critical-${i}`,severity:'critical',title:'Deployment readiness blocker',message}));
+  deploymentReadiness.warnings.forEach((message,i)=>r.push({id:`readiness-warning-${i}`,severity:'warning',title:'Deployment readiness warning',message}));
+
   if(!r.some(x=>x.severity==='critical'||x.severity==='warning'))r.push({id:'ok',severity:'success',title:'IaC integrity checks passed',message:'Hierarchy, references, data sources, modules and outputs are structurally consistent.'});
   return r;
- },[architectureNodes,effectiveVariables,effectiveLocals,architectureModules,architectureOutputs,architectureMetadata,referencedDataSources]);
+ },[architectureNodes,effectiveVariables,effectiveLocals,architectureModules,architectureOutputs,architectureMetadata,referencedDataSources,deploymentReadiness]);
  const score=Math.max(35,100-findings.filter(f=>f.severity==='warning').length*6-findings.filter(f=>f.severity==='critical').length*20);
  const saveDesign=useCallback(()=>{
   const document={version:'7.9.0',designId,designName,organizationId,organizationName,projectId,projectName,environmentId,environmentName,nodes,edges,variables:designVariables,locals:designLocals,outputs:architectureOutputs,modules:architectureModules,metadata:architectureMetadata,updatedAt:new Date().toISOString()};
@@ -1062,6 +1210,12 @@ const selectedNode=nodes.find(n=>n.id===selectedNodeId);const selectedEdge=edges
   onPointerUp={endRightPaneResize}
   onPointerCancel={endRightPaneResize}
  />
-<button className="pane-collapse-control right" onClick={()=>setRightPaneCollapsed(v=>!v)} title={rightPaneCollapsed?'Expand right pane':'Collapse right pane'}>{rightPaneCollapsed?<ChevronLeft size={17}/>:<ChevronRight size={17}/>}</button><div className="inspector-tabs v5-tabs"><button className={rightPanel==='properties'?'active':''} onClick={()=>setRightPanel('properties')}>Properties</button><button className={rightPanel==='model'?'active':''} onClick={()=>setRightPanel('model')}>Model</button><button className={rightPanel==='variables'?'active':''} onClick={()=>setRightPanel('variables')}>Variables</button><button className={rightPanel==='validation'?'active':''} onClick={()=>setRightPanel('validation')}>Validate <span>{findings.filter(f=>f.severity==='warning'||f.severity==='critical').length}</span></button><button className={rightPanel==='iac'?'active':''} onClick={()=>setRightPanel('iac')}>IaC</button><button className={rightPanel==='deploy'?'active':''} onClick={()=>setRightPanel('deploy')}>Deploy</button></div>{rightPanel==='model'?<ArchitectureModelPanel metadata={architectureMetadata} outputs={architectureOutputs} modules={architectureModules} variables={effectiveVariables} locals={effectiveLocals} resources={architectureNodes} onMetadataChange={m=>{setArchitectureMetadata(m);markChanged();}} onOutputsChange={v=>{setArchitectureOutputs(v);markChanged();}} onModulesChange={v=>{setArchitectureModules(v);markChanged();}}/>:rightPanel==='variables'?<div className="design-scope-variable-panel"><div className="design-scope-banner"><strong>Current Design</strong><span>{designName}</span><small>Variables declared here are available only inside this design.</small></div><VariablesManager variables={designVariables} locals={designLocals} onVariablesChange={v=>{setDesignVariables(v);markChanged();}} onLocalsChange={v=>{setDesignLocals(v);markChanged();}}/></div>:rightPanel==='deploy'?<div className="deploy-studio"><div className="panel-title">Deploy to Azure</div><p>Generate IaC, validate it, then hand off deployment to a CI/CD pipeline. Credentials stay outside the browser.</p><div className="deploy-status-card"><div><strong>{statusLabel[deploymentStatus]}</strong><span>{deploymentMessage}</span></div><span className={`deploy-status-dot ${deploymentStatus}`}/></div><div className="form-stack"><label>Source control<select value={deployProvider} onChange={e=>setDeployProvider(e.target.value as 'azuredevops'|'github')}><option value="azuredevops">Azure DevOps</option><option value="github">GitHub</option></select></label><label>IaC engine<select value={deployIacType} onChange={e=>setDeployIacType(e.target.value as 'terraform'|'bicep')}><option value="terraform">Terraform</option><option value="bicep">Bicep</option></select></label><label>Environment<select value={deployEnvironment} onChange={e=>setDeployEnvironment(e.target.value as 'dev'|'test'|'prod')}><option value="dev">Development</option><option value="test">Test</option><option value="prod">Production</option></select></label>{deployProvider==='azuredevops'?<><label>Azure DevOps organization<input value={adoOrganization} onChange={e=>setAdoOrganization(e.target.value)} placeholder="contoso"/></label><label>Project<input value={adoProject} onChange={e=>setAdoProject(e.target.value)} placeholder="CloudPlatform"/></label><label>Repository<input value={adoRepository} onChange={e=>setAdoRepository(e.target.value)} placeholder="archmind-infrastructure"/></label><label>Branch<input value={adoBranch} onChange={e=>setAdoBranch(e.target.value)} placeholder="main"/></label><label>Pipeline ID<input value={adoPipelineId} onChange={e=>setAdoPipelineId(e.target.value)} placeholder="12"/></label></>:<><label>GitHub repository<input value={repoName} onChange={e=>setRepoName(e.target.value)} placeholder="org/repository"/></label><label>Branch<input value={repoBranch} onChange={e=>setRepoBranch(e.target.value)} placeholder="main"/></label></>}</div><div className="deploy-actions"><button onClick={validateDeployment}><CheckCircle2 size={15}/> Validate</button><button onClick={startPlan}><Play size={15}/> {deployIacType==='terraform'?'Plan':'What-if'}</button><button className="primary-button" onClick={approveAndDeploy}><Rocket size={15}/> Approve & Deploy</button></div><div className="deploy-note"><ServerCog size={16}/><span>This UI is wired as a safe deployment workflow scaffold. For real deployment, point it to the included Azure Function API and CI/CD pipeline templates.</span></div></div>:rightPanel==='iac'?<div className="iac-panel"><div className="panel-title">Infrastructure as Code</div><div className="iac-toggle"><button className={iacMode==='terraform'?'active':''} onClick={()=>setIacMode('terraform')}>Terraform</button><button className={iacMode==='bicep'?'active':''} onClick={()=>setIacMode('bicep')}>Bicep</button></div><pre>{iacCode}</pre><div className="iac-actions"><button onClick={copyIac}>Copy code</button><button onClick={downloadIac}>Download {iacMode==='terraform'?'main.tf':'main.bicep'}</button><button className="primary-button" onClick={downloadIacBundle}>Download IaC Bundle</button></div><div className="repo-panel"><strong>Source Control</strong><label>Provider<select value={repoProvider} onChange={e=>setRepoProvider(e.target.value as 'github'|'azuredevops')}><option value="github">GitHub / GitHub Enterprise</option><option value="azuredevops">Azure DevOps Repos</option></select></label><label>Repository<input value={repoName} onChange={e=>setRepoName(e.target.value)} placeholder="organization/infrastructure-repo"/></label><label>Branch<input value={repoBranch} onChange={e=>setRepoBranch(e.target.value)}/></label><label>Target folder<input value={repoFolder} onChange={e=>setRepoFolder(e.target.value)}/></label><label>Commit message<input value={commitMessage} onChange={e=>setCommitMessage(e.target.value)}/></label><button className="primary-button" onClick={prepareRepoPush}>Prepare Repository Push</button><small>Secure direct push requires a backend GitHub App/OAuth or Azure DevOps OAuth connection. Tokens are never stored in this browser app.</small></div><div className="ai-note"><strong>Generator status</strong><span>v5.3 generates deployable starter Terraform for Resource Groups and VNets and preserves all remaining diagram resources as reviewed TODO mappings. Expand resource mappings before production deployment.</span></div></div>:rightPanel==='import'?<div className="import-iac-panel"><div className="panel-title">IaC → Diagram</div><div className="iac-toggle"><button className={iacImportType==='terraform'?'active':''} onClick={()=>setIacImportType('terraform')}>Terraform</button><button className={iacImportType==='bicep'?'active':''} onClick={()=>setIacImportType('bicep')}>Bicep</button><button className={iacImportType==='json'?'active':''} onClick={()=>setIacImportType('json')}>JSON</button></div><button className="primary-button" onClick={uploadIacFile}>Upload .tf / .bicep / .json file</button><textarea value={iacImportCode} onChange={e=>setIacImportCode(e.target.value)} placeholder={iacImportType==='terraform'?'Paste Terraform azurerm code here...':iacImportType==='bicep'?'Paste Bicep code here...':'Paste ArchMindCanvas JSON here...'}></textarea><button className="primary-button" onClick={importIacToDiagram}>Generate Diagram from Code</button><div className="ai-note"><strong>Reverse engineering</strong><span>v5.7.3 supports unified JSON, Terraform and Bicep import with collision-free hierarchical layout and rebuilds Azure hierarchy from common Terraform azurerm references and Bicep resource declarations, creates editable ArchMindCanvas nodes, infers basic reference relationships, and auto-fits the generated diagram. Complex Terraform modules, dynamic blocks, remote state and deeply nested Bicep modules require a future backend parser for complete fidelity.</span></div></div>:rightPanel==='cost'?<div className="cost-panel"><div className="panel-title">Cost Intelligence</div><div className="cost-controls"><label>Currency<select value={costCurrency} onChange={e=>{setCostCurrency(e.target.value as 'USD'|'EUR'|'INR'|'GBP');setPricingStatus('idle');setLivePrices({});}}><option>USD</option><option>EUR</option><option>INR</option><option>GBP</option></select></label><button className="primary-button" onClick={refreshLivePricing} disabled={pricingStatus==='loading'}>{pricingStatus==='loading'?'Loading live prices...':'Refresh Azure Retail Prices'}</button><small className="pricing-status">{pricingStatus==='live'?'Live Azure retail prices loaded':pricingStatus==='partial'?'Partial live pricing loaded; unsupported resources use baseline estimates':pricingStatus==='error'?'Live pricing unavailable; showing baseline estimates':'Baseline estimates shown until live prices are refreshed'}</small></div><div className="cost-hero"><span>Estimated monthly cost</span><strong>{money(monthlyCost)}</strong><small>Estimated annual cost: {money(monthlyCost*12)}</small></div><div className="cost-section"><strong>Cost by category</strong>{Object.entries(costBreakdown).sort((a,b)=>b[1]-a[1]).map(([k,v])=><div className="cost-row" key={k}><span>{k}</span><b>{money(v)}</b></div>)}</div><div className="cost-section"><strong>Resources</strong>{costItems.length?costItems.map(x=><div className="cost-resource" key={x.id}><div><b>{x.name}</b><small>{x.category}</small></div><span>{x.monthly?money(x.monthly):'Not priced'} {x.live?'· Live':''}</span></div>):<small>Add Azure resources to see an estimate.</small>}</div><div className="ai-note"><strong>Estimate only</strong><span>Use “Refresh Azure Retail Prices” to query Microsoft's public Retail Prices API. Where an exact SKU is not configured or no matching meter is found, ArchMindCanvas falls back to its baseline estimate. Retail pricing is not your negotiated invoice price.</span></div></div>:rightPanel==='validation'?<ValidationPanel findings={findings} score={score} onSelectNode={id=>{setSelectedNodeId(id);setRightPanel('properties');}}/>:isArchitecture?<PropertiesPanel nodeId={(selectedNode as ArchitectureNode).id} data={(selectedNode as ArchitectureNode).data} allResources={architectureNodes} declaredVariables={effectiveVariables} declaredLocals={effectiveLocals} parentId={(selectedNode as ArchitectureNode).parentId} hierarchy={hierarchyData} onParentChange={changeParent} onChange={updateArchitecture} onDelete={deleteSelected} onDuplicate={duplicateSelected}/>:isDrawing?<div className="properties-panel"><div className="panel-title">Drawing object</div><div className="form-stack"><label>Text / label<input value={(selectedNode as DrawingNode).data.label} onChange={e=>updateDrawing({label:e.target.value})}/></label><button className="danger-button" onClick={deleteSelected}>Delete object</button></div></div>:selectedEdge?<div className="properties-panel"><div className="panel-title">Connection</div><div className="form-stack"><label>Line style<select value={selectedEdge.data?.connectorStyle||'smoothstep'} onChange={e=>updateEdge({connectorStyle:e.target.value as ConnectorStyle})}><option value="straight">Straight</option><option value="smoothstep">Elbow / routed</option><option value="bezier">Curved</option><option value="dotted">Dotted</option><option value="dashed">Dashed</option></select></label><label>Arrow direction<select value={selectedEdge.data?.arrowStyle||'end'} onChange={e=>updateEdge({arrowStyle:e.target.value as any})}><option value="none">No arrow</option><option value="end">Forward →</option><option value="start">Backward ←</option><option value="both">Both ↔</option></select></label><label>Line thickness<select value={selectedEdge.data?.strokeWidth||2} onChange={e=>updateEdge({strokeWidth:Number(e.target.value)})}><option value="1">1 px</option><option value="2">2 px</option><option value="3">3 px</option><option value="4">4 px</option><option value="6">6 px</option></select></label><button type="button" onClick={()=>updateEdge({routePoints:[],routeX:undefined,routeY:undefined,labelX:undefined,labelY:undefined})}>Reset auto-route</button><small>Tip: Select a connection and double-click the line to add bend points. Drag points to route the line; double-click a point to remove it. Drag the label to reposition it.</small><label>Label<input value={selectedEdge.data?.label||''} onChange={e=>updateEdge({label:e.target.value})}/></label><label>Connection type<select value={selectedEdge.data?.connectionType||''} onChange={e=>updateEdge({connectionType:e.target.value})}><option value="">General</option><option>HTTPS</option><option>Private Link</option><option>VNet Peering</option><option>VPN</option><option>ExpressRoute</option><option>Dependency</option><option>Data Flow</option></select></label><label>Protocol<input value={selectedEdge.data?.protocol||''} onChange={e=>updateEdge({protocol:e.target.value})} placeholder="TCP / UDP / HTTPS"/></label><label>Port<input value={selectedEdge.data?.port||''} onChange={e=>updateEdge({port:e.target.value})} placeholder="443"/></label><button className="danger-button" onClick={deleteSelected}>Delete connection</button></div></div>:<div className="empty-properties"><div className="empty-icon">✦</div><strong>Select an object or connection</strong><span>Edit hierarchy, Azure properties, tags and connection metadata here.</span></div>}</div></main></div>;
+<button className="pane-collapse-control right" onClick={()=>setRightPaneCollapsed(v=>!v)} title={rightPaneCollapsed?'Expand right pane':'Collapse right pane'}>{rightPaneCollapsed?<ChevronLeft size={17}/>:<ChevronRight size={17}/>}</button><div className="inspector-tabs v5-tabs"><button className={rightPanel==='properties'?'active':''} onClick={()=>setRightPanel('properties')}>Properties</button><button className={rightPanel==='model'?'active':''} onClick={()=>setRightPanel('model')}>Model</button><button className={rightPanel==='variables'?'active':''} onClick={()=>setRightPanel('variables')}>Variables</button><button className={rightPanel==='validation'?'active':''} onClick={()=>setRightPanel('validation')}>Validate <span>{findings.filter(f=>f.severity==='warning'||f.severity==='critical').length}</span></button><button className={rightPanel==='iac'?'active':''} onClick={()=>setRightPanel('iac')}>IaC</button><button className={rightPanel==='deploy'?'active':''} onClick={()=>setRightPanel('deploy')}>Deploy</button></div>{rightPanel==='model'?<ArchitectureModelPanel metadata={architectureMetadata} outputs={architectureOutputs} modules={architectureModules} variables={effectiveVariables} locals={effectiveLocals} resources={architectureNodes} onMetadataChange={m=>{setArchitectureMetadata(m);markChanged();}} onOutputsChange={v=>{setArchitectureOutputs(v);markChanged();}} onModulesChange={v=>{setArchitectureModules(v);markChanged();}}/>:rightPanel==='variables'?<div className="design-scope-variable-panel"><div className="design-scope-banner"><strong>Current Design</strong><span>{designName}</span><small>Variables declared here are available only inside this design.</small></div><VariablesManager variables={designVariables} locals={designLocals} onVariablesChange={v=>{setDesignVariables(v);markChanged();}} onLocalsChange={v=>{setDesignLocals(v);markChanged();}}/></div>:rightPanel==='deploy'?<div className="deploy-studio"><div className="panel-title">Deploy to Azure</div><p>Generate IaC, validate it, then hand off deployment to a CI/CD pipeline. Credentials stay outside the browser.</p><div className="deploy-status-card"><div><strong>{statusLabel[deploymentStatus]}</strong><span>{deploymentMessage}</span></div><span className={`deploy-status-dot ${deploymentStatus}`}/></div><div className="form-stack"><label>Source control<select value={deployProvider} onChange={e=>setDeployProvider(e.target.value as 'azuredevops'|'github')}><option value="azuredevops">Azure DevOps</option><option value="github">GitHub</option></select></label><label>IaC engine<select value={deployIacType} onChange={e=>setDeployIacType(e.target.value as 'terraform'|'bicep')}><option value="terraform">Terraform</option><option value="bicep">Bicep</option></select></label><label>Environment<select value={deployEnvironment} onChange={e=>setDeployEnvironment(e.target.value as 'dev'|'test'|'prod')}><option value="dev">Development</option><option value="test">Test</option><option value="prod">Production</option></select></label>{deployProvider==='azuredevops'?<><label>Azure DevOps organization<input value={adoOrganization} onChange={e=>setAdoOrganization(e.target.value)} placeholder="contoso"/></label><label>Project<input value={adoProject} onChange={e=>setAdoProject(e.target.value)} placeholder="CloudPlatform"/></label><label>Repository<input value={adoRepository} onChange={e=>setAdoRepository(e.target.value)} placeholder="archmind-infrastructure"/></label><label>Branch<input value={adoBranch} onChange={e=>setAdoBranch(e.target.value)} placeholder="main"/></label><label>Pipeline ID<input value={adoPipelineId} onChange={e=>setAdoPipelineId(e.target.value)} placeholder="12"/></label></>:<><label>GitHub repository<input value={repoName} onChange={e=>setRepoName(e.target.value)} placeholder="org/repository"/></label><label>Branch<input value={repoBranch} onChange={e=>setRepoBranch(e.target.value)} placeholder="main"/></label></>}</div><div className="deploy-actions"><button onClick={validateDeployment}><CheckCircle2 size={15}/> Validate</button><button onClick={startPlan}><Play size={15}/> {deployIacType==='terraform'?'Plan':'What-if'}</button><button className="primary-button" onClick={approveAndDeploy}><Rocket size={15}/> Approve & Deploy</button></div><div className="deploy-note"><ServerCog size={16}/><span>This UI is wired as a safe deployment workflow scaffold. For real deployment, point it to the included Azure Function API and CI/CD pipeline templates.</span></div></div>:rightPanel==='iac'?<div className="iac-panel"><div className="panel-title">Infrastructure as Code</div><div className={`deployment-readiness-banner ${deploymentReadiness.ready?'ready':'blocked'}`}>
+      <div>
+        <strong>{deploymentReadiness.ready?'Ready for Terraform validation':'Deployment blockers detected'}</strong>
+        <span>{deploymentReadiness.ready?`${deploymentReadiness.resourceCount} modeled resources passed structural readiness checks.`:`${deploymentReadiness.critical.length} critical blocker(s) and ${deploymentReadiness.warnings.length} warning(s).`}</span>
+      </div>
+      <button onClick={()=>setRightPanel('validation')}>Review</button>
+    </div><div className="iac-toggle"><button className={iacMode==='terraform'?'active':''} onClick={()=>setIacMode('terraform')}>Terraform</button><button className={iacMode==='bicep'?'active':''} onClick={()=>setIacMode('bicep')}>Bicep</button></div><pre>{iacCode}</pre><div className="iac-actions"><button onClick={copyIac}>Copy code</button><button onClick={downloadIac}>Download {iacMode==='terraform'?'main.tf':'main.bicep'}</button><button className="primary-button" onClick={downloadIacBundle}>Download IaC Bundle</button></div><div className="repo-panel"><strong>Source Control</strong><label>Provider<select value={repoProvider} onChange={e=>setRepoProvider(e.target.value as 'github'|'azuredevops')}><option value="github">GitHub / GitHub Enterprise</option><option value="azuredevops">Azure DevOps Repos</option></select></label><label>Repository<input value={repoName} onChange={e=>setRepoName(e.target.value)} placeholder="organization/infrastructure-repo"/></label><label>Branch<input value={repoBranch} onChange={e=>setRepoBranch(e.target.value)}/></label><label>Target folder<input value={repoFolder} onChange={e=>setRepoFolder(e.target.value)}/></label><label>Commit message<input value={commitMessage} onChange={e=>setCommitMessage(e.target.value)}/></label><button className="primary-button" onClick={prepareRepoPush}>Prepare Repository Push</button><small>Secure direct push requires a backend GitHub App/OAuth or Azure DevOps OAuth connection. Tokens are never stored in this browser app.</small></div><div className="ai-note"><strong>Generator status</strong><span>v5.3 generates deployable starter Terraform for Resource Groups and VNets and preserves all remaining diagram resources as reviewed TODO mappings. Expand resource mappings before production deployment.</span></div></div>:rightPanel==='import'?<div className="import-iac-panel"><div className="panel-title">IaC → Diagram</div><div className="iac-toggle"><button className={iacImportType==='terraform'?'active':''} onClick={()=>setIacImportType('terraform')}>Terraform</button><button className={iacImportType==='bicep'?'active':''} onClick={()=>setIacImportType('bicep')}>Bicep</button><button className={iacImportType==='json'?'active':''} onClick={()=>setIacImportType('json')}>JSON</button></div><button className="primary-button" onClick={uploadIacFile}>Upload .tf / .bicep / .json file</button><textarea value={iacImportCode} onChange={e=>setIacImportCode(e.target.value)} placeholder={iacImportType==='terraform'?'Paste Terraform azurerm code here...':iacImportType==='bicep'?'Paste Bicep code here...':'Paste ArchMindCanvas JSON here...'}></textarea><button className="primary-button" onClick={importIacToDiagram}>Generate Diagram from Code</button><div className="ai-note"><strong>Reverse engineering</strong><span>v5.7.3 supports unified JSON, Terraform and Bicep import with collision-free hierarchical layout and rebuilds Azure hierarchy from common Terraform azurerm references and Bicep resource declarations, creates editable ArchMindCanvas nodes, infers basic reference relationships, and auto-fits the generated diagram. Complex Terraform modules, dynamic blocks, remote state and deeply nested Bicep modules require a future backend parser for complete fidelity.</span></div></div>:rightPanel==='cost'?<div className="cost-panel"><div className="panel-title">Cost Intelligence</div><div className="cost-controls"><label>Currency<select value={costCurrency} onChange={e=>{setCostCurrency(e.target.value as 'USD'|'EUR'|'INR'|'GBP');setPricingStatus('idle');setLivePrices({});}}><option>USD</option><option>EUR</option><option>INR</option><option>GBP</option></select></label><button className="primary-button" onClick={refreshLivePricing} disabled={pricingStatus==='loading'}>{pricingStatus==='loading'?'Loading live prices...':'Refresh Azure Retail Prices'}</button><small className="pricing-status">{pricingStatus==='live'?'Live Azure retail prices loaded':pricingStatus==='partial'?'Partial live pricing loaded; unsupported resources use baseline estimates':pricingStatus==='error'?'Live pricing unavailable; showing baseline estimates':'Baseline estimates shown until live prices are refreshed'}</small></div><div className="cost-hero"><span>Estimated monthly cost</span><strong>{money(monthlyCost)}</strong><small>Estimated annual cost: {money(monthlyCost*12)}</small></div><div className="cost-section"><strong>Cost by category</strong>{Object.entries(costBreakdown).sort((a,b)=>b[1]-a[1]).map(([k,v])=><div className="cost-row" key={k}><span>{k}</span><b>{money(v)}</b></div>)}</div><div className="cost-section"><strong>Resources</strong>{costItems.length?costItems.map(x=><div className="cost-resource" key={x.id}><div><b>{x.name}</b><small>{x.category}</small></div><span>{x.monthly?money(x.monthly):'Not priced'} {x.live?'· Live':''}</span></div>):<small>Add Azure resources to see an estimate.</small>}</div><div className="ai-note"><strong>Estimate only</strong><span>Use “Refresh Azure Retail Prices” to query Microsoft's public Retail Prices API. Where an exact SKU is not configured or no matching meter is found, ArchMindCanvas falls back to its baseline estimate. Retail pricing is not your negotiated invoice price.</span></div></div>:rightPanel==='validation'?<ValidationPanel findings={findings} score={score} onSelectNode={id=>{setSelectedNodeId(id);setRightPanel('properties');}}/>:isArchitecture?<PropertiesPanel nodeId={(selectedNode as ArchitectureNode).id} data={(selectedNode as ArchitectureNode).data} allResources={architectureNodes} declaredVariables={effectiveVariables} declaredLocals={effectiveLocals} parentId={(selectedNode as ArchitectureNode).parentId} hierarchy={hierarchyData} onParentChange={changeParent} onChange={updateArchitecture} onDelete={deleteSelected} onDuplicate={duplicateSelected}/>:isDrawing?<div className="properties-panel"><div className="panel-title">Drawing object</div><div className="form-stack"><label>Text / label<input value={(selectedNode as DrawingNode).data.label} onChange={e=>updateDrawing({label:e.target.value})}/></label><button className="danger-button" onClick={deleteSelected}>Delete object</button></div></div>:selectedEdge?<div className="properties-panel"><div className="panel-title">Connection</div><div className="form-stack"><label>Line style<select value={selectedEdge.data?.connectorStyle||'smoothstep'} onChange={e=>updateEdge({connectorStyle:e.target.value as ConnectorStyle})}><option value="straight">Straight</option><option value="smoothstep">Elbow / routed</option><option value="bezier">Curved</option><option value="dotted">Dotted</option><option value="dashed">Dashed</option></select></label><label>Arrow direction<select value={selectedEdge.data?.arrowStyle||'end'} onChange={e=>updateEdge({arrowStyle:e.target.value as any})}><option value="none">No arrow</option><option value="end">Forward →</option><option value="start">Backward ←</option><option value="both">Both ↔</option></select></label><label>Line thickness<select value={selectedEdge.data?.strokeWidth||2} onChange={e=>updateEdge({strokeWidth:Number(e.target.value)})}><option value="1">1 px</option><option value="2">2 px</option><option value="3">3 px</option><option value="4">4 px</option><option value="6">6 px</option></select></label><button type="button" onClick={()=>updateEdge({routePoints:[],routeX:undefined,routeY:undefined,labelX:undefined,labelY:undefined})}>Reset auto-route</button><small>Tip: Select a connection and double-click the line to add bend points. Drag points to route the line; double-click a point to remove it. Drag the label to reposition it.</small><label>Label<input value={selectedEdge.data?.label||''} onChange={e=>updateEdge({label:e.target.value})}/></label><label>Connection type<select value={selectedEdge.data?.connectionType||''} onChange={e=>updateEdge({connectionType:e.target.value})}><option value="">General</option><option>HTTPS</option><option>Private Link</option><option>VNet Peering</option><option>VPN</option><option>ExpressRoute</option><option>Dependency</option><option>Data Flow</option></select></label><label>Protocol<input value={selectedEdge.data?.protocol||''} onChange={e=>updateEdge({protocol:e.target.value})} placeholder="TCP / UDP / HTTPS"/></label><label>Port<input value={selectedEdge.data?.port||''} onChange={e=>updateEdge({port:e.target.value})} placeholder="443"/></label><button className="danger-button" onClick={deleteSelected}>Delete connection</button></div></div>:<div className="empty-properties"><div className="empty-icon">✦</div><strong>Select an object or connection</strong><span>Edit hierarchy, Azure properties, tags and connection metadata here.</span></div>}</div></main></div>;
 }
 export default function App(){return <ReactFlowProvider><Designer/></ReactFlowProvider>}
