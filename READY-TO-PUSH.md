@@ -35,3 +35,14 @@ Changes:
 - New connections use the currently selected connector style and arrow preference.
 - Selecting an existing connection synchronizes the toolbar controls to that connection.
 - Profile subtitle changed from `Organization Admin` to `Founder · ArchMindCanvas`.
+
+
+## v8.4.4 — Architecture Guidance presentation-only update
+
+Only the Architecture Tools presentation was changed:
+- Visible name: `Architecture Tools` -> `Architecture Guidance`
+- Icon: existing sparkle icon -> Lucide `BookOpenText`
+
+No handlers, state variables, component names, Terraform/IaC, remote backend,
+templates, reference starters, connectors, validation, deployment or other
+application behavior was intentionally changed.

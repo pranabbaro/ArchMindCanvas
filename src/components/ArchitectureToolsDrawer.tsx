@@ -1,8 +1,7 @@
 import { useMemo, useState } from 'react';
 import {
   Boxes, CheckCircle2, ChevronRight, Cloud, Database, ExternalLink, Globe2, Layers3,
-  Network, Search, ServerCog, ShieldCheck, Sparkles, X, Zap
-} from 'lucide-react';
+  Network, Search, ServerCog, ShieldCheck, Sparkles, X, Zap, BookOpenText} from 'lucide-react';
 
 type Section='library'|'waf'|'references';
 type Props={
@@ -58,7 +57,7 @@ export default function ArchitectureToolsDrawer({section,onSectionChange,onClose
 
   return <div className="architecture-tools-drawer">
     <div className="architecture-tools-drawer-head">
-      <div><strong>Architecture Tools</strong><small>Microsoft guidance + ArchMindCanvas intelligence</small></div>
+      <div><strong>Architecture Guidance</strong><small>Microsoft guidance + ArchMindCanvas intelligence</small></div>
       <button onClick={onClose} aria-label="Close"><X size={16}/></button>
     </div>
 

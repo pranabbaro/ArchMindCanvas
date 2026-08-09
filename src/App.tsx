@@ -3,7 +3,7 @@ import {
   addEdge, Background, BackgroundVariant, Controls, MarkerType, MiniMap, ReactFlow, ReactFlowProvider,
   useEdgesState, useNodesState, useReactFlow, type Connection, type EdgeChange, type NodeChange,
 } from '@xyflow/react';
-import { Check, Clipboard, Copy, Download, FilePlus2, FolderOpen, Maximize2, Redo2, Save, ShieldCheck, Sparkles, Undo2, MousePointer2, Hand, Route, Square, Triangle, Type, Trash2, Bot, Code2, DollarSign, Image, FileText, BringToFront, SendToBack, Lock, Unlock, Rocket, Play, CheckCircle2, GitBranch, ServerCog, Variable, Building2, FolderKanban, Layers3, LayoutDashboard, Boxes, ChevronDown, ChevronLeft, ChevronRight, Network, GripVertical, LayoutTemplate} from 'lucide-react';
+import { Check, Clipboard, Copy, Download, FilePlus2, FolderOpen, Maximize2, Redo2, Save, ShieldCheck, Sparkles, Undo2, MousePointer2, Hand, Route, Square, Triangle, Type, Trash2, Bot, Code2, DollarSign, Image, FileText, BringToFront, SendToBack, Lock, Unlock, Rocket, Play, CheckCircle2, GitBranch, ServerCog, Variable, Building2, FolderKanban, Layers3, LayoutDashboard, Boxes, ChevronDown, ChevronLeft, ChevronRight, Network, GripVertical, LayoutTemplate, BookOpenText} from 'lucide-react';
 import { toPng, toSvg } from 'html-to-image';
 import { jsPDF } from 'jspdf';
 import ArchitectureNodeComponent from './components/ArchitectureNode';
@@ -1502,7 +1502,7 @@ const terraformVariablesCode=useMemo(()=>effectiveVariables.map(v=>{
     <button
       className={architectureToolsOpen||architectureToolsMenuOpen?'active':''}
       onClick={()=>{setArchitectureToolsMenuOpen(v=>!v);setLibraryOpen(false)}}
-      title="Architecture Tools"
+      title="Architecture Guidance"
     >
       <Sparkles size={18}/>
       <span>Architecture</span>
@@ -1511,7 +1511,7 @@ const terraformVariablesCode=useMemo(()=>effectiveVariables.map(v=>{
 
     {architectureToolsMenuOpen&&!leftPaneCollapsed&&<div className="architecture-tools-flyout" onMouseDown={e=>e.stopPropagation()}>
       <div className="architecture-tools-flyout-head">
-        <strong>Architecture Tools</strong>
+        <strong>Architecture Guidance</strong>
         <small>Guidance, references and reviews</small>
       </div>
       <div className="architecture-tools-group-label">MICROSOFT</div>
