@@ -726,7 +726,9 @@ const selectedNode=nodes.find(n=>n.id===selectedNodeId);const selectedEdge=edges
     }
 
     if(n.data.resourceType==='virtualMachine'){
-      const subnet=findSubnet(n.data.subnet);
+      const explicitSubnet=findSubnet(n.data.subnet);
+      const parentSubnet=n.parentId?architectureNodes.find(x=>x.id===n.parentId&&x.data.resourceType==='subnet'):undefined;
+      const subnet=explicitSubnet||parentSubnet;
       const nicName=`${name}_nic`;
       const image=(n.data.properties?.image||'2022-datacenter-azure-edition') as string;
       const size=(n.data.properties?.size||'Standard_D2s_v5') as string;
@@ -934,6 +936,28 @@ const terraformVariablesCode=useMemo(()=>effectiveVariables.map(v=>{
 
   seenNames.forEach((ids,address)=>{
    if(ids.length>1)critical.push(`Duplicate Terraform address: ${address}`);
+  });
+
+
+  // Detect generator fallbacks that would require undeclared variables.
+  architectureNodes.forEach(n=>{
+   if(n.data.resourceType==='virtualMachine'){
+    const explicitSubnet=architectureNodes.find(x=>x.data.resourceType==='subnet'&&x.data.label===n.data.subnet);
+    const parentSubnet=n.parentId?architectureNodes.find(x=>x.id===n.parentId&&x.data.resourceType==='subnet'):undefined;
+    const resolvedSubnet=explicitSubnet||parentSubnet;
+    if(!resolvedSubnet&&!effectiveVariables.some(v=>v.name==='subnet_id')){
+     critical.push(`${n.data.label}: NIC subnet could not be resolved and variable subnet_id is not declared.`);
+    }
+    if(!n.data.resourceGroup&&!effectiveVariables.some(v=>v.name==='resource_group_name')){
+     critical.push(`${n.data.label}: Resource Group could not be resolved and variable resource_group_name is not declared.`);
+    }
+   }
+   if(n.data.resourceType==='subnet'){
+    const vnetResolved=architectureNodes.some(x=>x.data.resourceType==='virtualNetwork'&&x.data.label===n.data.vnet);
+    if(!vnetResolved&&!effectiveVariables.some(v=>v.name==='virtual_network_name')){
+     critical.push(`${n.data.label}: Virtual Network could not be resolved and variable virtual_network_name is not declared.`);
+    }
+   }
   });
 
   architectureModules.forEach(m=>{

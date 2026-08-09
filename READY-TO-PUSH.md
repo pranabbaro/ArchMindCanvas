@@ -1,26 +1,21 @@
-# ArchMindCanvas v8.2.0 — Provider-Aware Terraform Generator
+# ArchMindCanvas v8.2.1 — Dependency Resolution Fix
 
-Fixes found during the real end-to-end IaC test:
+Targeted patch on top of v8.2.0.
 
-- Internal model fields such as `resourceGroupRef`, `subscriptionRef`, `vnetRef`, and `subnetRef` are not emitted as Terraform arguments.
-- `azurerm_subnet` no longer emits invalid `location`.
-- Subnet keeps valid Resource Group and VNet references.
-- Windows VM generation now includes:
-  - Resource Group reference
-  - Location
-  - VM size
-  - Admin username
-  - Sensitive password variable
-  - Automatically generated NIC
-  - NIC → Subnet dependency
-  - OS disk block
-  - Windows Server image reference
-- `zone = "None"` is not emitted.
-- Existing/Create/Import behavior is preserved.
-- Architecture Tools and the archmind robot assistant are preserved.
+Fixes:
+- VM-generated NIC now resolves the Subnet from:
+  1. explicit VM relationship, then
+  2. visual parent Subnet container.
+- When resolved, generated Terraform uses:
+  `subnet_id = azurerm_subnet.<name>.id`
+- Fallback `var.subnet_id` is used only when no modeled Subnet can be resolved.
+- Deployment readiness now blocks unresolved fallback references when the required variable is not declared.
+- Similar readiness protection was added for unresolved Resource Group and Virtual Network fallbacks.
+
+Everything else from v8.2.0 remains unchanged.
 
 ```powershell
 git add .
-git commit -m "ArchMindCanvas v8.2.0 - provider aware terraform generator"
+git commit -m "ArchMindCanvas v8.2.1 - fix dependency resolution"
 git push origin main
 ```
