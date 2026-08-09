@@ -1979,3 +1979,19 @@
 .react-flow__node-default{
   pointer-events:auto!important;
 }
+
+/* v8.4.0 Functional Microsoft reference starters */
+.reference-card-actions .starter-enabled{
+  border-color:#86b9e8!important;
+  color:#145ea8!important;
+  background:#f5faff!important;
+  font-weight:800!important;
+}
+.reference-card-actions .starter-enabled:hover{
+  background:#eaf5ff!important;
+  border-color:#5e9ed9!important;
+}
+.reference-card-actions button:disabled{
+  cursor:not-allowed!important;
+  opacity:.52!important;
+}

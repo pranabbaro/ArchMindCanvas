@@ -1217,6 +1217,117 @@ const terraformVariablesCode=useMemo(()=>effectiveVariables.map(v=>{
   return r;
  },[architectureNodes,effectiveVariables,effectiveLocals,architectureModules,architectureOutputs,architectureMetadata,referencedDataSources,deploymentReadiness]);
  const score=Math.max(35,100-findings.filter(f=>f.severity==='warning').length*6-findings.filter(f=>f.severity==='critical').length*20);
+
+ const useReferenceStarter=useCallback((starterKey:string,referenceTitle:string,referenceHref:string)=>{
+  const id=()=>crypto.randomUUID();
+  const mk=(resourceType:ResourceType,label:string,x:number,y:number,width?:number,height?:number,parentId?:string,extra:Partial<ArchitectureNodeData>={}):CanvasNode=>{
+   const container=isContainerType(resourceType);
+   return {
+    id:id(),
+    type:container?'container':'architecture',
+    position:{x,y},
+    ...(parentId?{parentId,extent:'parent' as const}:{}),
+    ...(container?{style:{...(containerSize(resourceType)),...(width?{width}:{}),...(height?{height}: {})}}:{}),
+    data:{...makeData(resourceType,label),resourceMode:'create',environment:environmentName,...extra}
+   } as CanvasNode;
+  };
+  const edge=(source:string,target:string,label?:string):CanvasEdge=>({
+   id:id(),source,target,type:'styled',
+   data:{connectorStyle:'smoothstep',arrowStyle:'end',...(label?{label}: {})}
+  } as CanvasEdge);
+
+  const subscription=mk('subscription','Azure Subscription',60,50,1200,820,undefined,{resourceMode:'existing'} as any);
+  const rg=mk('resourceGroup',`${referenceTitle.replace(/[^a-z0-9]+/gi,'-').replace(/^-|-$/g,'').slice(0,36)}-RG`,45,95,1060,660,subscription.id,{resourceGroup:'Reference-Starter-RG'} as any);
+  const ns:CanvasNode[]=[subscription,rg];
+  const es:CanvasEdge[]=[];
+
+  if(starterKey==='hub-spoke'){
+   const hub=mk('virtualNetwork','Hub-VNet',35,80,430,500,rg.id,{resourceGroup:rg.data.label,properties:{addressSpace:'10.0.0.0/16'}} as any);
+   const hubSubnet=mk('subnet','AzureFirewallSubnet',25,90,340,150,hub.id,{resourceGroup:rg.data.label,vnet:hub.data.label,properties:{addressPrefix:'10.0.1.0/24'}} as any);
+   const fw=mk('firewall','Azure-Firewall',70,55,undefined,undefined,hubSubnet.id,{resourceGroup:rg.data.label,vnet:hub.data.label,subnet:hubSubnet.data.label} as any);
+   const bastionSubnet=mk('subnet','AzureBastionSubnet',25,270,340,150,hub.id,{resourceGroup:rg.data.label,vnet:hub.data.label,properties:{addressPrefix:'10.0.2.0/24'}} as any);
+   const bastion=mk('bastion','Azure-Bastion',70,55,undefined,undefined,bastionSubnet.id,{resourceGroup:rg.data.label,vnet:hub.data.label,subnet:bastionSubnet.data.label} as any);
+   const spoke1=mk('virtualNetwork','Spoke-App-VNet',500,80,250,500,rg.id,{resourceGroup:rg.data.label,properties:{addressSpace:'10.10.0.0/16'}} as any);
+   const s1=mk('subnet','App-Subnet',25,100,180,220,spoke1.id,{resourceGroup:rg.data.label,vnet:spoke1.data.label,properties:{addressPrefix:'10.10.1.0/24'}} as any);
+   const vm=mk('virtualMachine','Application-VM',30,70,undefined,undefined,s1.id,{resourceGroup:rg.data.label,vnet:spoke1.data.label,subnet:s1.data.label} as any);
+   const spoke2=mk('virtualNetwork','Spoke-Data-VNet',780,80,250,500,rg.id,{resourceGroup:rg.data.label,properties:{addressSpace:'10.20.0.0/16'}} as any);
+   const s2=mk('subnet','Data-Subnet',25,100,180,220,spoke2.id,{resourceGroup:rg.data.label,vnet:spoke2.data.label,properties:{addressPrefix:'10.20.1.0/24'}} as any);
+   const sql=mk('sqlDatabase','Application-SQL',30,70,undefined,undefined,s2.id,{resourceGroup:rg.data.label,vnet:spoke2.data.label,subnet:s2.data.label} as any);
+   ns.push(hub,hubSubnet,fw,bastionSubnet,bastion,spoke1,s1,vm,spoke2,s2,sql);
+   es.push(edge(hub.id,spoke1.id,'Peering'),edge(hub.id,spoke2.id,'Peering'));
+  }else if(starterKey==='aks-baseline'){
+   const vnet=mk('virtualNetwork','AKS-VNet',45,80,650,500,rg.id,{resourceGroup:rg.data.label,properties:{addressSpace:'10.30.0.0/16'}} as any);
+   const snet=mk('subnet','AKS-Subnet',30,100,380,260,vnet.id,{resourceGroup:rg.data.label,vnet:vnet.data.label,properties:{addressPrefix:'10.30.1.0/24'}} as any);
+   const aks=mk('aks','AKS-Cluster',55,65,undefined,undefined,snet.id,{resourceGroup:rg.data.label,vnet:vnet.data.label,subnet:snet.data.label} as any);
+   const nat=mk('natGateway','AKS-NAT-Gateway',220,65,undefined,undefined,snet.id,{resourceGroup:rg.data.label,vnet:vnet.data.label,subnet:snet.data.label} as any);
+   const acr=mk('containerRegistry','Container-Registry',730,100,undefined,undefined,rg.id,{resourceGroup:rg.data.label} as any);
+   const kv=mk('keyVault','AKS-Key-Vault',730,230,undefined,undefined,rg.id,{resourceGroup:rg.data.label} as any);
+   const logs=mk('logAnalytics','AKS-Log-Analytics',730,360,undefined,undefined,rg.id,{resourceGroup:rg.data.label} as any);
+   ns.push(vnet,snet,aks,nat,acr,kv,logs);
+   es.push(edge(acr.id,aks.id),edge(kv.id,aks.id),edge(aks.id,logs.id));
+  }else if(starterKey==='multi-region-web'){
+   const fd=mk('frontDoor','Azure-Front-Door',440,80,undefined,undefined,rg.id,{resourceGroup:rg.data.label} as any);
+   const v1=mk('virtualNetwork','Region-1-VNet',50,220,430,360,rg.id,{resourceGroup:rg.data.label,region:'West Europe',properties:{addressSpace:'10.40.0.0/16'}} as any);
+   const s1=mk('subnet','Region-1-App-Subnet',25,80,330,180,v1.id,{resourceGroup:rg.data.label,vnet:v1.data.label,region:'West Europe',properties:{addressPrefix:'10.40.1.0/24'}} as any);
+   const app1=mk('appService','Web-App-Region-1',55,55,undefined,undefined,s1.id,{resourceGroup:rg.data.label,vnet:v1.data.label,subnet:s1.data.label,region:'West Europe'} as any);
+   const v2=mk('virtualNetwork','Region-2-VNet',560,220,430,360,rg.id,{resourceGroup:rg.data.label,region:'North Europe',properties:{addressSpace:'10.50.0.0/16'}} as any);
+   const s2=mk('subnet','Region-2-App-Subnet',25,80,330,180,v2.id,{resourceGroup:rg.data.label,vnet:v2.data.label,region:'North Europe',properties:{addressPrefix:'10.50.1.0/24'}} as any);
+   const app2=mk('appService','Web-App-Region-2',55,55,undefined,undefined,s2.id,{resourceGroup:rg.data.label,vnet:v2.data.label,subnet:s2.data.label,region:'North Europe'} as any);
+   const db=mk('sqlDatabase','Geo-Replicated-SQL',440,500,undefined,undefined,rg.id,{resourceGroup:rg.data.label} as any);
+   ns.push(fd,v1,s1,app1,v2,s2,app2,db);
+   es.push(edge(fd.id,app1.id),edge(fd.id,app2.id),edge(app1.id,db.id),edge(app2.id,db.id));
+  }else if(starterKey==='avd-enterprise'){
+   const vnet=mk('virtualNetwork','AVD-VNet',45,90,640,500,rg.id,{resourceGroup:rg.data.label,properties:{addressSpace:'10.60.0.0/16'}} as any);
+   const snet=mk('subnet','AVD-SessionHosts-Subnet',30,100,390,270,vnet.id,{resourceGroup:rg.data.label,vnet:vnet.data.label,properties:{addressPrefix:'10.60.1.0/24'}} as any);
+   const avd=mk('avd','AVD-Workspace-HostPool',70,55,undefined,undefined,snet.id,{resourceGroup:rg.data.label,vnet:vnet.data.label,subnet:snet.data.label} as any);
+   const vm=mk('virtualMachine','AVD-Session-Host',220,55,undefined,undefined,snet.id,{resourceGroup:rg.data.label,vnet:vnet.data.label,subnet:snet.data.label} as any);
+   const storage=mk('storageAccount','FSLogix-Storage',740,110,undefined,undefined,rg.id,{resourceGroup:rg.data.label} as any);
+   const pe=mk('privateEndpoint','FSLogix-Private-Endpoint',740,235,undefined,undefined,rg.id,{resourceGroup:rg.data.label,vnet:vnet.data.label,subnet:snet.data.label} as any);
+   const kv=mk('keyVault','AVD-Key-Vault',740,360,undefined,undefined,rg.id,{resourceGroup:rg.data.label} as any);
+   const logs=mk('logAnalytics','AVD-Log-Analytics',740,485,undefined,undefined,rg.id,{resourceGroup:rg.data.label} as any);
+   ns.push(vnet,snet,avd,vm,storage,pe,kv,logs);
+   es.push(edge(storage.id,pe.id),edge(pe.id,avd.id),edge(avd.id,vm.id),edge(avd.id,logs.id));
+  }else{
+   alert('This reference starter is not mapped yet.');
+   return;
+  }
+
+  const newDesignId=crypto.randomUUID();
+  const starterName=`${referenceTitle} - Starter`;
+  setDesignId(newDesignId);
+  setDesignName(starterName);
+  setNodes(normalizeCanvasLayering(ns));
+  setEdges(es);
+  setSelectedNodeId(undefined);
+  setSelectedEdgeId(undefined);
+  setDesignVariables([]);
+  setDesignLocals([]);
+  setArchitectureOutputs([]);
+  setArchitectureModules([]);
+  setArchitectureMetadata({
+   description:`Editable ArchMindCanvas starter adapted from Microsoft reference guidance: ${referenceTitle}. Review and customize all resources, security controls, sizing and IaC before deployment.`,
+   owner:'',
+   application:'',
+   businessUnit:'',
+   costCenter:'',
+   criticality:'Medium',
+   lifecycle:'Development',
+   version:'1.0.0',
+   tags:{
+    ReferenceSource:'Microsoft Azure Architecture Center',
+    ReferenceTitle:referenceTitle,
+    ReferenceUrl:referenceHref,
+    StarterType:'ArchMindCanvas Adapted Reference'
+   }
+  });
+  setSaveState('unsaved');
+  setArchitectureToolsOpen(false);
+  setArchitectureToolsMenuOpen(false);
+  setRightPanel('model');
+  setWorkspaceView('editor');
+  setTimeout(()=>fitView({padding:.12}),50);
+ },[environmentName,setNodes,setEdges,normalizeCanvasLayering,fitView]);
+
  const saveDesign=useCallback(()=>{
   const document={version:'7.9.0',designId,designName,organizationId,organizationName,projectId,projectName,environmentId,environmentName,nodes,edges,variables:designVariables,locals:designLocals,outputs:architectureOutputs,modules:architectureModules,metadata:architectureMetadata,updatedAt:new Date().toISOString()};
   localStorage.setItem(`${STORAGE_KEY}:${designId}`,JSON.stringify(document));
@@ -1406,6 +1517,7 @@ const terraformVariablesCode=useMemo(()=>effectiveVariables.map(v=>{
   onSectionChange={setArchitectureToolsSection}
   onClose={()=>setArchitectureToolsOpen(false)}
   onOpenValidation={()=>{setArchitectureToolsOpen(false);setRightPanel('validation')}}
+  onUseStarter={useReferenceStarter}
 />}
 <div className="canvas-wrapper" onDrop={onDrop} onDragOver={e=>{e.preventDefault();e.dataTransfer.dropEffect='move';}}><div className="drawing-toolbar draggable-canvas-toolbar" style={{transform:`translate(${canvasToolbarPos.x}px, ${canvasToolbarPos.y}px)`}}>
  <button

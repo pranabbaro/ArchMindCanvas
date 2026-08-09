@@ -10,6 +10,7 @@ type Props={
   onSectionChange:(section:Section)=>void;
   onClose:()=>void;
   onOpenValidation:()=>void;
+  onUseStarter:(starterKey:string,title:string,href:string)=>void;
 };
 
 const wafPillars=[
@@ -34,10 +35,10 @@ const categories=[
 ];
 
 const references=[
-  {title:'Hub-spoke network topology in Azure',category:'Networking',description:'Enterprise network topology with centralized shared services and spoke workload networks.',href:'https://learn.microsoft.com/en-us/azure/architecture/networking/architecture/hub-spoke'},
-  {title:'Baseline architecture for an AKS cluster',category:'Containers & AKS',description:'A production-oriented AKS baseline covering networking, identity, ingress and operations.',href:'https://learn.microsoft.com/en-us/azure/architecture/reference-architectures/containers/aks/baseline-aks'},
-  {title:'Highly available multi-region web application',category:'Web & Applications',description:'Patterns for resilient web applications distributed across Azure regions.',href:'https://learn.microsoft.com/en-us/azure/architecture/reference-architectures/app-service-web-app/multi-region'},
-  {title:'Azure Virtual Desktop for the enterprise',category:'Virtual Desktop',description:'Enterprise AVD architecture considerations for identity, networking, profiles and operations.',href:'https://learn.microsoft.com/en-us/azure/architecture/example-scenario/avd/windows-virtual-desktop'},
+  {starterKey:'hub-spoke',title:'Hub-spoke network topology in Azure',category:'Networking',description:'Enterprise network topology with centralized shared services and spoke workload networks.',href:'https://learn.microsoft.com/en-us/azure/architecture/networking/architecture/hub-spoke'},
+  {starterKey:'aks-baseline',title:'Baseline architecture for an AKS cluster',category:'Containers & AKS',description:'A production-oriented AKS baseline covering networking, identity, ingress and operations.',href:'https://learn.microsoft.com/en-us/azure/architecture/reference-architectures/containers/aks/baseline-aks'},
+  {starterKey:'multi-region-web',title:'Highly available multi-region web application',category:'Web & Applications',description:'Patterns for resilient web applications distributed across Azure regions.',href:'https://learn.microsoft.com/en-us/azure/architecture/reference-architectures/app-service-web-app/multi-region'},
+  {starterKey:'avd-enterprise',title:'Azure Virtual Desktop for the enterprise',category:'Virtual Desktop',description:'Enterprise AVD architecture considerations for identity, networking, profiles and operations.',href:'https://learn.microsoft.com/en-us/azure/architecture/example-scenario/avd/windows-virtual-desktop'},
   {title:'Generative AI with Azure OpenAI',category:'AI & Machine Learning',description:'Reference guidance for building enterprise generative AI solutions on Azure.',href:'https://learn.microsoft.com/en-us/azure/architecture/ai-ml/'},
   {title:'SAP workload architecture on Azure',category:'SAP & Enterprise',description:'Architecture guidance for highly available SAP workloads running on Azure.',href:'https://learn.microsoft.com/en-us/azure/architecture/guide/sap/'},
   {title:'Disaster recovery for Azure applications',category:'Business Continuity & DR',description:'Design guidance for resilient applications and regional disaster recovery.',href:'https://learn.microsoft.com/en-us/azure/architecture/framework/resiliency/overview'},
@@ -46,7 +47,7 @@ const references=[
 
 const open=(href:string)=>window.open(href,'_blank','noopener,noreferrer');
 
-export default function ArchitectureToolsDrawer({section,onSectionChange,onClose,onOpenValidation}:Props){
+export default function ArchitectureToolsDrawer({section,onSectionChange,onClose,onOpenValidation,onUseStarter}:Props){
   const[query,setQuery]=useState('');
   const[category,setCategory]=useState('All');
 
@@ -135,7 +136,9 @@ export default function ArchitectureToolsDrawer({section,onSectionChange,onClose
           <p>{r.description}</p>
           <div className="reference-card-actions">
             <button onClick={()=>open(r.href)}><ExternalLink size={12}/> View reference</button>
-            <button className="secondary" title="Template conversion will be added after the Microsoft reference catalog mapping is validated">Use as starting point</button>
+            {'starterKey' in r&&r.starterKey
+              ?<button className="secondary starter-enabled" onClick={()=>onUseStarter(r.starterKey!,r.title,r.href)}>Use as starting point</button>
+              :<button className="secondary" disabled title="Starter mapping is not available for this reference yet">Coming soon</button>}
           </div>
         </article>)}
         {!filteredReferences.length&&<div className="reference-empty">No reference architectures match this filter.</div>}
