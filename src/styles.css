@@ -1665,3 +1665,130 @@
 .reference-filter-row{display:flex;gap:5px;padding-bottom:9px;overflow:auto}.reference-filter-row button{flex:0 0 auto;padding:5px 7px;border:1px solid #dce5ee;border-radius:999px;background:#fff;color:#64748b;font-size:6px}.reference-filter-row button.active{border-color:#73a8e0;background:#eef6ff;color:#1f65ae}
 .reference-card-list{display:flex;flex-direction:column;gap:8px}.reference-card-list article{padding:11px;border:1px solid #dfe7ef;border-radius:10px;background:#fff}.reference-card-top{display:flex;align-items:center;justify-content:space-between}.reference-card-top span{font-size:5.5px;font-weight:800;color:#2875c8;text-transform:uppercase}.reference-card-top em{padding:2px 5px;border-radius:999px;background:#f1f5f9;color:#64748b;font-size:5.5px;font-style:normal}.reference-card-list h3{margin:7px 0 4px;font-size:9px}.reference-card-list p{margin:0;font-size:6.5px;line-height:1.45;color:#66778b}.reference-card-actions{display:flex;gap:6px;margin-top:9px}.reference-card-actions button{display:flex;align-items:center;gap:4px;padding:6px 8px;border:1px solid #bcd5ec;border-radius:7px;background:#fff;color:#1f65ae;font-size:6.5px}.reference-card-actions .secondary{border-color:#d9e2ec;color:#64748b}.reference-empty{padding:20px;text-align:center;color:#64748b;font-size:7px}
 .workspace.left-pane-collapsed .architecture-tools-flyout,.workspace.left-pane-collapsed .architecture-tools-drawer{display:none!important}
+
+/* v8.1.1 — Architecture Tools flyout visual fix */
+.architecture-tools-flyout{
+  position:absolute!important;
+  z-index:1600!important;
+  left:50px!important;
+  top:-8px!important;
+  width:338px!important;
+  max-height:calc(100vh - 80px)!important;
+  overflow:auto!important;
+  padding:10px!important;
+  border:1px solid #d9e3ed!important;
+  border-radius:14px!important;
+  background:#ffffff!important;
+  box-shadow:0 22px 60px rgba(15,23,42,.22)!important;
+}
+
+.architecture-tools-flyout-head{
+  display:flex!important;
+  flex-direction:column!important;
+  gap:2px!important;
+  padding:8px 10px 10px!important;
+  border-bottom:1px solid #edf2f7!important;
+  margin-bottom:6px!important;
+}
+.architecture-tools-flyout-head strong{
+  font-size:13px!important;
+  line-height:1.2!important;
+  color:#111827!important;
+}
+.architecture-tools-flyout-head small{
+  font-size:10px!important;
+  color:#718096!important;
+  line-height:1.35!important;
+}
+
+.architecture-tools-group-label{
+  margin:8px 2px 5px!important;
+  padding:0 8px!important;
+  font-size:9px!important;
+  font-weight:800!important;
+  letter-spacing:.08em!important;
+  color:#94a3b8!important;
+}
+
+.architecture-tools-flyout>button{
+  width:100%!important;
+  min-height:58px!important;
+  display:grid!important;
+  grid-template-columns:32px minmax(0,1fr) 18px!important;
+  align-items:center!important;
+  gap:10px!important;
+  margin:4px 0!important;
+  padding:9px 10px!important;
+  border:1px solid #e3eaf2!important;
+  border-radius:10px!important;
+  background:#fff!important;
+  color:#334155!important;
+  text-align:left!important;
+  cursor:pointer!important;
+  transition:background .15s ease,border-color .15s ease,box-shadow .15s ease,transform .15s ease!important;
+}
+
+.architecture-tools-flyout>button:hover{
+  background:#f7fbff!important;
+  border-color:#aacced!important;
+  box-shadow:0 6px 16px rgba(30,64,175,.08)!important;
+  transform:translateY(-1px)!important;
+}
+
+.architecture-tools-flyout>button>svg:first-child{
+  width:30px!important;
+  height:30px!important;
+  padding:6px!important;
+  border-radius:9px!important;
+  background:#eef6ff!important;
+  color:#2a73bd!important;
+}
+
+.architecture-tools-flyout>button>svg:last-child{
+  color:#8da0b6!important;
+}
+
+.architecture-tools-flyout>button>span{
+  min-width:0!important;
+  display:flex!important;
+  flex-direction:column!important;
+  gap:3px!important;
+}
+
+.architecture-tools-flyout>button strong{
+  display:block!important;
+  font-size:11px!important;
+  line-height:1.25!important;
+  color:#172033!important;
+  white-space:normal!important;
+}
+
+.architecture-tools-flyout>button small{
+  display:block!important;
+  font-size:9px!important;
+  line-height:1.35!important;
+  color:#6f8195!important;
+  white-space:normal!important;
+}
+
+.left-rail-tool-wrap{
+  position:relative!important;
+}
+
+.left-rail-tool-wrap>button{
+  width:100%!important;
+}
+
+/* Keep flyout independent of the narrow rail's inherited button styles */
+.editor-left-rail .architecture-tools-flyout button span,
+.editor-left-rail .architecture-tools-flyout button small{
+  writing-mode:horizontal-tb!important;
+  transform:none!important;
+}
+
+/* Compact scrollbars */
+.architecture-tools-flyout::-webkit-scrollbar{width:7px!important}
+.architecture-tools-flyout::-webkit-scrollbar-thumb{
+  background:#cbd5e1!important;
+  border-radius:999px!important;
+}

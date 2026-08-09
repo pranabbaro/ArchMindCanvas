@@ -1,55 +1,22 @@
-# ArchMindCanvas v8.1.0 — Architecture Tools Library
+# ArchMindCanvas v8.1.1 — Architecture Tools Flyout UI Fix
 
-Left rail now stays compact:
-- Resources
-- Architecture Tools
+This release changes only the Architecture Tools flyout styling.
 
-Architecture Tools opens a grouped flyout:
+Fixes:
+- Compact 338px flyout width
+- Proper card rows
+- Visible icons
+- Tight vertical spacing
+- Better typography
+- Hover states
+- Right-arrow alignment
+- Controlled flyout height with scrolling
+- Prevents left-rail styles from flattening the flyout content
 
-Microsoft
-- Microsoft Architecture Library
-- Azure Well-Architected Framework
-- Reference Architectures
-
-ArchMindCanvas
-- Architecture Templates
-- Architecture Review
-- Best Practice Validation
-
-Architecture Library drawer:
-- Searchable architecture categories
-- Networking
-- Web & Applications
-- Containers & AKS
-- AI & Machine Learning
-- Data & Analytics
-- Virtual Desktop
-- Hybrid & Azure Local
-- Security
-- Business Continuity & DR
-- SAP & Enterprise
-- Link to the complete Azure Architecture Center catalog
-
-Well-Architected Framework:
-- Reliability
-- Security
-- Cost Optimization
-- Operational Excellence
-- Performance Efficiency
-- Direct Microsoft Learn guidance links
-- Shortcut to review the current ArchMindCanvas design
-
-Reference Architectures:
-- Search
-- Workload category filters
-- Featured Microsoft reference architecture cards
-- Direct official reference links
-- "Use as starting point" UI reserved for validated reference-to-template mapping
-
-The v8.0.1 IaC and Deployment Readiness Engine code is unchanged.
+All v8.1.0 functionality is unchanged.
 
 ```powershell
 git add .
-git commit -m "ArchMindCanvas v8.1.0 - architecture tools library"
+git commit -m "ArchMindCanvas v8.1.1 - fix architecture tools flyout UI"
 git push origin main
 ```
