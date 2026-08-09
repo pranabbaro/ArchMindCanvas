@@ -1,16 +1,19 @@
-# ArchMindCanvas v8.2.2 — Terraform Bundle Hardening
+# ArchMindCanvas v8.3.0 — Terraform Backend / Remote State
 
-Adds `terraform.tfvars.example` to downloaded Terraform bundles.
+Adds a Terraform Backend section to the IaC workspace.
 
-Highlights:
-- Architecture/global variables are represented in the example values file.
-- Sensitive-looking variables are commented placeholders only.
-- `vm_admin_password` is never exported with a real value.
-- Bundle README now includes a quick-start workflow and security guidance.
-- The proven v8.2.1 provider-aware Terraform generator and dependency resolution are unchanged.
+- Local State for development/testing
+- Azure Storage Remote State for shared/production usage
+- Configurable state Resource Group, Storage Account, Blob Container and State Key
+- Live backend.tf preview
+- backend.tf included in downloaded Terraform bundles
+- Settings persist in the browser
+- No Azure credentials, storage keys, SAS tokens or secrets are exported
+
+The proven v8.2.2 provider-aware Terraform generation is unchanged.
 
 ```powershell
 git add .
-git commit -m "ArchMindCanvas v8.2.2 - harden Terraform bundle variables"
+git commit -m "ArchMindCanvas v8.3.0 - terraform backend remote state"
 git push origin main
 ```
