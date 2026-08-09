@@ -17,6 +17,7 @@ import CommandCenter from './components/CommandCenter';
 import Sidebar from './components/Sidebar';
 import ValidationPanel from './components/ValidationPanel';
 import ArchitectureModelPanel from './components/ArchitectureModelPanel';
+import ArchitectureToolsDrawer from './components/ArchitectureToolsDrawer';
 import { isContainerType, resourceMap } from './resourceCatalog';
 import type { ArchitectureMetadata, ArchitectureModuleDefinition, ArchitectureOutputDefinition, LocalDefinition, VariableDefinition, ArchitectureNode, CanvasEdge, CanvasNode, ConnectorStyle, DrawingNode, ResourceType, ValidationFinding, ArchitectureNodeData, TagMap } from './types';
 import JSZip from 'jszip';
@@ -61,7 +62,7 @@ const[organizationId,setOrganizationId]=useState<string>('org-default');const[or
  const[canvasToolbarDragging,setCanvasToolbarDragging]=useState(false);
  const canvasToolbarDragRef=useRef<{startX:number;startY:number;originX:number;originY:number}|null>(null);
  useEffect(()=>{localStorage.setItem('archmind-canvas-toolbar-pos',JSON.stringify(canvasToolbarPos));},[canvasToolbarPos]);
-useEffect(()=>{localStorage.setItem('archmind-left-pane-collapsed',String(leftPaneCollapsed));},[leftPaneCollapsed]);useEffect(()=>{localStorage.setItem('archmind-right-pane-collapsed',String(rightPaneCollapsed));},[rightPaneCollapsed]);const[libraryOpen,setLibraryOpen]=useState(false);const[designVariablesOpen,setDesignVariablesOpen]=useState(false);const[saveMenuOpen,setSaveMenuOpen]=useState(false);const[layoutMenuOpen,setLayoutMenuOpen]=useState(false);const[editMenuOpen,setEditMenuOpen]=useState(false);const[contextMenu,setContextMenu]=useState<{x:number;y:number;nodeId?:string}|null>(null);const[lockedIds,setLockedIds]=useState<Set<string>>(new Set());const[tool,setTool]=useState<Tool>('select');const[connectorStyle,setConnectorStyle]=useState<ConnectorStyle>('smoothstep');
+useEffect(()=>{localStorage.setItem('archmind-left-pane-collapsed',String(leftPaneCollapsed));},[leftPaneCollapsed]);useEffect(()=>{localStorage.setItem('archmind-right-pane-collapsed',String(rightPaneCollapsed));},[rightPaneCollapsed]);const[libraryOpen,setLibraryOpen]=useState(false);const[architectureToolsMenuOpen,setArchitectureToolsMenuOpen]=useState(false);const[architectureToolsOpen,setArchitectureToolsOpen]=useState(false);const[architectureToolsSection,setArchitectureToolsSection]=useState<'library'|'waf'|'references'>('library');const[designVariablesOpen,setDesignVariablesOpen]=useState(false);const[saveMenuOpen,setSaveMenuOpen]=useState(false);const[layoutMenuOpen,setLayoutMenuOpen]=useState(false);const[editMenuOpen,setEditMenuOpen]=useState(false);const[contextMenu,setContextMenu]=useState<{x:number;y:number;nodeId?:string}|null>(null);const[lockedIds,setLockedIds]=useState<Set<string>>(new Set());const[tool,setTool]=useState<Tool>('select');const[connectorStyle,setConnectorStyle]=useState<ConnectorStyle>('smoothstep');
  const history=useRef<Snapshot[]>([]),future=useRef<Snapshot[]>([]),copiedNodes=useRef<CanvasNode[]>([]),nextPos=useRef(0);
  const nodeTypes=useMemo(()=>({architecture:ArchitectureNodeComponent,container:ContainerNode,drawing:DrawingNodeComponent}),[]);const edgeTypes=useMemo(()=>({styled:StyledEdge}),[]);
  useEffect(()=>{
@@ -1157,12 +1158,58 @@ const selectedNode=nodes.find(n=>n.id===selectedNodeId);const selectedEdge=edges
     {leftPaneCollapsed?<ChevronRight size={17}/>:<ChevronLeft size={17}/>}
     <span>{leftPaneCollapsed?'Open':'Hide'}</span>
   </button>
-  <button className={libraryOpen?'active':''} onClick={()=>setLibraryOpen(v=>!v)} title="Azure Resources">
+  <button className={libraryOpen?'active':''} onClick={()=>{setLibraryOpen(v=>!v);setArchitectureToolsMenuOpen(false);setArchitectureToolsOpen(false)}} title="Azure Resources">
     <Boxes size={18}/>
     <span>Resources</span>
   </button>
+
+  <div className="left-rail-tool-wrap">
+    <button
+      className={architectureToolsOpen||architectureToolsMenuOpen?'active':''}
+      onClick={()=>{setArchitectureToolsMenuOpen(v=>!v);setLibraryOpen(false)}}
+      title="Architecture Tools"
+    >
+      <Sparkles size={18}/>
+      <span>Architecture</span>
+      <small>Tools</small>
+    </button>
+
+    {architectureToolsMenuOpen&&!leftPaneCollapsed&&<div className="architecture-tools-flyout" onMouseDown={e=>e.stopPropagation()}>
+      <div className="architecture-tools-flyout-head">
+        <strong>Architecture Tools</strong>
+        <small>Guidance, references and reviews</small>
+      </div>
+      <div className="architecture-tools-group-label">MICROSOFT</div>
+      <button onClick={()=>{setArchitectureToolsSection('library');setArchitectureToolsOpen(true);setArchitectureToolsMenuOpen(false)}}>
+        <Boxes size={15}/><span><strong>Microsoft Architecture Library</strong><small>Azure patterns, guides and solution ideas</small></span><ChevronRight size={14}/>
+      </button>
+      <button onClick={()=>{setArchitectureToolsSection('waf');setArchitectureToolsOpen(true);setArchitectureToolsMenuOpen(false)}}>
+        <ShieldCheck size={15}/><span><strong>Well-Architected Framework</strong><small>Reliability, Security, Cost, Operations, Performance</small></span><ChevronRight size={14}/>
+      </button>
+      <button onClick={()=>{setArchitectureToolsSection('references');setArchitectureToolsOpen(true);setArchitectureToolsMenuOpen(false)}}>
+        <LayoutDashboard size={15}/><span><strong>Reference Architectures</strong><small>Microsoft reference designs by workload</small></span><ChevronRight size={14}/>
+      </button>
+
+      <div className="architecture-tools-group-label">ARCHMINDCANVAS</div>
+      <button onClick={()=>{setArchitectureToolsMenuOpen(false);sessionStorage.setItem('archmind-dashboard-target','home');setWorkspaceView('dashboard')}}>
+        <Boxes size={15}/><span><strong>Architecture Templates</strong><small>Reusable ArchMindCanvas starters</small></span><ChevronRight size={14}/>
+      </button>
+      <button onClick={()=>{setArchitectureToolsMenuOpen(false);setRightPanel('validation')}}>
+        <CheckCircle2 size={15}/><span><strong>Architecture Review</strong><small>Review the current design</small></span><ChevronRight size={14}/>
+      </button>
+      <button onClick={()=>{setArchitectureToolsMenuOpen(false);setRightPanel('validation')}}>
+        <ShieldCheck size={15}/><span><strong>Best Practice Validation</strong><small>Check design risks and recommendations</small></span><ChevronRight size={14}/>
+      </button>
+    </div>}
+  </div>
 </aside>
 {libraryOpen&&!leftPaneCollapsed&&<div className="resource-library-drawer"><div className="resource-library-drawer-head"><strong>Azure Resources</strong><button onClick={()=>setLibraryOpen(false)}>×</button></div><Sidebar onAddResource={t=>createResource(t as ResourceType)}/></div>}
+{architectureToolsOpen&&!leftPaneCollapsed&&<ArchitectureToolsDrawer
+  section={architectureToolsSection}
+  onSectionChange={setArchitectureToolsSection}
+  onClose={()=>setArchitectureToolsOpen(false)}
+  onOpenValidation={()=>{setArchitectureToolsOpen(false);setRightPanel('validation')}}
+/>}
 <div className="canvas-wrapper" onDrop={onDrop} onDragOver={e=>{e.preventDefault();e.dataTransfer.dropEffect='move';}}><div className="drawing-toolbar draggable-canvas-toolbar" style={{transform:`translate(${canvasToolbarPos.x}px, ${canvasToolbarPos.y}px)`}}>
  <button
   className={`canvas-toolbar-drag-handle ${canvasToolbarDragging?'dragging':''}`}
