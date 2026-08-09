@@ -27,3 +27,6 @@ git add .
 git commit -m "ArchMindCanvas v8.4.0 - functional Microsoft reference starters"
 git push origin main
 ```
+
+## v8.4.1 — clear icon names restored
+Normal desktop/laptop views again show icon + name for New, Template, Save, Auto Arrange, Validate, IaC, Cost, Import IaC, Org Vars and Deploy. The Command Center sidebar again shows Home, Projects, Templates, Activity and Settings. Icon-only mode is reserved for narrow/mobile screens. v8.4.0 reference starter functionality is unchanged.

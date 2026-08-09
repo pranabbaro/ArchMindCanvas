@@ -1995,3 +1995,25 @@
   cursor:not-allowed!important;
   opacity:.52!important;
 }
+
+/* v8.4.1 — Restore clear navigation names beside icons. */
+@media (min-width: 721px){
+  .topbar .toolbar button{width:auto!important;min-width:max-content!important;padding:6px 7px!important;justify-content:center!important;gap:4px!important}
+  .topbar .toolbar button span{display:inline!important;font-size:7.5px!important;white-space:nowrap!important}
+  .topbar .toolbar{overflow-x:auto!important;overflow-y:hidden!important;scrollbar-width:none!important}
+  .topbar .toolbar::-webkit-scrollbar{display:none!important}
+  .command-center-shell{grid-template-columns:232px minmax(0,1fr)!important}
+  .command-brand{justify-content:flex-start!important}
+  .command-brand>div:last-child{display:block!important}
+  .command-org{display:block!important}
+  .command-nav button{justify-content:flex-start!important}
+  .command-nav button span{display:block!important;flex:1!important}
+  .command-nav button em{display:inline-block!important}
+  .command-sidebar-footer{display:block!important}
+}
+@media (max-width:720px){
+  .command-center-shell{grid-template-columns:64px minmax(0,1fr)!important}
+  .command-brand>div:last-child,.command-org,.command-nav button span,.command-nav button em,.command-sidebar-footer{display:none!important}
+  .command-brand{justify-content:center!important}.command-nav button{justify-content:center!important}
+  .topbar .toolbar button span{display:none!important}.topbar .toolbar button{width:34px!important;min-width:34px!important;padding:6px!important}
+}
