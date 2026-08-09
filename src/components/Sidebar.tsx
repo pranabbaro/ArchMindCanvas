@@ -97,7 +97,7 @@ export default function Sidebar({onAddResource}:Props){
                   }}>
                   <span className="resource-icon azure-service-icon-small"><ResourceIcon iconUrl={resource.iconUrl} label={resource.label} FallbackIcon={resource.fallbackIcon}/></span>
                   <span className="resource-copy"><strong>{resource.label}</strong><small>{resource.description}</small></span>
-                  {!canvasReady&&<span className="catalog-preview-badge">ICON</span>}
+
                 </button>;
               })}
             </div>}
@@ -106,7 +106,7 @@ export default function Sidebar({onAddResource}:Props){
       </div>
       {provider==='azure'
         ?<div className="sidebar-help"><strong>Tip:</strong> Drag a Subscription, Resource Group, VNet or Subnet first, then place resources inside or link hierarchy from Properties.</div>
-        :<div className="sidebar-help aws-catalog-note"><strong>AWS catalog:</strong> Official AWS architecture icon set is loaded for the core services. Canvas placement will be enabled after provider-specific AWS node and IaC handling is isolated from Azure.</div>}
+        :<div className="sidebar-help aws-catalog-note"><strong>AWS diagram mode:</strong> Drag AWS services onto the canvas, connect them, and save the design. AWS Terraform generation is intentionally separate from the existing Azure IaC path.</div>}
     </>:<div className="provider-coming-soon">
       <ProviderLogo provider={provider}/>
       <strong>{current.resourceLabel}</strong>

@@ -19,7 +19,7 @@ const item = (
   type,label,description,category,sku,
   iconUrl:awsIcon(iconCategory,iconFile),
   fallbackIcon,
-  canvasReady:false,
+  canvasReady:true,
 });
 
 export const awsResources:CloudResourceItem[] = [

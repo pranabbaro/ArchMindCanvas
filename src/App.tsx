@@ -23,7 +23,22 @@ import type { ArchitectureMetadata, ArchitectureModuleDefinition, ArchitectureOu
 import JSZip from 'jszip';
 
 const STORAGE_KEY='archmindcanvas-v5';
-const makeData=(type:ResourceType,label?:string):ArchitectureNodeData=>({label:label||resourceMap[type].label,resourceType:type,description:resourceMap[type].description,region:['tenant','managementGroup'].includes(type)?'Global':'Central India',sku:resourceMap[type].sku,environment:'Production',owner:'',tags:{}});
+const makeData=(type:ResourceType,label?:string):ArchitectureNodeData=>{
+ const item=resourceMap[type];
+ const aws=String(type).startsWith('aws');
+ return {
+  label:label||item.label,
+  resourceType:type,
+  cloudProvider:aws?'aws':'azure',
+  terraformReady:!aws,
+  description:item.description,
+  region:aws?'ap-south-1':(['tenant','managementGroup'].includes(type)?'Global':'Central India'),
+  sku:item.sku,
+  environment:'Production',
+  owner:'',
+  tags:{}
+ };
+};
 const containerSizes:Partial<Record<ResourceType,{width:number;height:number}>>={tenant:{width:1200,height:850},managementGroup:{width:1050,height:740},subscription:{width:920,height:650},resourceGroup:{width:780,height:540},virtualNetwork:{width:620,height:420},subnet:{width:360,height:270}};
 const containerSize=(type:ResourceType)=>containerSizes[type]||{width:420,height:300};
 const starterNodes:CanvasNode[]=[
@@ -182,7 +197,7 @@ const selectedNode=nodes.find(n=>n.id===selectedNodeId);const selectedEdge=edges
 
  const compatibleParent=(type:ResourceType)=>type==='managementGroup'?['tenant']:type==='subscription'?['managementGroup','tenant']:type==='resourceGroup'?['subscription']:type==='virtualNetwork'?['resourceGroup']:type==='subnet'?['virtualNetwork']:['subnet','resourceGroup'];
  const findContainer=useCallback((point:{x:number;y:number},type:ResourceType)=>{const wanted=compatibleParent(type);return [...nodes].reverse().find((n):n is ArchitectureNode=>n.type==='container'&&wanted.includes((n as ArchitectureNode).data.resourceType)&&point.x>=n.position.x&&point.x<=n.position.x+Number(n.style?.width||600)&&point.y>=n.position.y&&point.y<=n.position.y+Number(n.style?.height||400));},[nodes]);
- const createResource=useCallback((type:ResourceType,position?:{x:number;y:number})=>{if(!resourceMap[type])return;pushHistory();const o=nextPos.current++%8,id=`${type}-${Date.now()}-${o}`,requested=position||{x:300+o*24,y:180+o*24},parent=position?findContainer(requested,type):undefined,isContainer=isContainerType(type);let node:ArchitectureNode={id,type:isContainer?'container':'architecture',position:parent?{x:Math.max(30,requested.x-parent.position.x),y:Math.max(70,requested.y-parent.position.y)}:requested,data:makeData(type),...(isContainer?{style:containerSize(type)}:{}),...(parent?{parentId:parent.id,extent:'parent' as const}:{})};node={...node,data:inheritFor(node,[...nodes,node])};setNodes(c=>recalcHierarchy([...c,node]));setSelectedNodeId(id);setSelectedEdgeId(undefined);setRightPanel('properties');markChanged();},[pushHistory,findContainer,setNodes,markChanged,nodes,recalcHierarchy]);
+ const createResource=useCallback((type:ResourceType,position?:{x:number;y:number})=>{if(!resourceMap[type])return;pushHistory();const o=nextPos.current++%8,id=`${type}-${Date.now()}-${o}`,requested=position||{x:300+o*24,y:180+o*24},isAws=String(type).startsWith('aws'),parent=position&&!isAws?findContainer(requested,type):undefined,isContainer=!isAws&&isContainerType(type);let node:ArchitectureNode={id,type:isContainer?'container':'architecture',position:parent?{x:Math.max(30,requested.x-parent.position.x),y:Math.max(70,requested.y-parent.position.y)}:requested,data:makeData(type),...(isContainer?{style:containerSize(type)}:{}),...(parent?{parentId:parent.id,extent:'parent' as const}:{})};node={...node,data:inheritFor(node,[...nodes,node])};setNodes(c=>recalcHierarchy([...c,node]));setSelectedNodeId(id);setSelectedEdgeId(undefined);setRightPanel('properties');markChanged();},[pushHistory,findContainer,setNodes,markChanged,nodes,recalcHierarchy]);
  const changeParent=(parentId?:string)=>{if(!selectedNodeId)return;pushHistory();setNodes(current=>{const updated=current.map(n=>n.id===selectedNodeId&&n.type!=='drawing'?{...n,parentId,extent:parentId?'parent' as const:undefined,position:parentId?{x:40,y:90}:n.position}:n);return recalcHierarchy(updated);});markChanged();};
  const updateArchitecture=(updates:Partial<ArchitectureNodeData>)=>{if(!selectedNodeId)return;setNodes(current=>{const updated=current.map(n=>n.id===selectedNodeId&&n.type!=='drawing'?{...n,data:{...n.data,...updates}}:n);return recalcHierarchy(updated);});markChanged();};
  const createDrawing=useCallback((shape:DrawingNode['data']['shape'],position:{x:number;y:number})=>{pushHistory();const id=`${shape}-${Date.now()}`;const node:DrawingNode={id,type:'drawing',position,data:{label:shape==='text'?'Text label':shape==='rectangle'?'Rectangle':'Triangle',shape,fill:shape==='rectangle'?'#ffffff':'#dbeafe',border:'#2563eb',textColor:'#0f172a',fontSize:18},style:shape==='rectangle'?{width:220,height:120}:shape==='triangle'?{width:180,height:150}:{width:150,height:45}};setNodes(c=>[...c,node]);setSelectedNodeId(id);markChanged();},[pushHistory,setNodes,markChanged]);
@@ -764,7 +779,7 @@ const selectedNode=nodes.find(n=>n.id===selectedNodeId);const selectedEdge=edges
     return rg?terraformAttributeRef(rg,'location'):JSON.stringify(n.data.region||'Central India');
   };
 
-  architectureNodes.forEach((n,i)=>{
+  architectureNodes.filter(n=>n.data.cloudProvider!=='aws').forEach((n,i)=>{
     if(['tenant','managementGroup','subscription'].includes(n.data.resourceType))return;
     const tfType=terraformResourceType(n.data.resourceType);
     const name=tfSafe(n.data.label||`resource_${i}`);
@@ -885,6 +900,7 @@ const selectedNode=nodes.find(n=>n.id===selectedNodeId);const selectedEdge=edges
     lines.push(block+'\n');
   });
 
+  if(architectureNodes.some(n=>n.data.cloudProvider==='aws'))lines.push('# AWS diagram resources are intentionally excluded from Azure Terraform generation until AWS IaC mapping is enabled.');
   return lines.join('\n');
  },[architectureNodes]);
 

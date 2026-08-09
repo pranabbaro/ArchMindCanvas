@@ -13,6 +13,7 @@ export type CloudResourceItem = {
   fallbackIcon: LucideIcon;
   container?: boolean;
   canvasReady?: boolean;
+  terraformReady?: boolean;
 };
 
 export type CloudCatalog = {

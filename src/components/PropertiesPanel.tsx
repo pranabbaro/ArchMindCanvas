@@ -324,10 +324,10 @@ export default function PropertiesPanel({nodeId,data,allResources,declaredVariab
   return <aside className="properties-panel dynamic-properties">
     <div className="property-resource-header">
       <div className="selected-resource-summary enterprise-resource-summary"><span className="summary-icon">{item.iconUrl?<img src={item.iconUrl} alt="" />:<Icon size={20}/>}</span><div><strong>{data.label}</strong><small>{item.label} · {item.category}</small><div className="resource-summary-meta"><span>{data.environment}</span><span>{data.region}</span><span>{resourceMode==='existing'?'Existing':resourceMode==='import'?'Import':'Create'}</span></div></div></div>
-      <div className="property-mode-switch"><button className={mode==='form'?'active':''} onClick={()=>setMode('form')}><FormInput size={14}/> Form</button><button className={mode==='code'?'active':''} onClick={()=>setMode('code')}><Code2 size={14}/> Code</button></div>
+      <div className="property-mode-switch"><button className={mode==='form'?'active':''} onClick={()=>setMode('form')}><FormInput size={14}/> Form</button>{data.cloudProvider!=='aws'&&<button className={mode==='code'?'active':''} onClick={()=>setMode('code')}><Code2 size={14}/> Code</button>}</div>
     </div>
 
-    {mode==='code'?<div className={`resource-code-view ${codeExpanded?'expanded':''}`}>
+    {data.cloudProvider==='aws'?<div className="aws-diagram-mode-note"><strong>AWS diagram mode</strong><span>This AWS service can be placed, moved, connected, saved and documented. Terraform generation will be enabled separately for mapped AWS services.</span></div>:mode==='code'?<div className={`resource-code-view ${codeExpanded?'expanded':''}`}>
       <div className="code-toolbar">
         <span>{resourceMode==='existing'?'data':resourceMode} · {tfName(data.resourceType)}</span>
         <div className="code-toolbar-actions">

@@ -144,3 +144,27 @@ Safety:
 - AWS resources are intentionally catalog-only in this phase (`canvasReady:false`)
   so they cannot accidentally enter the existing Azure-specific Terraform pipeline.
 - Provider-specific AWS canvas/IaC support is the next isolated phase.
+
+
+## v8.5.1 — AWS all-services canvas diagram mode
+
+All AWS services currently in the AWS core catalog are now draggable onto the canvas.
+
+AWS diagram-mode capabilities:
+- Drag/drop
+- Move and resize
+- Select
+- Connect with existing connector styles/arrows
+- Duplicate/delete
+- Save/load as part of the architecture
+- Provider label displayed as Amazon Web Services
+- Default AWS region metadata: ap-south-1
+
+Safety:
+- Every AWS node carries `cloudProvider: 'aws'`.
+- AWS nodes are not automatically parented inside Azure RG/VNet/Subnet containers.
+- AWS nodes are explicitly excluded from the existing Azure Terraform generator.
+- AWS Properties shows diagram-mode guidance instead of Azure Terraform code controls.
+- Azure behavior and Azure IaC generation remain unchanged.
+
+Next phase can add AWS hierarchy/container semantics and AWS Terraform mapping independently.

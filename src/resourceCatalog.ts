@@ -1,4 +1,14 @@
-// Backward-compatible Azure catalog export.
-// Existing ArchMindCanvas modules can continue importing from `resourceCatalog`
-// while multi-cloud provider catalogs live under `src/cloud/`.
-export { categories, resourceCatalog, resourceMap, isContainerType } from './cloud/azure/azureCatalog';
+import type { ResourceType } from './types';
+import { categories, resourceCatalog, resourceMap as azureResourceMap, isContainerType as isAzureContainerType } from './cloud/azure/azureCatalog';
+import { awsResources } from './cloud/aws/awsCatalog';
+
+export { categories, resourceCatalog };
+
+const awsResourceMap = Object.fromEntries(awsResources.map(i=>[i.type,i]));
+export const resourceMap = {
+  ...azureResourceMap,
+  ...awsResourceMap,
+} as Record<ResourceType, (typeof resourceCatalog)[number] | (typeof awsResources)[number]>;
+
+export const isContainerType = (type:ResourceType) =>
+  type.startsWith('aws') ? false : isAzureContainerType(type);

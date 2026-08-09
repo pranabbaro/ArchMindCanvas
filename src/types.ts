@@ -76,7 +76,42 @@ export type ResourceType =
   | 'documentIntelligence'
   | 'contentSafety'
   | 'cognitiveServices'
-  | 'botService';
+  | 'botService'
+  | 'awsCloudFormation'
+  | 'awsCloudWatch'
+  | 'awsCloudTrail'
+  | 'awsVpc'
+  | 'awsTransitGateway'
+  | 'awsDirectConnect'
+  | 'awsSiteToSiteVpn'
+  | 'awsCloudFront'
+  | 'awsRoute53'
+  | 'awsAlb'
+  | 'awsNlb'
+  | 'awsPrivateLink'
+  | 'awsApiGateway'
+  | 'awsEc2'
+  | 'awsEc2AutoScaling'
+  | 'awsLambda'
+  | 'awsElasticBeanstalk'
+  | 'awsEcs'
+  | 'awsEks'
+  | 'awsEcr'
+  | 'awsFargate'
+  | 'awsS3'
+  | 'awsEbs'
+  | 'awsBackup'
+  | 'awsRds'
+  | 'awsAurora'
+  | 'awsDynamoDb'
+  | 'awsKms'
+  | 'awsSecretsManager'
+  | 'awsSecurityHub'
+  | 'awsNetworkFirewall'
+  | 'awsSqs'
+  | 'awsSns'
+  | 'awsEventBridge'
+  | 'awsStepFunctions';
 
 export type TagMap = Record<string, string>;
 
@@ -159,6 +194,8 @@ export type ExistingResourceReference = {
 
 export type ArchitectureNodeData = {
   label: string;
+  cloudProvider?: 'azure' | 'aws' | 'gcp';
+  terraformReady?: boolean;
   resourceType: ResourceType;
   description: string;
   region: string;
