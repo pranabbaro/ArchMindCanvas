@@ -1,16 +1,15 @@
-# ArchMindCanvas v8.3.1 — Nested Resource Layering Fix
+# ArchMindCanvas v8.3.2 — Build Fix + Nested Layering
 
-Fixes nested resources appearing behind Subnet/VNet/RG containers.
+Fixes the v8.3.1 TypeScript build failure:
 
-- Containers receive deterministic low z-index values based on hierarchy depth.
-- Normal resources always render above containers.
-- Selected objects are raised to the top.
-- Layering is recalculated after node changes.
-- Existing Forward / Backward behavior remains available.
-- Terraform backend, provider-aware IaC, tfvars, validation and archmind assistant logic are unchanged.
+- Removes the duplicate `onNodesChange` declaration conflict.
+- Keeps the nested resource layering normalization.
+- ReactFlow now uses `onNodesChangeLayered`.
+- VM/resources remain above Subnet/VNet/RG containers.
+- Terraform backend, tfvars, validation, IaC generation, Architecture Tools, and archmind assistant are unchanged.
 
 ```powershell
 git add .
-git commit -m "ArchMindCanvas v8.3.1 - fix nested resource layering"
+git commit -m "ArchMindCanvas v8.3.2 - fix duplicate node change handler"
 git push origin main
 ```
