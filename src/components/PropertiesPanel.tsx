@@ -6,6 +6,7 @@ import {
 import { resourceMap } from '../resourceCatalog';
 import { getResourceSchema, schemaGroups, type PropertyField } from '../resourceSchemas';
 import { getAwsResourceSchema, awsSchemaGroups } from '../cloud/aws/awsSchemas';
+import { generateAwsTerraformForNode, awsTerraformType } from '../cloud/aws/awsTerraform';
 import type {
   ArchitectureNode, ArchitectureNodeData, LocalDefinition, PropertyBinding, PropertyValueSource,
   ResourceMode, ResourceType, TagMap, VariableDefinition
@@ -331,22 +332,22 @@ export default function PropertiesPanel({nodeId,data,allResources,declaredVariab
   return <aside className="properties-panel dynamic-properties">
     <div className="property-resource-header">
       <div className="selected-resource-summary enterprise-resource-summary"><span className="summary-icon">{item.iconUrl?<img src={item.iconUrl} alt="" />:<Icon size={20}/>}</span><div><strong>{data.label}</strong><small>{item.label} · {item.category}</small><div className="resource-summary-meta"><span>{data.environment}</span><span>{data.region}</span><span>{resourceMode==='existing'?'Existing':resourceMode==='import'?'Import':'Create'}</span></div></div></div>
-      <div className="property-mode-switch"><button className={mode==='form'?'active':''} onClick={()=>setMode('form')}><FormInput size={14}/> Form</button>{data.cloudProvider!=='aws'&&<button className={mode==='code'?'active':''} onClick={()=>setMode('code')}><Code2 size={14}/> Code</button>}</div>
+      <div className="property-mode-switch"><button className={mode==='form'?'active':''} onClick={()=>setMode('form')}><FormInput size={14}/> Form</button>{(data.cloudProvider!=='aws'||data.terraformReady)&&<button className={mode==='code'?'active':''} onClick={()=>setMode('code')}><Code2 size={14}/> Code</button>}</div>
     </div>
 
-    {data.cloudProvider==='aws'&&<div className="aws-diagram-mode-note"><strong>AWS resource properties</strong><span>Configure service-specific AWS architecture properties here. Terraform generation remains disabled until the AWS IaC mapping phase.</span></div>}
-    {data.cloudProvider!=='aws'&&mode==='code'?<div className={`resource-code-view ${codeExpanded?'expanded':''}`}>
+    {data.cloudProvider==='aws'&&mode==='form'&&<div className="aws-diagram-mode-note"><strong>AWS resource properties + Terraform</strong><span>This AWS service now has provider-specific Terraform generation. Configure the properties, then use Code to review the generated HCL.</span></div>}
+    {mode==='code'?<div className={`resource-code-view ${codeExpanded?'expanded':''}`}>
       <div className="code-toolbar">
-        <span>{resourceMode==='existing'?'data':resourceMode} · {tfName(data.resourceType)}</span>
+        <span>{data.cloudProvider==='aws'?'resource':(resourceMode==='existing'?'data':resourceMode)} · {data.cloudProvider==='aws'?awsTerraformType(data.resourceType):tfName(data.resourceType)}</span>
         <div className="code-toolbar-actions">
-          <button onClick={()=>navigator.clipboard?.writeText(terraformPreview(data,allResources))}><Copy size={13}/> Copy</button>
+          <button onClick={()=>navigator.clipboard?.writeText(data.cloudProvider==='aws'?generateAwsTerraformForNode(allResources.find(r=>r.id===nodeId)!,allResources):terraformPreview(data,allResources))}><Copy size={13}/> Copy</button>
           <button onClick={()=>setCodeExpanded(v=>!v)} title={codeExpanded?'Exit full screen':'Expand code'}>
             {codeExpanded?<Minimize2 size={13}/>:<Maximize2 size={13}/>}
             {codeExpanded?'Restore':'Expand'}
           </button>
         </div>
       </div>
-      <pre>{terraformPreview(data,allResources)}</pre>
+      <pre>{data.cloudProvider==='aws'?generateAwsTerraformForNode(allResources.find(r=>r.id===nodeId)!,allResources):terraformPreview(data,allResources)}</pre>
     </div>:<>
       {data.cloudProvider!=='aws'&&<section className="property-section smart-resource-mode-section">
         <div className="property-section-title"><strong>Resource mode</strong><small>Choose whether ArchMindCanvas creates, references, or imports this Azure resource.</small></div>
@@ -368,7 +369,7 @@ export default function PropertiesPanel({nodeId,data,allResources,declaredVariab
         <div className="property-section-title"><strong>Metadata</strong></div>
         <div className="form-stack">
           <label>Resource name<input value={data.label} onChange={e=>onChange({label:e.target.value})}/></label>
-          {data.cloudProvider!=='aws'&&<label>Terraform type<input value={tfName(data.resourceType)} readOnly/></label>}
+          <label>Terraform type<input value={data.cloudProvider==='aws'?awsTerraformType(data.resourceType):tfName(data.resourceType)} readOnly/></label>
           {showParent&&<label>Parent / placement<select value={parentId||''} onChange={e=>onParentChange(e.target.value||undefined)}><option value="">No parent / top level</option>{parentOptions.map(o=><option key={o.id} value={o.id}>{o.label}</option>)}</select></label>}
         </div>
       </section>

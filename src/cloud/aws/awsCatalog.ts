@@ -21,6 +21,7 @@ const item = (
   iconUrl:awsIcon(iconCategory,iconFile),
   fallbackIcon,
   canvasReady:true,
+  terraformReady:true,
   container,
 });
 

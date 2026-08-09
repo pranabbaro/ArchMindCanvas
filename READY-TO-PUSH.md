@@ -260,3 +260,36 @@ Important:
 
 No canvas, icon, hierarchy, property schema, connector, template, validation,
 Azure/AWS Terraform, backend-state, save/deploy or Architecture Guidance behavior changed.
+
+
+## v8.5.6 — AWS all-services Terraform / IaC completion
+
+All AWS services currently present in the ArchMindCanvas AWS catalog now have
+provider-specific Terraform generation.
+
+Architecture:
+- AWS Terraform generation moved to `src/cloud/aws/awsTerraform.ts`.
+- Azure Terraform logic remains in the existing path and is not replaced.
+- AWS Account stays a hierarchy/container boundary and emits a comment rather
+  than a fake Terraform resource.
+
+AWS Terraform mappings include:
+VPC, Subnet, EC2, EC2 Auto Scaling, Lambda, Elastic Beanstalk, ECS, EKS,
+ECR, Fargate task definition, S3, EBS, AWS Backup, RDS, Aurora, DynamoDB,
+KMS, Secrets Manager, Security Hub, Network Firewall, Transit Gateway,
+Direct Connect, Site-to-Site VPN, CloudFront, Route 53, ALB, NLB,
+PrivateLink/VPC Endpoint, API Gateway, CloudFormation, CloudWatch,
+CloudTrail, SQS, SNS, EventBridge and Step Functions.
+
+Safety:
+- Required-but-environment-specific values use visible `REPLACE_ME` placeholders
+  or Terraform variables instead of invented production identifiers.
+- AWS DB passwords are sensitive variables.
+- Provider fallback variables exist for subnet/security-group references.
+- AWS resource properties now expose a Code tab with the generated HCL.
+- Existing Azure Terraform, backend state, canvas layout, icons, connectors,
+  templates, cost engine, validation and Architecture Guidance are preserved.
+
+Testing note:
+- `terraform validate` can be used locally without deploying.
+- `terraform plan/apply` still requires valid AWS credentials and real AWS values.
