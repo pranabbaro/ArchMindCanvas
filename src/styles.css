@@ -2039,3 +2039,100 @@
   border-color:#6aa6e8;
   box-shadow:0 0 0 2px rgba(59,130,246,.10);
 }
+
+
+/* v8.4.6 — Resources cloud-provider selector only */
+.cloud-provider-selector-wrap{
+  position:relative;
+  padding:10px 14px 8px;
+  border-bottom:1px solid #e6edf5;
+  background:#fff;
+}
+.cloud-provider-selector{
+  width:100%;
+  min-height:52px;
+  display:grid;
+  grid-template-columns:34px minmax(0,1fr) 18px;
+  align-items:center;
+  gap:9px;
+  padding:7px 9px;
+  border:1px solid #d8e4f0;
+  border-radius:10px;
+  background:#fff;
+  color:#172033;
+  text-align:left;
+}
+.cloud-provider-selector:hover{background:#f8fbff;border-color:#bcd4eb}
+.cloud-provider-selector>span:nth-child(2){display:flex;flex-direction:column;gap:1px;min-width:0}
+.cloud-provider-selector strong{font-size:11px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.cloud-provider-selector small{font-size:7px;color:#718198}
+.cloud-provider-logo{
+  width:30px;
+  height:30px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  border:1px solid #e1e9f1;
+  border-radius:8px;
+  background:#f8fbff;
+  overflow:hidden;
+}
+.cloud-provider-logo img{max-width:24px;max-height:22px;object-fit:contain}
+.cloud-provider-logo.aws img{max-width:25px;max-height:12px}
+.cloud-provider-logo.gcp img{max-width:25px;max-height:20px}
+.cloud-provider-logo-fallback{font-size:8px;font-weight:900;color:#2a69a8}
+.cloud-provider-menu{
+  position:absolute;
+  z-index:80;
+  top:67px;
+  left:14px;
+  right:14px;
+  padding:6px;
+  border:1px solid #d9e4ef;
+  border-radius:10px;
+  background:#fff;
+  box-shadow:0 14px 34px rgba(15,23,42,.16);
+}
+.cloud-provider-menu button{
+  width:100%;
+  display:grid;
+  grid-template-columns:34px minmax(0,1fr) 12px;
+  align-items:center;
+  gap:9px;
+  padding:7px;
+  border:0;
+  border-radius:8px;
+  background:#fff;
+  text-align:left;
+}
+.cloud-provider-menu button:hover,.cloud-provider-menu button.active{background:#f2f7fd}
+.cloud-provider-menu button>span:nth-child(2){display:flex;flex-direction:column;gap:1px}
+.cloud-provider-menu strong{font-size:9px;color:#172033}
+.cloud-provider-menu small{font-size:6.5px;color:#718198}
+.provider-selected-dot{width:7px;height:7px;border-radius:50%;background:#2d7de0}
+.provider-coming-soon{
+  margin:18px 16px;
+  padding:24px 18px;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  gap:9px;
+  border:1px solid #dce6f0;
+  border-radius:12px;
+  background:#f8fbff;
+  text-align:center;
+}
+.provider-coming-soon .cloud-provider-logo{width:44px;height:44px}
+.provider-coming-soon .cloud-provider-logo img{max-width:34px;max-height:30px}
+.provider-coming-soon strong{font-size:12px;color:#172033}
+.provider-coming-soon p{margin:0;max-width:260px;font-size:8px;line-height:1.55;color:#6b7d92}
+.provider-coming-soon button{
+  margin-top:3px;
+  padding:7px 10px;
+  border:1px solid #bcd4eb;
+  border-radius:8px;
+  background:#fff;
+  color:#1769aa;
+  font-size:8px;
+  font-weight:700;
+}

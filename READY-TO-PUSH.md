@@ -55,3 +55,22 @@ Only the circled left sidebar control was corrected:
 - Architecture / Tools -> Architecture / Guidance
 
 The existing click handler and all application behavior are unchanged.
+
+
+## v8.4.6 — Multi-cloud Resources provider selector
+
+Focused Resources-drawer update only.
+
+Added a provider dropdown above the resource library:
+- Microsoft Azure
+- Amazon Web Services
+- Google Cloud
+
+Behavior:
+- Azure remains the default and keeps the existing resource catalog unchanged.
+- Provider selection is remembered locally.
+- AWS and Google Cloud currently show a clear "resource catalog coming soon" state.
+- Existing left-rail Resources behavior and all Azure drag/drop resources remain unchanged.
+
+No Terraform/IaC, backend, validation, templates, reference starters,
+connector controls, Architecture Guidance, deployment or canvas logic changed.
