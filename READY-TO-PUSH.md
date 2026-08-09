@@ -1,25 +1,24 @@
-# ArchMindCanvas v8.0.0 — Deployment Readiness Engine
+# ArchMindCanvas v8.0.1 — Runtime Hotfix
 
-This release hardens existing Terraform functionality instead of adding duplicate UI features.
+Fixes the blank production page introduced by v8.0.0.
 
-Key improvements:
-- Relationship-aware Terraform addresses for Create / Existing / Import resources
-- Existing resources generate `data` blocks
-- Import resources generate `resource` + `import` blocks
-- Resource bindings generate real Terraform expressions where possible
-- Resource-group and VNet/Subnet relationships resolve to Terraform references
-- Architecture tags are emitted into Terraform
-- Duplicate Terraform addresses are blocked
-- Existing lookup and Import ID completeness are checked
-- Variables, locals, modules and outputs are included in deployment readiness
-- IaC panel displays Ready / Blocked status
-- Validation receives deployment-readiness blockers and warnings
+Root cause:
+`terraformMainCode` executes during React render and uses:
+- terraformNodeAddress
+- terraformAttributeRef
+- resolveBindingExpression
 
-Target workflow:
-Design → Validate → Generate IaC → Terraform validate/plan → Deploy
+Those helpers were declared later in the component. The starter RG/VNet/Subnet architecture immediately exercised them, causing a JavaScript temporal-dead-zone ReferenceError.
+
+Fix:
+- Moved all Terraform relationship/reference helpers before `terraformMainCode`.
+- Deployment Readiness Engine remains enabled.
+- Create / Existing / Import hardening remains enabled.
+- IaC readiness banner remains enabled.
+- v7.9.10 UI functionality is unchanged.
 
 ```powershell
 git add .
-git commit -m "ArchMindCanvas v8.0.0 - deployment readiness engine"
+git commit -m "ArchMindCanvas v8.0.1 - fix Terraform helper runtime order"
 git push origin main
 ```

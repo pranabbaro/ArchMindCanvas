@@ -645,6 +645,36 @@ const selectedNode=nodes.find(n=>n.id===selectedNodeId);const selectedEdge=edges
   };return map[type]||`azurerm_${type}`;
  };
  const quoteTf=(v:string|number|boolean)=>typeof v==='number'||typeof v==='boolean'?String(v):JSON.stringify(String(v));
+ const terraformNodeAddress=(n:ArchitectureNode)=>{
+  const tfType=terraformResourceType(n.data.resourceType);
+  const name=tfSafe(n.data.label);
+  return (n.data.resourceMode||'create')==='existing'
+   ? `data.${tfType}.${name}`
+   : `${tfType}.${name}`;
+ };
+ const terraformAttributeRef=(n:ArchitectureNode,attribute='id')=>`${terraformNodeAddress(n)}.${attribute}`;
+
+ const resolveBindingExpression=(binding:any,literal:any)=>{
+  if(!binding||binding.source==='literal')return quoteTf(literal);
+  if(binding.source==='variable')return `var.${binding.variableName||'value'}`;
+  if(binding.source==='local')return `local.${binding.localName||'value'}`;
+  if(binding.source==='moduleOutput')return `module.${binding.moduleName||'module'}.${binding.moduleOutput||'output'}`;
+  if(binding.source==='data')return `data.${binding.dataSourceType||'azurerm_resource_group'}.${binding.dataSourceName||'existing'}.${binding.dataAttribute||'id'}`;
+  if(binding.source==='resource'&&binding.targetNodeId){
+   const target=architectureNodes.find(x=>x.id===binding.targetNodeId);
+   if(target)return terraformAttributeRef(target,binding.targetAttribute||'id');
+  }
+  return quoteTf(literal);
+ };
+
+ const inferParentReferences=(n:ArchitectureNode)=>{
+  const refs:string[]=[];
+  const parent=n.parentId?architectureNodes.find(x=>x.id===n.parentId):undefined;
+  if(parent)refs.push(terraformNodeAddress(parent));
+  return refs;
+ };
+
+
  const terraformMainCode=useMemo(()=>{
   const lines:string[]=[];
 
@@ -810,35 +840,6 @@ const selectedNode=nodes.find(n=>n.id===selectedNodeId);const selectedEdge=edges
   if(d.type==='azurerm_subscription')return `data "azurerm_subscription" "${d.name}" {}`;
   return `data "${d.type}" "${d.name}" {\n  # TODO: configure lookup arguments required by this data source\n}`;
  }).join('\n\n'),[referencedDataSources]);
-
- const terraformNodeAddress=(n:ArchitectureNode)=>{
-  const tfType=terraformResourceType(n.data.resourceType);
-  const name=tfSafe(n.data.label);
-  return (n.data.resourceMode||'create')==='existing'
-   ? `data.${tfType}.${name}`
-   : `${tfType}.${name}`;
- };
- const terraformAttributeRef=(n:ArchitectureNode,attribute='id')=>`${terraformNodeAddress(n)}.${attribute}`;
-
- const resolveBindingExpression=(binding:any,literal:any)=>{
-  if(!binding||binding.source==='literal')return quoteTf(literal);
-  if(binding.source==='variable')return `var.${binding.variableName||'value'}`;
-  if(binding.source==='local')return `local.${binding.localName||'value'}`;
-  if(binding.source==='moduleOutput')return `module.${binding.moduleName||'module'}.${binding.moduleOutput||'output'}`;
-  if(binding.source==='data')return `data.${binding.dataSourceType||'azurerm_resource_group'}.${binding.dataSourceName||'existing'}.${binding.dataAttribute||'id'}`;
-  if(binding.source==='resource'&&binding.targetNodeId){
-   const target=architectureNodes.find(x=>x.id===binding.targetNodeId);
-   if(target)return terraformAttributeRef(target,binding.targetAttribute||'id');
-  }
-  return quoteTf(literal);
- };
-
- const inferParentReferences=(n:ArchitectureNode)=>{
-  const refs:string[]=[];
-  const parent=n.parentId?architectureNodes.find(x=>x.id===n.parentId):undefined;
-  if(parent)refs.push(terraformNodeAddress(parent));
-  return refs;
- };
 
  const deploymentReadiness=useMemo(()=>{
   const critical:string[]=[];
