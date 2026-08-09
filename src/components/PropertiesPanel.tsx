@@ -5,6 +5,7 @@ import {
 } from 'lucide-react';
 import { resourceMap } from '../resourceCatalog';
 import { getResourceSchema, schemaGroups, type PropertyField } from '../resourceSchemas';
+import { getAwsResourceSchema, awsSchemaGroups } from '../cloud/aws/awsSchemas';
 import type {
   ArchitectureNode, ArchitectureNodeData, LocalDefinition, PropertyBinding, PropertyValueSource,
   ResourceMode, ResourceType, TagMap, VariableDefinition
@@ -307,9 +308,9 @@ export default function PropertiesPanel({nodeId,data,allResources,declaredVariab
   const[codeExpanded,setCodeExpanded]=useState(false);
   const[collapsed,setCollapsed]=useState<Record<string,boolean>>({});
   const[showTagSource,setShowTagSource]=useState(false);
-  const schema=useMemo(()=>data?getResourceSchema(data.resourceType):[],[data?.resourceType]);
-  const groups=useMemo(()=>data?schemaGroups(data.resourceType):[],[data?.resourceType]);
-  if(!data)return <aside className="properties-panel"><div className="empty-properties"><div className="empty-icon">◇</div><strong>No resource selected</strong><span>Select a node to edit its Azure configuration.</span></div></aside>;
+  const schema=useMemo(()=>data?(data.cloudProvider==='aws'?getAwsResourceSchema(data.resourceType):getResourceSchema(data.resourceType)):[],[data?.resourceType,data?.cloudProvider]);
+  const groups=useMemo(()=>data?(data.cloudProvider==='aws'?awsSchemaGroups(data.resourceType):schemaGroups(data.resourceType)):[],[data?.resourceType,data?.cloudProvider]);
+  if(!data)return <aside className="properties-panel"><div className="empty-properties"><div className="empty-icon">◇</div><strong>No resource selected</strong><span>Select a resource to edit its cloud configuration.</span></div></aside>;
 
   const item=resourceMap[data.resourceType];const Icon=item.fallbackIcon;
   const parentOptions=data.cloudProvider==='aws'
@@ -333,7 +334,8 @@ export default function PropertiesPanel({nodeId,data,allResources,declaredVariab
       <div className="property-mode-switch"><button className={mode==='form'?'active':''} onClick={()=>setMode('form')}><FormInput size={14}/> Form</button>{data.cloudProvider!=='aws'&&<button className={mode==='code'?'active':''} onClick={()=>setMode('code')}><Code2 size={14}/> Code</button>}</div>
     </div>
 
-    {data.cloudProvider==='aws'?<div className="aws-diagram-mode-note"><strong>AWS diagram mode</strong><span>This AWS service supports provider-aware hierarchy and canvas placement. AWS Account, VPC and Subnet act as containers. Terraform generation will be enabled separately for mapped AWS services.</span></div>:mode==='code'?<div className={`resource-code-view ${codeExpanded?'expanded':''}`}>
+    {data.cloudProvider==='aws'&&<div className="aws-diagram-mode-note"><strong>AWS resource properties</strong><span>Configure service-specific AWS architecture properties here. Terraform generation remains disabled until the AWS IaC mapping phase.</span></div>}
+    {data.cloudProvider!=='aws'&&mode==='code'?<div className={`resource-code-view ${codeExpanded?'expanded':''}`}>
       <div className="code-toolbar">
         <span>{resourceMode==='existing'?'data':resourceMode} · {tfName(data.resourceType)}</span>
         <div className="code-toolbar-actions">
@@ -346,7 +348,7 @@ export default function PropertiesPanel({nodeId,data,allResources,declaredVariab
       </div>
       <pre>{terraformPreview(data,allResources)}</pre>
     </div>:<>
-      <section className="property-section smart-resource-mode-section">
+      {data.cloudProvider!=='aws'&&<section className="property-section smart-resource-mode-section">
         <div className="property-section-title"><strong>Resource mode</strong><small>Choose whether ArchMindCanvas creates, references, or imports this Azure resource.</small></div>
         <div className="resource-mode-grid">
           <button className={resourceMode==='create'?'active':''} onClick={()=>changeResourceMode('create')}><Boxes size={15}/><b>Create</b><span>Deploy a new resource</span></button>
@@ -360,13 +362,13 @@ export default function PropertiesPanel({nodeId,data,allResources,declaredVariab
             <label>Azure resource ID <small>Optional. Use this only when you want to bind/import by full Azure resource ID.</small><textarea rows={3} value={data.existingResource?.resourceId||''} placeholder="/subscriptions/.../resourceGroups/.../providers/..." onChange={e=>onChange({existingResource:{...(data.existingResource||{lookupType:'name'}),resourceId:e.target.value}})}/></label>
           </details>
         </div>}
-      </section>
+      </section>}
 
       <section className="property-section">
         <div className="property-section-title"><strong>Metadata</strong></div>
         <div className="form-stack">
           <label>Resource name<input value={data.label} onChange={e=>onChange({label:e.target.value})}/></label>
-          <label>Terraform type<input value={tfName(data.resourceType)} readOnly/></label>
+          {data.cloudProvider!=='aws'&&<label>Terraform type<input value={tfName(data.resourceType)} readOnly/></label>}
           {showParent&&<label>Parent / placement<select value={parentId||''} onChange={e=>onParentChange(e.target.value||undefined)}><option value="">No parent / top level</option>{parentOptions.map(o=><option key={o.id} value={o.id}>{o.label}</option>)}</select></label>}
         </div>
       </section>
@@ -401,8 +403,8 @@ export default function PropertiesPanel({nodeId,data,allResources,declaredVariab
       </section>
 
       <section className="property-section hierarchy-summary-section">
-        <div className="property-section-title"><strong>Resource hierarchy</strong><small>Current placement within the Azure architecture.</small></div>
-        <div className="hierarchy-path enterprise-hierarchy"><span>{[data.subscriptionName,data.resourceGroup,data.vnet,data.subnet].filter(Boolean).join('  ›  ')||'Not linked yet'}</span></div>
+        <div className="property-section-title"><strong>Resource hierarchy</strong><small>{data.cloudProvider==='aws'?'Current placement within the AWS architecture.':'Current placement within the Azure architecture.'}</small></div>
+        <div className="hierarchy-path enterprise-hierarchy"><span>{(data.cloudProvider==='aws'?[data.awsAccountId,data.awsVpc,data.awsSubnet]:[data.subscriptionName,data.resourceGroup,data.vnet,data.subnet]).filter(Boolean).join('  ›  ')||'Not linked yet'}</span></div>
       </section>
     </>}
 

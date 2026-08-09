@@ -193,3 +193,26 @@ AWS inherited metadata:
 
 Azure hierarchy, Azure Terraform, backend, validation, templates, connectors,
 Architecture Guidance, cost, save/deploy and archmind behavior are unchanged.
+
+
+## v8.5.3 — AWS resource-specific properties
+
+AWS resources now follow the same schema principle as Azure: each service has
+its own relevant architecture properties rather than a generic form.
+
+Examples:
+- VPC: CIDR, DNS, tenancy, IPv6.
+- Subnet: VPC, CIDR, AZ, public/private behavior.
+- EC2: AMI, instance type, subnet, SGs, key pair, disks, IAM profile.
+- RDS/Aurora: engine, class, storage, Multi-AZ, backup, encryption, networking.
+- S3: versioning, encryption, public access, lifecycle, ownership.
+- EKS/ECS/Lambda, CloudFront, Route 53, ALB/NLB, KMS, Secrets Manager,
+  CloudWatch, CloudTrail, SQS/SNS/EventBridge/Step Functions and other current
+  AWS catalog services each have service-relevant fields.
+
+Safety:
+- AWS schemas live only in `src/cloud/aws/awsSchemas.ts`.
+- Existing Azure `resourceSchemas.ts` is unchanged.
+- AWS Terraform/code mode remains disabled.
+- Existing Azure Terraform/IaC, remote backend, validation, templates,
+  connectors, Architecture Guidance, cost, save/deploy and archmind remain unchanged.
