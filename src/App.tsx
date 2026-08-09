@@ -1493,7 +1493,7 @@ const terraformVariablesCode=useMemo(()=>effectiveVariables.map(v=>{
     {leftPaneCollapsed?<ChevronRight size={17}/>:<ChevronLeft size={17}/>}
     <span>{leftPaneCollapsed?'Open':'Hide'}</span>
   </button>
-  <button className={libraryOpen?'active':''} onClick={()=>{setLibraryOpen(v=>!v);setArchitectureToolsMenuOpen(false);setArchitectureToolsOpen(false)}} title="Azure Resources">
+  <button className={libraryOpen?'active':''} onClick={()=>{setLibraryOpen(v=>!v);setArchitectureToolsMenuOpen(false);setArchitectureToolsOpen(false)}} title="Resources">
     <Boxes size={18}/>
     <span>Resources</span>
   </button>
@@ -1538,7 +1538,7 @@ const terraformVariablesCode=useMemo(()=>effectiveVariables.map(v=>{
     </div>}
   </div>
 </aside>
-{libraryOpen&&!leftPaneCollapsed&&<div className="resource-library-drawer"><div className="resource-library-drawer-head"><strong>Azure Resources</strong><button onClick={()=>setLibraryOpen(false)}>×</button></div><Sidebar onAddResource={t=>createResource(t as ResourceType)}/></div>}
+{libraryOpen&&!leftPaneCollapsed&&<div className="resource-library-drawer"><div className="resource-library-drawer-head"><strong>Resources</strong><button onClick={()=>setLibraryOpen(false)}>×</button></div><Sidebar onAddResource={t=>createResource(t as ResourceType)}/></div>}
 {architectureToolsOpen&&!leftPaneCollapsed&&<ArchitectureToolsDrawer
   section={architectureToolsSection}
   onSectionChange={setArchitectureToolsSection}

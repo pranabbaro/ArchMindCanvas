@@ -1,28 +1,10 @@
 import { ChevronDown, ChevronRight, Search, type LucideIcon } from 'lucide-react';
 import { useMemo, useState } from 'react';
-import { categories, resourceCatalog } from '../resourceCatalog';
+import { getCloudCatalog, providerInfo } from '../cloud/providerRegistry';
+import type { CloudProvider } from '../cloud/types';
 import type { ResourceCategory } from '../types';
 
 type Props={onAddResource:(type:string)=>void};
-type CloudProvider='azure'|'aws'|'gcp';
-
-const providerInfo:Record<CloudProvider,{label:string;resourceLabel:string;logo:string}> = {
-  azure:{
-    label:'Microsoft Azure',
-    resourceLabel:'Azure Resources',
-    logo:'https://learn.microsoft.com/en-us/media/logos/logo_azure.svg'
-  },
-  aws:{
-    label:'Amazon Web Services',
-    resourceLabel:'AWS Resources',
-    logo:'https://signin.aws.amazon.com/v2/assets/_next/static/media/aws-logo@2x.7c50e6f9.png'
-  },
-  gcp:{
-    label:'Google Cloud',
-    resourceLabel:'Google Cloud Resources',
-    logo:'https://www.gstatic.com/cgc/renaissance/image/MultiPath_Bottom_2X_Centered_static.png'
-  }
-};
 
 function ResourceIcon({iconUrl,label,FallbackIcon}:{iconUrl:string;label:string;FallbackIcon:LucideIcon}){
   const[failed,setFailed]=useState(false);
@@ -54,12 +36,15 @@ export default function Sidebar({onAddResource}:Props){
     localStorage.setItem('archmind-resource-provider',next);
   };
 
+  const current=providerInfo[provider];
+  const selectedCatalog=getCloudCatalog(provider);
+  const categories=selectedCatalog.categories as ResourceCategory[];
+  const resourceCatalog=selectedCatalog.resources;
   const normalized=query.trim().toLowerCase();
   const resources=useMemo(
     ()=>resourceCatalog.filter(i=>`${i.label} ${i.description} ${i.category}`.toLowerCase().includes(normalized)),
-    [normalized]
+    [normalized,resourceCatalog]
   );
-  const current=providerInfo[provider];
 
   return <aside className="sidebar">
     <div className="cloud-provider-selector-wrap">

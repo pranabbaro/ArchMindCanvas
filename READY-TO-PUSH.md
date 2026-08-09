@@ -74,3 +74,23 @@ Behavior:
 
 No Terraform/IaC, backend, validation, templates, reference starters,
 connector controls, Architecture Guidance, deployment or canvas logic changed.
+
+
+## v8.4.7 — Multi-cloud catalog foundation
+
+Safe internal refactor only, plus the requested drawer-title correction.
+
+Visible change:
+- Resource drawer heading: `Azure Resources` -> `Resources`.
+
+Internal structure:
+- `src/cloud/azure/azureCatalog.ts` contains the existing Azure catalog unchanged.
+- `src/cloud/aws/awsCatalog.ts` is an empty AWS catalog placeholder.
+- `src/cloud/gcp/gcpCatalog.ts` is an empty Google Cloud catalog placeholder.
+- `src/cloud/providerRegistry.ts` resolves the selected provider to its catalog.
+- `src/cloud/types.ts` defines common multi-cloud catalog types.
+- `src/resourceCatalog.ts` remains as a backward-compatible Azure re-export, so existing working imports are preserved.
+
+No layout, icons, Azure resource definitions, drag/drop behavior, canvas behavior,
+Terraform/IaC, remote backend, validation, templates, reference starters,
+connectors, Architecture Guidance, cost, save, deploy or archmind logic was changed.
