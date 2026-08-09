@@ -1483,3 +1483,130 @@
   margin-top:8px;
   background:#e8edf3;
 }
+
+/* v7.9.9 resizable inspector + fullscreen resource code */
+
+/* Right panel width is user-controlled */
+.workspace.workspace-simple{
+  grid-template-columns:54px minmax(0,1fr) var(--inspector-width,420px)!important;
+}
+.workspace.workspace-simple.left-pane-collapsed{
+  grid-template-columns:42px minmax(0,1fr) var(--inspector-width,420px)!important;
+}
+.workspace.workspace-simple.right-pane-collapsed{
+  grid-template-columns:54px minmax(0,1fr) 42px!important;
+}
+.workspace.workspace-simple.left-pane-collapsed.right-pane-collapsed{
+  grid-template-columns:42px minmax(0,1fr) 42px!important;
+}
+.workspace.right-pane-resizing,
+.workspace.right-pane-resizing *{
+  cursor:col-resize!important;
+  user-select:none!important;
+}
+
+.inspector-shell{
+  min-width:0!important;
+  width:100%!important;
+  position:relative!important;
+}
+.inspector-resize-handle{
+  position:absolute;
+  z-index:90;
+  left:-5px;
+  top:0;
+  bottom:0;
+  width:10px;
+  cursor:col-resize;
+  touch-action:none;
+}
+.inspector-resize-handle::after{
+  content:"";
+  position:absolute;
+  left:4px;
+  top:42%;
+  width:2px;
+  height:54px;
+  border-radius:999px;
+  background:#cbd5e1;
+  opacity:0;
+  transition:opacity .15s ease,background .15s ease;
+}
+.inspector-resize-handle:hover::after,
+.workspace.right-pane-resizing .inspector-resize-handle::after{
+  opacity:1;
+  background:#3b82f6;
+}
+.workspace.right-pane-collapsed .inspector-resize-handle{display:none!important}
+
+/* Resource-level Terraform viewer */
+.resource-code-view{
+  min-width:0;
+}
+.resource-code-view .code-toolbar{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:8px;
+}
+.resource-code-view .code-toolbar-actions{
+  display:flex;
+  align-items:center;
+  gap:6px;
+}
+.resource-code-view .code-toolbar-actions button{
+  display:flex;
+  align-items:center;
+  gap:4px;
+  white-space:nowrap;
+}
+.resource-code-view pre{
+  width:100%!important;
+  min-height:420px!important;
+  max-height:calc(100vh - 330px)!important;
+  overflow:auto!important;
+  white-space:pre!important;
+  word-break:normal!important;
+  overflow-wrap:normal!important;
+}
+
+/* Full screen code mode */
+.resource-code-view.expanded{
+  position:fixed!important;
+  z-index:2200!important;
+  inset:28px!important;
+  display:flex!important;
+  flex-direction:column!important;
+  padding:16px!important;
+  border:1px solid #26344d!important;
+  border-radius:14px!important;
+  background:#fff!important;
+  box-shadow:0 30px 90px rgba(15,23,42,.35)!important;
+}
+.resource-code-view.expanded::before{
+  content:"";
+  position:fixed;
+  inset:0;
+  z-index:-1;
+  background:rgba(15,23,42,.58);
+  backdrop-filter:blur(2px);
+}
+.resource-code-view.expanded .code-toolbar{
+  flex:0 0 auto;
+  padding:0 0 12px!important;
+}
+.resource-code-view.expanded pre{
+  flex:1 1 auto!important;
+  min-height:0!important;
+  max-height:none!important;
+  height:auto!important;
+  font-size:13px!important;
+  line-height:1.55!important;
+  overflow:auto!important;
+  white-space:pre!important;
+}
+
+/* Wider default is more useful for Properties / IaC */
+@media(min-width:1500px){
+  .workspace.workspace-simple{--inspector-width:420px}
+}

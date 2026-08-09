@@ -1,7 +1,7 @@
 import { useMemo, useState } from 'react';
 import {
   ChevronDown, ChevronRight, Code2, Copy, Database, FormInput, Link2, PackageOpen,
-  Trash2, Variable, Boxes, Braces, Box, X
+  Trash2, Variable, Boxes, Braces, Box, X, Maximize2, Minimize2
 } from 'lucide-react';
 import { resourceMap } from '../resourceCatalog';
 import { getResourceSchema, schemaGroups, type PropertyField } from '../resourceSchemas';
@@ -304,6 +304,7 @@ function TagBindingPicker({
 
 export default function PropertiesPanel({nodeId,data,allResources,declaredVariables,declaredLocals,onChange,onDelete,onDuplicate,hierarchy,parentId,onParentChange}:Props){
   const[mode,setMode]=useState<'form'|'code'>('form');
+  const[codeExpanded,setCodeExpanded]=useState(false);
   const[collapsed,setCollapsed]=useState<Record<string,boolean>>({});
   const[showTagSource,setShowTagSource]=useState(false);
   const schema=useMemo(()=>data?getResourceSchema(data.resourceType):[],[data?.resourceType]);
@@ -326,7 +327,19 @@ export default function PropertiesPanel({nodeId,data,allResources,declaredVariab
       <div className="property-mode-switch"><button className={mode==='form'?'active':''} onClick={()=>setMode('form')}><FormInput size={14}/> Form</button><button className={mode==='code'?'active':''} onClick={()=>setMode('code')}><Code2 size={14}/> Code</button></div>
     </div>
 
-    {mode==='code'?<div className="resource-code-view"><div className="code-toolbar"><span>{resourceMode==='existing'?'data':resourceMode} · {tfName(data.resourceType)}</span><button onClick={()=>navigator.clipboard?.writeText(terraformPreview(data,allResources))}><Copy size={13}/> Copy</button></div><pre>{terraformPreview(data,allResources)}</pre></div>:<>
+    {mode==='code'?<div className={`resource-code-view ${codeExpanded?'expanded':''}`}>
+      <div className="code-toolbar">
+        <span>{resourceMode==='existing'?'data':resourceMode} · {tfName(data.resourceType)}</span>
+        <div className="code-toolbar-actions">
+          <button onClick={()=>navigator.clipboard?.writeText(terraformPreview(data,allResources))}><Copy size={13}/> Copy</button>
+          <button onClick={()=>setCodeExpanded(v=>!v)} title={codeExpanded?'Exit full screen':'Expand code'}>
+            {codeExpanded?<Minimize2 size={13}/>:<Maximize2 size={13}/>}
+            {codeExpanded?'Restore':'Expand'}
+          </button>
+        </div>
+      </div>
+      <pre>{terraformPreview(data,allResources)}</pre>
+    </div>:<>
       <section className="property-section smart-resource-mode-section">
         <div className="property-section-title"><strong>Resource mode</strong><small>Choose whether ArchMindCanvas creates, references, or imports this Azure resource.</small></div>
         <div className="resource-mode-grid">

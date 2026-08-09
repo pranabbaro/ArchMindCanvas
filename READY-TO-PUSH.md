@@ -1,20 +1,20 @@
-# ArchMindCanvas v7.9.8 — Clean Left Rail
+# ArchMindCanvas v7.9.9 — Resizable Inspector + Fullscreen Code
 
-Removed duplicate editor controls from the left rail:
-- Select
-- Pan
-- Shapes
+Right inspector:
+- Drag the left edge of the right panel to resize
+- Width range: 320px to 760px
+- Width is saved in localStorage
+- Existing collapse/expand still works
+- Canvas automatically grows/shrinks with the panel
 
-These functions remain available in the draggable canvas toolbar.
-
-Left rail now contains only:
-- Collapse / Expand
-- Resources
-
-This intentionally leaves the rail clean for future non-duplicate tools.
+Resource Code view:
+- Added Expand / Restore button
+- Full-screen Terraform review mode
+- Copy remains available
+- Full code keeps native formatting and scrolls inside the viewer
 
 ```powershell
 git add .
-git commit -m "ArchMindCanvas v7.9.8 - clean left rail"
+git commit -m "ArchMindCanvas v7.9.9 - resizable inspector and fullscreen code"
 git push origin main
 ```
