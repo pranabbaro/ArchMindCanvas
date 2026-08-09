@@ -293,3 +293,21 @@ Safety:
 Testing note:
 - `terraform validate` can be used locally without deploying.
 - `terraform plan/apply` still requires valid AWS credentials and real AWS values.
+
+
+## v8.5.7 — Cloud-aware IaC selector
+
+Focused IaC-panel UI behavior only.
+
+Behavior:
+- AWS-only architecture -> Terraform only.
+- Azure-only architecture -> Terraform + Bicep.
+- Mixed Azure + AWS architecture -> Terraform + `Bicep · Azure only`.
+- If a prior design left the UI in Bicep mode and the current design is AWS-only,
+  the UI automatically switches back to Terraform.
+- Mixed-cloud Bicep output is explicitly Azure-only and does not include AWS TODO resources.
+- IaC readiness heading is provider-aware.
+
+No canvas layout, resource icons, hierarchy, resource properties, AWS/Azure Terraform
+generation, backend state, Cost, connectors, templates, validation, save/deploy,
+Architecture Guidance, or archmind behavior was changed.
