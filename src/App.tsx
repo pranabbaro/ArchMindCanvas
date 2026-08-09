@@ -734,6 +734,9 @@ const selectedNode=nodes.find(n=>n.id===selectedNodeId);const selectedEdge=edges
  };
  const statusLabel:Record<string,string>={idle:'Not configured',ready:'Ready',queued:'Queued',validating:'Validating',planning:'Planning',approval:'Waiting for approval',deploying:'Deploying',completed:'Completed',failed:'Needs attention'};
  const tfSafe=(value:string)=>value.toLowerCase().replace(/[^a-z0-9_]+/g,'_').replace(/^_+|_+$/g,'')||'resource';
+ const findAncestorResource=(n:ArchitectureNode,type:ResourceType)=>{let cur=n.parentId?architectureNodes.find(x=>x.id===n.parentId):undefined;while(cur){if(cur.data.resourceType===type)return cur;cur=cur.parentId?architectureNodes.find(x=>x.id===cur!.parentId):undefined;}return undefined;};
+ const hasAzureTerraformResources=architectureNodes.some(n=>n.data.cloudProvider!=='aws'&&!['tenant','managementGroup','subscription'].includes(n.data.resourceType));
+ const hasAwsTerraformResources=architectureNodes.some(n=>n.data.cloudProvider==='aws'&&['awsVpc','awsSubnet','awsEc2'].includes(n.data.resourceType));
  const terraformResourceType=(type:ResourceType)=>{
   const map:Partial<Record<ResourceType,string>>={
    resourceGroup:'azurerm_resource_group',virtualNetwork:'azurerm_virtual_network',subnet:'azurerm_subnet',
@@ -749,8 +752,9 @@ const selectedNode=nodes.find(n=>n.id===selectedNodeId);const selectedEdge=edges
    managedIdentity:'azurerm_user_assigned_identity',apiManagement:'azurerm_api_management',serviceBus:'azurerm_servicebus_namespace',
    eventHubs:'azurerm_eventhub_namespace',dataFactory:'azurerm_data_factory',databricks:'azurerm_databricks_workspace',
    azureOpenAI:'azurerm_cognitive_account',aiSearch:'azurerm_search_service',logAnalytics:'azurerm_log_analytics_workspace',
-   applicationInsights:'azurerm_application_insights'
-  };return map[type]||`azurerm_${type}`;
+   applicationInsights:'azurerm_application_insights',
+   awsVpc:'aws_vpc',awsSubnet:'aws_subnet',awsEc2:'aws_instance'
+  };return map[type]||`${String(type).startsWith('aws')?'aws':'azurerm'}_${type}`;
  };
  const quoteTf=(v:string|number|boolean)=>typeof v==='number'||typeof v==='boolean'?String(v):JSON.stringify(String(v));
  const terraformNodeAddress=(n:ArchitectureNode)=>{
@@ -924,7 +928,31 @@ const selectedNode=nodes.find(n=>n.id===selectedNodeId);const selectedEdge=edges
     lines.push(block+'\n');
   });
 
-  if(architectureNodes.some(n=>n.data.cloudProvider==='aws'))lines.push('# AWS diagram resources are intentionally excluded from Azure Terraform generation until AWS IaC mapping is enabled.');
+  const awsNodes=architectureNodes.filter(n=>n.data.cloudProvider==='aws');
+  const awsFind=(type:ResourceType,label?:string)=>awsNodes.find(x=>x.data.resourceType===type&&x.data.label===label);
+  const awsParent=findAncestorResource;
+  const awsRef=(n:ArchitectureNode,attribute='id')=>`${terraformResourceType(n.data.resourceType)}.${tfSafe(n.data.label)}.${attribute}`;
+  awsNodes.forEach((n,i)=>{
+   const name=tfSafe(n.data.label||`aws_resource_${i}`); const p=n.data.properties||{};
+   if(n.data.resourceType==='awsAccount'){lines.push(`# AWS Account boundary: ${n.data.label} (organizational diagram container; no aws provider resource is created)`);return;}
+   if(n.data.resourceType==='awsVpc'){
+    lines.push([`resource "aws_vpc" "${name}" {`,`  cidr_block           = ${quoteTf(p.cidrBlock||'10.0.0.0/16')}`,`  enable_dns_support   = ${quoteTf(p.enableDnsSupport??true)}`,`  enable_dns_hostnames = ${quoteTf(p.enableDnsHostnames??true)}`,`  instance_tenancy     = ${quoteTf(p.instanceTenancy||'default')}`,'','  tags = {',`    Name = ${quoteTf(n.data.label)}`,'  }','}'].join('\n')+'\n');return;
+   }
+   if(n.data.resourceType==='awsSubnet'){
+    const vpc=awsFind('awsVpc',n.data.awsVpc)||awsParent(n,'awsVpc');
+    lines.push([`resource "aws_subnet" "${name}" {`,`  vpc_id                  = ${vpc?awsRef(vpc):'var.aws_vpc_id'}`,`  cidr_block              = ${quoteTf(p.cidrBlock||'10.0.1.0/24')}`,`  availability_zone       = ${quoteTf(p.availabilityZone||`${n.data.region||'ap-south-1'}a`)}`,`  map_public_ip_on_launch = ${quoteTf(p.mapPublicIpOnLaunch??false)}`,'','  tags = {',`    Name = ${quoteTf(n.data.label)}`,'  }','}'].join('\n')+'\n');return;
+   }
+   if(n.data.resourceType==='awsEc2'){
+    const subnet=awsFind('awsSubnet',n.data.awsSubnet)||awsParent(n,'awsSubnet');
+    const sg=String(p.securityGroupIds||'').split(/[\n,]+/).map(x=>x.trim()).filter(Boolean);
+    const body=[`resource "aws_instance" "${name}" {`,`  ami                         = ${quoteTf(p.amiId||'ami-REPLACE_ME')}`,`  instance_type               = ${quoteTf(p.instanceType||'t3.micro')}`,`  subnet_id                   = ${subnet?awsRef(subnet):'var.aws_subnet_id'}`,`  associate_public_ip_address = ${quoteTf(p.associatePublicIp??false)}`];
+    if(p.keyName)body.push(`  key_name                    = ${quoteTf(p.keyName)}`);
+    if(sg.length)body.push(`  vpc_security_group_ids      = [${sg.map(x=>quoteTf(x)).join(', ')}]`);
+    if(p.iamInstanceProfile)body.push(`  iam_instance_profile        = ${quoteTf(p.iamInstanceProfile)}`);
+    body.push('','  root_block_device {',`    volume_size = ${quoteTf(p.rootVolumeSize??30)}`,`    volume_type = ${quoteTf(p.rootVolumeType||'gp3')}`,'  }','','  tags = {',`    Name = ${quoteTf(n.data.label)}`,'  }','}'); lines.push(body.join('\n')+'\n');return;
+   }
+   lines.push(`# AWS ${n.data.resourceType} "${n.data.label}" remains diagram-only; Terraform mapping is not enabled yet.`);
+  });
   return lines.join('\n');
  },[architectureNodes]);
 
@@ -935,7 +963,8 @@ const selectedNode=nodes.find(n=>n.id===selectedNodeId);const selectedEdge=edges
   type        = string
   sensitive   = true
 }`:'',[architectureNodes]);
-const terraformVariablesCode=useMemo(()=>effectiveVariables.map(v=>{
+const terraformVariablesCode=useMemo(()=>{
+ const userVariables=effectiveVariables.map(v=>{
   const lines=[`variable "${v.name}" {`,`  type = ${v.type}`];
   if(v.description)lines.push(`  description = ${JSON.stringify(v.description)}`);
   if(v.defaultValue!==undefined&&v.defaultValue!==''){
@@ -946,7 +975,14 @@ const terraformVariablesCode=useMemo(()=>effectiveVariables.map(v=>{
   if(v.nullable===false)lines.push('  nullable = false');
   lines.push('}');
   return lines.join('\n');
- }).join('\n\n'),[effectiveVariables]);
+ }).join('\n\n');
+ const names=new Set(effectiveVariables.map(v=>v.name));
+ const generated:string[]=[];
+ if(hasAwsTerraformResources&&!names.has('aws_region'))generated.push('variable "aws_region" {\n  description = "AWS region used by the generated AWS provider."\n  type = string\n  default = "ap-south-1"\n}');
+ if(architectureNodes.some(n=>n.data.cloudProvider==='aws'&&n.data.resourceType==='awsSubnet'&&!n.data.awsVpc&&!findAncestorResource(n,'awsVpc'))&&!names.has('aws_vpc_id'))generated.push('variable "aws_vpc_id" {\n  description = "Existing AWS VPC ID when the subnet is not nested under a modeled VPC."\n  type = string\n}');
+ if(architectureNodes.some(n=>n.data.cloudProvider==='aws'&&n.data.resourceType==='awsEc2'&&!n.data.awsSubnet&&!findAncestorResource(n,'awsSubnet'))&&!names.has('aws_subnet_id'))generated.push('variable "aws_subnet_id" {\n  description = "Existing AWS subnet ID when EC2 is not nested under a modeled subnet."\n  type = string\n}');
+ return [userVariables,...generated].filter(Boolean).join('\n\n');
+},[effectiveVariables,architectureNodes,hasAwsTerraformResources]);
 
  const terraformLocalsCode=useMemo(()=>`locals {\n${effectiveLocals.length?effectiveLocals.map(l=>`  ${l.name} = ${l.value}`).join('\n'):'  # No locals declared'}\n}`,[effectiveLocals]);
 
@@ -1087,7 +1123,16 @@ const terraformVariablesCode=useMemo(()=>effectiveVariables.map(v=>{
    readyResourceCount:readyNodes.length
   };
  },[architectureNodes,effectiveVariables,effectiveLocals,architectureModules,architectureOutputs]);
- const terraformProvidersCode=`terraform {\n  required_version = ">= 1.6.0"\n  required_providers {\n    azurerm = {\n      source  = "hashicorp/azurerm"\n      version = "~> 4.0"\n    }\n  }\n}\n\nprovider "azurerm" {\n  features {}\n}`;
+ const terraformProvidersCode=[
+  'terraform {',
+  '  required_version = ">= 1.6.0"',
+  '  required_providers {',
+  ...(hasAzureTerraformResources?['    azurerm = {','      source  = "hashicorp/azurerm"','      version = "~> 4.0"','    }']:[]),
+  ...(hasAwsTerraformResources?['    aws = {','      source  = "hashicorp/aws"','      version = "~> 6.0"','    }']:[]),
+  '  }','}',
+  ...(hasAzureTerraformResources?['','provider "azurerm" {','  features {}','}']:[]),
+  ...(hasAwsTerraformResources?['','provider "aws" {','  region = var.aws_region','}']:[])
+ ].join('\n');
  const terraformMetadataCode=`# Architecture: ${designName}\n# Version: ${architectureMetadata.version}\n# Owner: ${architectureMetadata.owner||'Not specified'}\n# Application: ${architectureMetadata.application||'Not specified'}\n# Criticality: ${architectureMetadata.criticality}\n# Lifecycle: ${architectureMetadata.lifecycle}\n# Description: ${architectureMetadata.description||'Not specified'}`;
  const terraformCode=useMemo(()=>[
   terraformMetadataCode,terraformProvidersCode,terraformVariablesCode,vmPasswordVariableCode,terraformLocalsCode,
@@ -1173,7 +1218,7 @@ const terraformVariablesCode=useMemo(()=>effectiveVariables.map(v=>{
     zip.file('locals.tf',terraformLocalsCode);
     zip.file('data.tf',terraformDataSourcesCode||'# No referenced data sources\n');
     zip.file('modules.tf',terraformModulesCode||'# No modules declared\n');
-    zip.file('main.tf',`${terraformMetadataCode}\n\n${terraformMainCode||'# No Azure resources modeled'}\n`);
+    zip.file('main.tf',`${terraformMetadataCode}\n\n${terraformMainCode||'# No Terraform resources modeled'}\n`);
     zip.file('outputs.tf',terraformOutputsCode||'# No outputs declared\n');
 
     const readme=[

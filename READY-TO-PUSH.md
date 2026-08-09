@@ -216,3 +216,17 @@ Safety:
 - AWS Terraform/code mode remains disabled.
 - Existing Azure Terraform/IaC, remote backend, validation, templates,
   connectors, Architecture Guidance, cost, save/deploy and archmind remain unchanged.
+
+## v8.5.4 — AWS Terraform foundation
+
+First controlled AWS IaC mapping phase. Existing Azure canvas and Azure Terraform logic remain intact.
+
+Enabled AWS Terraform resources:
+- AWS Account: retained as a diagram/account boundary; no synthetic Terraform resource is generated.
+- Amazon VPC -> `aws_vpc`
+- AWS Subnet -> `aws_subnet`
+- Amazon EC2 -> `aws_instance`
+
+The generated provider bundle adds `hashicorp/aws` only when one of the mapped AWS resources is present. `aws_region` is generated automatically. VPC/Subnet hierarchy references are generated from the canvas when available, with input-variable fallbacks for externally managed VPCs/subnets.
+
+All other AWS services remain diagram/property-only and are explicitly commented as not yet Terraform-mapped. This prevents accidental generation of invalid generic AWS resources.
