@@ -1504,9 +1504,9 @@ const terraformVariablesCode=useMemo(()=>effectiveVariables.map(v=>{
       onClick={()=>{setArchitectureToolsMenuOpen(v=>!v);setLibraryOpen(false)}}
       title="Architecture Guidance"
     >
-      <Sparkles size={18}/>
+      <BookOpenText size={18}/>
       <span>Architecture</span>
-      <small>Tools</small>
+      <small>Guidance</small>
     </button>
 
     {architectureToolsMenuOpen&&!leftPaneCollapsed&&<div className="architecture-tools-flyout" onMouseDown={e=>e.stopPropagation()}>

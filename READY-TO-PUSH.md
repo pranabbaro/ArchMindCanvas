@@ -46,3 +46,12 @@ Only the Architecture Tools presentation was changed:
 No handlers, state variables, component names, Terraform/IaC, remote backend,
 templates, reference starters, connectors, validation, deployment or other
 application behavior was intentionally changed.
+
+
+## v8.4.5 — Sidebar Architecture Guidance correction
+
+Only the circled left sidebar control was corrected:
+- Sparkles -> BookOpenText
+- Architecture / Tools -> Architecture / Guidance
+
+The existing click handler and all application behavior are unchanged.
